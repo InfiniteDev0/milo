@@ -45,7 +45,7 @@ function StepCard({
   return (
     <div
       onMouseEnter={onMouseEnter}
-      className={`relative flex flex-col-reverse gap-4 overflow-hidden rounded-[20px] border-2 border-black/[0.08] bg-white p-6 shadow-[0px_8px_20px_0px_rgba(0,0,0,0.1)] ${
+      className={`relative flex flex-col-reverse gap-4 overflow-hidden rounded-[20px] border-2 border-black/[0.08] bg-white p-3 md:p-6 shadow-[0px_8px_20px_0px_rgba(0,0,0,0.1)] ${
         isLast ? "sm:col-span-2 sm:flex-row sm:items-center" : ""
       } lg:h-80 lg:shrink-0 lg:cursor-pointer lg:flex-row lg:items-center lg:transition-[width,background] lg:duration-700 lg:ease-in-out ${
         isOpen ? "lg:w-1/2 lg:bg-white" : "lg:w-[24%] lg:bg-[#f4f2ee]"
@@ -101,7 +101,7 @@ export default function ProcessSection() {
       id="process"
       className="relative flex w-full flex-col items-center justify-center overflow-hidden"
     >
-      <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center justify-center box-border px-6 sm:px-10 lg:px-20">
+      <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center justify-center box-border pt-7 md:pt-0 sm:px-10 lg:px-20">
         {/* Dashboard preview with fade-out gradient */}
         <div className="relative mb-6 h-55 w-full overflow-hidden rounded-3xl sm:h-80 lg:mb-2.5 lg:h-120 lg:w-[83%]">
           <img

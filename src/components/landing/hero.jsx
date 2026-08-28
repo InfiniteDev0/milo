@@ -23,19 +23,21 @@ export default function Hero() {
   ];
   return (
     <section
-      className="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 bg-cover bg-center p-10 lg:h-[75vh] lg:gap-0 lg:py-0"
+      className="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 bg-cover bg-center w-full md:p-10 lg:h-[75vh] lg:gap-0 lg:py-0"
       // style={{ backgroundImage: "url('/hero.png')" }}
     >
       {/* Left content */}
       <div className="flex flex-col justify-center items-center text-center lg:items-start lg:text-left w-full h-full gap-7 p-6">
         <div className="flex flex-col gap-2">
-          <h1 className="text-6xl sm:text-5xl lg:text-6xl font-extralight">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl md:font-extralight">
             Manage Your <br /> Life in Blocks
           </h1>
-          <div className="text-lg text-zinc-600">
-            Milo is a daily organizing assistant, <br />
-            that elevates your performance with the help of <br /> kanban
-            blocks.
+          <div className="text-sm w-full md:text-lg space-y-1 text-zinc-600">
+            <p>
+              {" "}
+              Milo is a daily organizing assistant, that elevates your
+              performance with the help of kanban blocks.
+            </p>
             <br />
             <span className="text-black">
               <Tooltip
@@ -56,11 +58,11 @@ export default function Hero() {
       </div>
 
       {/* Right content */}
-      <div className="flex flex-col items-center justify-center h-full gap-1 relative">
+      <div className="flex flex-col items-center justify-center h-full w gap-1 relative">
         {BLOCKS.map(({ title, tasks, bg, status }, idx) => (
           <div
             key={title}
-            className={`h-15 ${bg} flex items-center justify-between p-2 rounded-sm w-[62%]`}
+            className={`h-15 ${bg} flex items-center justify-between p-2 rounded-sm w-[90%] md:w-[62%]`}
           >
             <h1 className="text-xl ">{title}</h1>
             <div className="flex flex-col items-end">
@@ -78,15 +80,19 @@ export default function Hero() {
           </div>
         ))}
         {/* blocks */}
-        <img src="/blocks.png" className="size-30 md:size-40 absolute left-0" alt="" />
+        <img
+          src="/blocks.png"
+          className="size-30 md:size-40 absolute left-0"
+          alt=""
+        />
         {/* Add tasks block */}
         <Link
           href="/login"
-          className="h-10 w-[62%] border border-dotted hover:bg-white hover:border transition-all duration-500 border-gray-400 flex items-center justify-center rounded-sm cursor-pointer"
+          className="h-10 w-[90%] md:w-[62%] border border-dotted hover:bg-white hover:border transition-all duration-500 border-gray-400 flex items-center justify-center rounded-sm cursor-pointer"
         >
           <span className="text-gray-600">Add a block</span>
         </Link>
-        <h1 className="mt-2">
+        <h1 className="text-sm md:text-md  my-6 md:mt-2">
           Divide your tasks in blocks and handle seperately
         </h1>
       </div>
