@@ -66,17 +66,17 @@ export default function Footer() {
   const [email, setEmail] = useState("");
 
   return (
-    <footer className="w-full  px-3 py-4">
-      <div className="relative w-full overflow-hidden rounded-[32px] bg-white p-10 md:p-14">
-        <div className="flex flex-col justify-between gap-10 md:flex-row">
+    <footer className="w-full px-3 py-4">
+      <div className="relative w-full overflow-hidden rounded-[24px] bg-white p-6 sm:rounded-[32px] sm:p-10 md:p-14">
+        <div className="flex flex-col justify-between gap-8 md:flex-row md:gap-10">
           {/* Left: newsletter */}
-          <div className="flex flex-col gap-6">
-            <h2 className="m-0 text-2xl font-normal text-black/70">
+          <div className="flex flex-col gap-5 md:gap-6">
+            <h2 className="m-0 text-xl font-normal text-black/70 sm:text-2xl">
               Sign up for our newsletter
             </h2>
             <form
               onSubmit={(e) => e.preventDefault()}
-              className="flex items-center gap-2 rounded-full bg-white/70 p-1.5"
+              className="flex w-full max-w-sm items-center gap-2 rounded-full bg-white/70 p-1.5"
             >
               <input
                 type="email"
@@ -84,11 +84,11 @@ export default function Footer() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@email.com"
-                className="w-56 bg-transparent px-4 py-2 text-sm text-black outline-none placeholder:text-black/40 sm:w-64"
+                className="min-w-0 flex-1 bg-muted px-3 py-2 text-sm text-black outline-none placeholder:text-black/40 sm:px-4"
               />
               <Button
                 type="submit"
-                className="bg-black text-white text-sm font-medium rounded-full px-5 py-2 h-auto transition-colors duration-300 hover:bg-black/80"
+                className="shrink-0 bg-black text-white text-sm font-medium rounded-full px-5 py-2 h-auto transition-colors duration-300 hover:bg-black/80"
               >
                 Subscribe
               </Button>
@@ -96,8 +96,8 @@ export default function Footer() {
           </div>
 
           {/* Right: pages */}
-          <div className="flex items-start gap-3">
-            <span className="flex items-center gap-1 pt-0.5 text-black/40">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+            <span className="flex items-center gap-1 text-black/40 sm:pt-0.5">
               <CornerDownRight className="size-4" />
               Pages
             </span>
@@ -117,7 +117,7 @@ export default function Footer() {
         </div>
 
         {/* Socials */}
-        <div className="mt-16 flex items-center gap-3">
+        <div className="mt-10 flex items-center gap-3 md:mt-16">
           {SOCIALS.map(({ label, href, icon: Icon }) => (
             <a
               key={label}
@@ -133,13 +133,12 @@ export default function Footer() {
         </div>
 
         {/* Bottom row */}
-        <div className="mt-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
-          <a
-            href="mailto:hello@milo.app"
-            className="text-4xl font-normal text-black transition-colors duration-300 hover:text-[#5e17eb] sm:text-5xl"
+        <div className="mt-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end sm:gap-4">
+          <h1
+            className="text-3xl font-normal text-black transition-colors duration-300  sm:text-4xl md:text-5xl break-all"
           >
-            hello@milo.app
-          </a>
+            Milo Daily Planner
+          </h1>
           <p className="m-0 text-sm text-black/40">
             Milo. All rights reserved.
           </p>

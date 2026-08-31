@@ -66,7 +66,7 @@ export default function Pricing() {
       </p>
 
       {/* billing toggle */}
-      <div className="mt-8 flex items-center gap-1 rounded-full bg-accent p-1">
+      <div className="mt-8 flex items-center gap-1 rounded-full bg-black p-1">
         {["monthly", "yearly"].map((option) => (
           <button
             key={option}
@@ -93,7 +93,7 @@ export default function Pricing() {
           <div
             key={plan.name}
             className={cn(
-              "flex flex-col rounded-xl border p-4",
+              "flex flex-col rounded-xl border bg-white p-4",
               plan.highlighted
                 ? "border-[#b999f9]"
                 : "border-border",
