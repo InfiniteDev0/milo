@@ -99,7 +99,7 @@ export default function ProcessSection() {
   return (
     <section
       id="process"
-      className="relative flex w-full flex-col items-center justify-center overflow-hidden"
+      className="relative flex w-full flex-col items-center justify-center overflow-hidden pt-5"
     >
       <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center justify-center box-border pt-7 md:pt-0 sm:px-10 lg:px-20">
         {/* Dashboard preview with fade-out gradient */}

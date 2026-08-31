@@ -38,7 +38,7 @@ const BLOCKS = [
 
 export default function LifeBlocksSection() {
   return (
-    <section className="w-full bg-white py-16 sm:py-20 lg:py-24">
+    <section className="w-full bg-white py-16 rounded-2xl sm:py-20 lg:py-24">
       <div className="mx-auto grid w-full max-w-300 grid-cols-1 items-center gap-12 px-6 sm:px-10 lg:grid-cols-2 lg:gap-16 lg:px-20">
         {/* Left: copy */}
         <div className="flex flex-col gap-6">
