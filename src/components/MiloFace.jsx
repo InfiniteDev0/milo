@@ -118,10 +118,10 @@ export default function MiloFace({
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const cur = clonePose(POSES.idle);
+    const cur = clonePose(POSES.content);
     let raf = 0;
     let lastT = performance.now();
-    let scrollMood = "idle";
+    let scrollMood = "content";
 
     /* ---- which pose should we be showing right now ---- */
     const resolve = () => {
@@ -234,7 +234,7 @@ export default function MiloFace({
       lastY = y;
 
       scrollMood =
-        p < 0.04 ? "idle" : p < 0.35 ? "content" : p < 0.72 ? "focused" : p < 0.96 ? "happy" : "cheer";
+        p < 0.35 ? "content" : p < 0.72 ? "focused" : p < 0.96 ? "happy" : "cheer";
 
       if (fast && p > 0.04 && p < 0.9) {
         transient.current = { name: "peek", until: Date.now() + 550 };

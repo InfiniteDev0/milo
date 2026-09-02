@@ -15,7 +15,8 @@ const albert = Albert_Sans({
 
 export const metadata = {
   title: "Milo - manage your life in blocks",
-  description: "Best app for personal productivity and project management",
+  description:
+    "Design the shape of your month. Milo runs the day — one block at a time, and nothing ever goes overdue.",
 };
 
 export default function RootLayout({ children }) {

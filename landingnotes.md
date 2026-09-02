@@ -18,7 +18,7 @@ spec, except the three flagged as NEW.
 | 07 | Rest is part of the plan | Rest-period timer + nudge, with the check-in frequency control | spec'd + NEW control |
 | 08 | Where you are, right now | Live day progress — blocks done, tasks done, focus time | NEW |
 | 09 | Save a block, reuse it any day | Block template library, dropping a saved block into today | NEW |
-| 10 | Planned 8. Completed 6. | Reflection card, verbatim from spec, plus Focus: 2h 14m | spec'd |
+| 10 | You showed up for 6 things today. | Reflection card — actuals only, never a planned-vs-done gap, plus Focus: 2h 14m | spec'd |
 | 11 | Habits survive the reshuffle | Habits page with streaks, next to a month-swap screen | spec'd |
 | 12 | Your year, rolled up | Year view by category — Learning, Self-growth, Health, Habits, Work | spec'd |
 

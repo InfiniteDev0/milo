@@ -34,9 +34,10 @@ export default function Hero() {
           </h1>
           <div className="text-sm w-full md:text-lg space-y-1 text-zinc-600">
             <p>
-              {" "}
-              Milo is a daily organizing assistant, that elevates your
-              performance with the help of kanban blocks.
+              Most planners break the moment your day does. Milo doesn&apos;t.
+              Your day is a handful of blocks — start one, and when life
+              interrupts, switch. The block you left just waits for you. Nothing
+              goes overdue. Nothing is ever late.
             </p>
             <br />
             <span className="text-black">
@@ -53,7 +54,7 @@ export default function Hero() {
           </div>
         </div>
         <Button className="flex items-center gap-2 bg-[#5e17eb] text-white text-md font-normal rounded-full px-5 py-2 h-12 w-fit transition-colors duration-300 hover:bg-black/90">
-          Try Milo , it's Free
+          Try Milo, it's Free
         </Button>
       </div>
 

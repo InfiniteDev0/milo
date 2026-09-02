@@ -1,4 +1,4 @@
-import { Flame } from "lucide-react";
+import { Check } from "lucide-react";
 
 const CATEGORIES = [
   "Morning",
@@ -15,7 +15,7 @@ const BLOCKS = [
     category: "Routine",
     status: "Done",
     statusBg: "bg-emerald-100 text-emerald-700",
-    streak: 8,
+    completed: 8,
     tasks: "5 tasks",
   },
   {
@@ -23,7 +23,7 @@ const BLOCKS = [
     category: "Focus",
     status: "Ongoing",
     statusBg: "bg-[#5e17eb]/10 text-[#5e17eb]",
-    streak: 12,
+    completed: 12,
     tasks: "3 tasks",
   },
   {
@@ -31,7 +31,7 @@ const BLOCKS = [
     category: "Recovery",
     status: "To do",
     statusBg: "bg-black/5 text-black/50",
-    streak: 3,
+    completed: 3,
     tasks: "2 tasks",
   },
 ];
@@ -73,14 +73,20 @@ export default function LifeBlocksSection() {
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[#5e17eb]" />
-              A rest timer between tasks nudges you back when it&apos;s time.
+              A rest timer between tasks nudges you back — you decide how often
+              it speaks, including never.
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[#5e17eb]" />
+              Nothing goes overdue. A block you skipped is just a block you
+              skipped.
             </li>
           </ul>
         </div>
 
         {/* Right: visual */}
         <div className="flex flex-col gap-3 rounded-[32px] bg-[#f4f2ee] p-6 sm:p-8">
-          {BLOCKS.map(({ name, category, status, statusBg, streak, tasks }) => (
+          {BLOCKS.map(({ name, category, status, statusBg, completed, tasks }) => (
             <div
               key={name}
               className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-[0px_4px_16px_0px_rgba(0,0,0,0.04)]"
@@ -99,9 +105,9 @@ export default function LifeBlocksSection() {
                 </span>
                 <div className="flex items-center gap-3">
                   <span>{tasks}</span>
-                  <span className="flex items-center gap-1 text-orange-500">
-                    <Flame className="size-3.5 fill-orange-500" />
-                    {streak}
+                  <span className="flex items-center gap-1 text-emerald-600">
+                    <Check className="size-3.5" />
+                    {completed}× done
                   </span>
                 </div>
               </div>
