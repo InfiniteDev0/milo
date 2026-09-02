@@ -9,12 +9,17 @@ import { cn } from "@/lib/utils";
 const PLANS = [
   {
     name: "Free",
-    tagline: "The simple daily planner for clearing your head.",
+    tagline: "Your day in blocks. Free, forever.",
     price: { monthly: "0", yearly: "0" },
     suffix: { monthly: "forever", yearly: "forever" },
     cta: "Start free",
     ctaVariant: "outline",
-    features: ["Unlimited tasks", "Brain Dump", "iPhone, iPad & web"],
+    features: [
+      "Unlimited Life Blocks & tasks",
+      "Kanban — To Do / In Progress / Done",
+      "Idea Dump",
+      "Web app",
+    ],
   },
   {
     name: "Pro",
@@ -30,12 +35,12 @@ const PLANS = [
     subCta: "No credit card required",
     featuresLabel: "Everything in Free, plus",
     features: [
-      "Timebox mode",
-      "Google & Apple Calendar",
-      "Recurring tasks",
-      "Labels & subtasks",
-      "Due dates & reminders",
-      "AI Assistant",
+      "Timebox your day",
+      "Habits & streaks",
+      "Saved blocks you reuse any day",
+      "Rest timer & check-in nudges",
+      "Daily reflection",
+      "Monthly keep-or-swap & year view",
     ],
   },
   {

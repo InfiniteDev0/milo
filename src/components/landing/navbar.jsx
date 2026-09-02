@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Menu, X } from "lucide-react";
+import MiloFace from "../MiloFace";
 
 const NAV_LINKS = [
   { label: "Pricing", href: "/pricing" },
@@ -21,9 +22,13 @@ export default function Navbar() {
     <nav className="fixed top-6 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center rounded-[28px] bg-white p-2 shadow-[0px_1px_20px_0px_rgba(224,215,198,0.6)] w-[min(92vw,360px)] md:w-auto">
       {/* Top row */}
       <div className="flex w-full items-center justify-between gap-0 md:w-auto md:justify-center md:gap-14">
-        {/* Logo */}
-        <Link href="/" aria-label="Go to home" className="flex shrink-0 items-center px-1">
-          <img src="/logo.png" alt="Milo home" className="size-10" />
+        {/* Logo — now a live face rather than a static <img> */}
+        <Link
+          href="/"
+          aria-label="Go to home"
+          className="flex shrink-0 items-center px-1"
+        >
+          <MiloFace className="size-12 touch-none select-none" />
         </Link>
 
         {/* Navigation links (desktop) */}

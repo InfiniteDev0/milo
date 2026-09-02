@@ -5,25 +5,25 @@ import { useState } from "react";
 const steps = [
   {
     step: "01",
-    title: "Easy setup",
+    title: "Create your account",
     description:
-      "Create your workspace and invite your team. Get everything ready in minutes.",
+      "Sign up, name your year, pick the day it starts from. Two minutes and you are in.",
     uiCard:
       "https://framerusercontent.com/images/hYqXfHm4SLL09lb8eXINkwGpaY.png",
   },
   {
     step: "02",
-    title: "Collaborate",
+    title: "Build your blocks",
     description:
-      "Assign tasks and keep communication clear. Everyone stays aligned.",
+      "Sort your tasks into blocks — Morning, Deep Work, Wind Down — each one sitting in its own stretch of the day.",
     uiCard:
       "https://framerusercontent.com/images/lpUXQzvzgT4sfG94CeE4ukM15U.png",
   },
   {
     step: "03",
-    title: "Track growth",
+    title: "Live the plan",
     description:
-      "Use dashboards to monitor progress, trends, and what matters most.",
+      "Live it, pause when you need to, reflect without judgment, adapt next month. One block at a time.",
     uiCard: "https://framerusercontent.com/images/XoXQ8sesm7JX8MLXDCX4E5uw.png",
   },
 ];
