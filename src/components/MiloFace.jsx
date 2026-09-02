@@ -223,6 +223,7 @@ export default function MiloFace({
     };
 
     let lastY = window.scrollY;
+    let peekCool = 0;
     let scrollEnd;
     const onScroll = () => {
       lastActive.current = Date.now();
@@ -230,14 +231,19 @@ export default function MiloFace({
       const y = window.scrollY;
       const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
       const p = y / max;
-      const fast = Math.abs(y - lastY) > 90;
+      const fast = Math.abs(y - lastY) > 320;
       lastY = y;
 
       scrollMood =
-        p < 0.35 ? "content" : p < 0.72 ? "focused" : p < 0.96 ? "happy" : "cheer";
+        p < 0.22 ? "content"
+          : p < 0.46 ? "focused"
+          : p < 0.68 ? "proud"
+          : p < 0.9 ? "happy"
+          : "cheer";
 
-      if (fast && p > 0.04 && p < 0.9) {
+      if (fast && p > 0.04 && p < 0.9 && Date.now() > peekCool) {
         transient.current = { name: "peek", until: Date.now() + 550 };
+        peekCool = Date.now() + 6000;
       }
       clearTimeout(scrollEnd);
       scrollEnd = setTimeout(() => { lastActive.current = Date.now(); }, 120);
@@ -264,10 +270,14 @@ export default function MiloFace({
 
   const R = (k) => (n) => { el.current[k] = n; };
 
+  // Every pose fits the viewBox except cheer, whose grin reaches ~364 units
+  // (about 7px at logo size) below it. Letting that one overflow keeps the
+  // framing tight for the other seven, instead of padding the box out for one.
   return (
     <svg
       ref={svgRef}
       viewBox={VIEWBOX}
+      style={{ overflow: "visible" }}
       className={className}
       onPointerEnter={() => (hover.current = true)}
       onPointerLeave={() => (hover.current = false)}
