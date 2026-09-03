@@ -1,313 +1,209 @@
 # Milo — Project Context
 
-This file is a full snapshot of the Milo project for anyone (human or AI) picking it up
-cold — it was written to be pasted into a fresh Claude conversation for context.
+A snapshot of where Milo actually is, written to be read cold by a human or a fresh
+session. **If something here disagrees with the code, the code wins — fix this file.**
+
+## The three documents
+
+| File | What it owns |
+|---|---|
+| `../PRODUCT.md` | What Milo does. Features, entities, rules, build order. |
+| `../POSITIONING.md` | Who it's for and what it promises. The nine commitments. |
+| `web/CLAUDE.md` (this) | How it's built. Stack, structure, gotchas, open decisions. |
+
+Read POSITIONING.md before writing any user-facing copy. It contains a banned-word
+list and a no-competitors rule that are not optional.
 
 ## What Milo is
 
-Milo is a calm, personal productivity app built around a **Plan → Live → Pause → Reflect →
-Adapt** loop. The core product philosophy, set early and non-negotiable:
+A day planner for days that don't go to plan. The promise, verbatim:
 
-- No guilt, shame, or aggressive productivity mechanics. Never "You failed your goal" —
-  always "You showed up for 6 things today. Nice work."
-- The point is to help users organize their lives, not optimize every second of them.
-- Calm, warm, premium visual feel. Not another bloated productivity app.
+> **Milo notices what you did, not what you didn't.**
 
-**Tagline used on the landing page:** "Manage your life in blocks."
+Your day is four to six **Life Blocks** you shaped yourself. One runs at a time. When
+life interrupts you switch, and the block you left pauses exactly where it was. At the
+end of the day Milo reports what you did — never what's missing.
 
-## Repo layout
+**Nothing in Milo is ever overdue. Nothing is ever late. Skipping is not an event.**
+
+That last line is a data-model rule, not a tone of voice. There is no late state to
+hide or soften; it does not exist. Anything that would reintroduce one — an overdue
+count, a broken-chain graphic, a "you missed 4" — fails review no matter how good it
+looks.
+
+## Two tests before building anything
+
+1. Does this support Milo's philosophy and current MVP scope? *(PRODUCT.md)*
+2. Would the person in POSITIONING.md feel worse after seeing it?
+
+Fail either and it gets cut. The user's standing instruction: **don't invent product
+decisions.** Propose, flag the tradeoff, let them decide.
+
+## Repo layout — the real one
 
 ```
 Milo/
-├── lib/            Flutter app — mobile, currently paused in favor of web-first work
-├── web/            Next.js app — the actual current focus
-├── assets/         Shared brand assets (images + fonts), source of truth for both platforms
-└── CLAUDE.md        This file
+├── PRODUCT.md
+├── POSITIONING.md
+└── web/            Next.js app — the only codebase
+    ├── CLAUDE.md
+    ├── landingnotes.md      decisions for the landing features grid
+    ├── milo-faces.html      generated reference sheet of every mascot pose
+    └── src/
 ```
 
-## Why two frontends
+There is **no `lib/` and no `assets/` folder.** Older versions of this file described a
+Flutter app and a shared asset directory — that was **Zeke**, an earlier Flutter project
+this one grew out of. It was renamed Milo and restarted as a Next.js web app. Flutter is
+gone, not paused. Brand assets live in `web/public/`.
 
-The project started as Flutter-only. Mid-build, the user decided: **web becomes a real
-Next.js + shadcn/ui app** (not Flutter web) because they wanted pixel-accurate control
-using shadcn components directly, and **Flutter is paused, mobile-only, for later**. The
-`web/` folder used to hold Flutter's auto-generated web scaffold; that was deleted and
-replaced with a real Next.js app in place.
+## Stack — verified, not aspirational
 
-Both platforms are being built to the same visual spec in parallel (the user or another
-session has been hand-editing Flutter's onboarding/auth screens to mirror the web ones —
-see `lib/features/onboarding/presentation/screens/login_screen.dart` and
-`signup_screen.dart`, which now match the web auth forms field-for-field).
+- **Next.js 16.3.2** (App Router, Turbopack) · **React 19.2.8** · **JavaScript, not
+  TypeScript** — `.js` / `.jsx` throughout, no `tsconfig`
+- **Tailwind v4** (`@tailwindcss/postcss`), `tw-animate-css`
+- **`@base-ui/react`** — Base UI, *not* Radix. `shadcn` is a dependency but components in
+  `src/components/ui/` are hand-held, not regenerated
+- **motion** (v13) for animation, **lucide-react** for icons
+- **No backend.** No auth, no database, no persistence of any kind yet
 
-## Product spec (the full brief, as given)
+**Fonts:** Outfit + Albert Sans via `next/font/google` in `src/app/layout.js`, *and*
+again via `@import` at the top of `globals.css`, which also hardcodes
+`font-family: 'Outfit'` / `'Albert sans'` on body and headings. The `next/font` variable
+names are also swapped (`Outfit` → `--font-Albert-sans`). **The user has explicitly said
+to leave the font setup alone.** Don't tidy it.
 
-### Onboarding flow
-Signup (currently just email/password UI, no real backend) → confirm/pick a start date →
-land on the dashboard, blurred, with a modal wizard on top: **Welcome** → name the year +
-pick an icon → yearly goals (free text) → **Year Vision Board** (flat list of task names,
-no categories yet — upgrading this to a Notion-style table with custom properties is an
-explicitly deferred feature) → name the month + icon → wizard dismisses, dashboard clears.
-
-### Dashboard shell (not built yet — only applies to the "Daily" sub-tab; every other
-sidebar destination should be an empty stub page for now)
-- Collapsible sidebar: "Milo" wordmark → divider → expandable **Daily** nav (reveals
-  Monthly/Yearly) → Habits → Library → Projects → Idea Dump → pinned at bottom: Settings,
-  Help, Trash, avatar.
-- Content area splits on an 8-column grid: sidebar = 2, center = 4, right = 2 (right
-  column's purpose still undefined, reserved).
-- Center column splits vertically 6 units: top 4/6 = Kanban (columns are **task status**:
-  To Do / In Progress / Done — cards pulled from all of today's active Life Blocks
-  together, confirmed via user decision), bottom 2/6 = timebox view.
-
-### Life Block (redefined per month — a month can keep or swap last month's blocks)
-Fields: name, category badge, total time (derived from its tasks), start time, editable
-status badge (Notion-style select), times completed, streak, task count. Can be skipped or
-repeated.
-
-**Confirmed constraint:** only **one Life Block can be "ongoing" at a time** across the
-whole day. Skipping/switching away from a block **pauses its tasks** automatically. (This
-supersedes an earlier guess that the one-task-in-progress rule was per-block or global —
-it's actually at the block level.)
-
-### Task (inside a block)
-name, category/status property, reason/note, duration, status (To Do/In Progress/Done), a
-rest-period timer with a productivity-nudge notification.
-
-### Habits
-A separate top-level entity, not nested in blocks. Own schedule + streak, survives Life
-Block swaps month to month. Stub page for now, like the other non-Daily tabs.
-
-### Year view
-Rolls the year's blocks up into categories (Learning, Self-growth, Health, Habits, Work) so
-the user can decide at month-end whether to keep or swap a block.
-
-## Build order decided so far
-
-1. ✅ Flutter foundation (theme, router, Riverpod, Hive) + Today/Tasks MVP
-2. ✅ Onboarding wizard (Flutter)
-3. 🔄 **Currently here:** Auth UI (signup/login) on both platforms, web landing page
-4. ⬜ App shell (sidebar + kanban + timebox) — explicitly deferred until after auth/landing
-5. ⬜ Life Blocks + Tasks data model and UI
-6. ⬜ Habits
-7. ⬜ Reflection loop
-8. ⬜ Notes + Smart Widgets
-9. ⬜ Cloud sync / real authentication (everything up to now is local-first, no backend)
-10. ⬜ Polish + beta
-
-The user's own stated anti-pattern to avoid: don't let Claude invent product decisions —
-"Does this support Milo's product philosophy and MVP? If not, kill it."
-
-## Web app (`web/`) — the current focus
-
-**Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind v4,
-shadcn/ui (Radix base, "Nova" preset — chosen explicitly to avoid the newer Base UI
-default), sonner for toasts, next/font/local for custom fonts.
-
-**Routes:**
-- `/` — landing page (Granola-inspired: floating pill navbar, hero headline, CTA buttons).
-  Mid-build; the user said they have a **Framer** design they want followed instead and
-  will share screenshots — the Granola-style version may get replaced.
-- `/auth` — login/signup, toggled client-side via `AuthForms` (`mode: "login" | "signup"`).
-  Split layout: image left (desktop only), form + logo right. Forms are **UI skeletons —
-  no backend wired**; submitting just shows a toast. Social buttons (Apple/Google/Meta) and
-  "Forgot password" are all inert placeholders (`toast.info(...)`).
-
-**Key files:**
-- `src/lib/fonts.ts` — the three custom font families via `next/font/local`.
-- `src/components/forms/{login-form,signup-form,auth-forms}.tsx` — the auth UI.
-- `src/components/{Milo-logo,Milo-wordmark,testimonial-card,download-button}.tsx` —
-  shared brand widgets.
-- `src/components/ui/*` — shadcn primitives (button, card, field, input, label, separator,
-  avatar, sonner).
-
-**Fonts (see Brand assets below for source files):**
-- Body/UI text → **Manrope** (`--font-sans` / `font-sans`)
-- Headings (landing hero, auth card titles) → **Cooper Black** (`--font-heading` /
-  `font-heading`)
-- Logo wordmark only ("Milo") → **Dancing Script** (`--font-script` / `font-script`), via
-  the `<MiloWordmark>` component. Never use this font for body or heading copy.
-
-**Important history/gotchas:**
-- A `shadcn@latest init` run needs explicit `-b radix -p nova -t next` flags — the bare
-  `-y` flag does *not* skip the newer interactive "component library" and "preset" prompts
-  and will silently no-op under a non-interactive shell.
-- Partway through scaffolding, files from an unrelated prior project of the user's
-  ("Manasik" — a different SaaS product with real backend auth, orgs/workspaces) got
-  pasted into `src/app/forms/` and `src/app/auth/page.tsx` as a structural reference (not
-  literal content — wrong branding, wrong backend calls, wrong visual design). Those were
-  moved to `src/components/forms/`, stripped of Manasik branding/backend calls, and
-  rebuilt to match Milo's actual shadcn-based design reference (see Brand assets).
-- The testimonial card intentionally does **not** use the real name/handle/photo from the
-  magicui tweet-card demo (`@dillionverma`) — fabricating a testimonial attributed to a
-  real, identifiable person is not okay. It ships with placeholder copy instead
-  (`src/components/testimonial-card.tsx`); swap in a real quote once one exists.
-
-**Target folder structure** — not migrated yet, adopt incrementally ("do it one by one"):
-every new file from here on should be placed where it belongs in this tree rather than
-where the current ad-hoc structure would put it; existing files move over gradually, not
-in one big rewrite.
+## Routes
 
 ```
-web/
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx                  # fonts, <Toaster />, html/body only
-│   │   ├── globals.css                 # Tailwind v4 @theme tokens (see below)
-│   │   │
-│   │   ├── (marketing)/
-│   │   │   ├── layout.tsx              # floating pill navbar + footer
-│   │   │   └── page.tsx                # /
-│   │   │
-│   │   ├── (auth)/
-│   │   │   ├── layout.tsx              # split: image left, form right
-│   │   │   └── auth/page.tsx           # /auth
-│   │   │
-│   │   └── (app)/
-│   │       ├── layout.tsx              # sidebar shell + 8-col grid
-│   │       ├── daily/page.tsx          # the only real view for now
-│   │       ├── monthly/page.tsx        # stub
-│   │       ├── yearly/page.tsx         # stub
-│   │       ├── habits/page.tsx         # stub
-│   │       ├── library/page.tsx        # stub
-│   │       ├── projects/page.tsx       # stub
-│   │       ├── ideas/page.tsx          # stub
-│   │       └── settings/page.tsx       # stub
-│   │
-│   ├── features/
-│   │   ├── life-blocks/
-│   │   │   ├── model.ts                # LifeBlock type + invariants
-│   │   │   ├── store.ts                # state, incl. the one-ongoing rule
-│   │   │   └── components/
-│   │   │       ├── block-badge.tsx
-│   │   │       └── block-list.tsx
-│   │   ├── tasks/
-│   │   │   ├── model.ts                # Task type, TaskStatus union
-│   │   │   ├── store.ts
-│   │   │   └── components/
-│   │   │       ├── task-board.tsx       # the kanban — columns are status
-│   │   │       └── task-card.tsx        # block shown as a spine, not a column
-│   │   ├── timebox/
-│   │   ├── habits/
-│   │   ├── onboarding/                 # wizard steps + stage enum
-│   │   ├── reflection/
-│   │   └── year/
-│   │
-│   ├── components/
-│   │   ├── ui/                         # shadcn output — regenerable, don't hand-edit
-│   │   ├── brand/
-│   │   │   ├── Milo-logo.tsx
-│   │   │   └── Milo-wordmark.tsx       # Dancing Script lives ONLY here
-│   │   ├── layout/
-│   │   │   ├── app-sidebar.tsx
-│   │   │   ├── marketing-nav.tsx
-│   │   │   └── marketing-footer.tsx
-│   │   └── forms/
-│   │       ├── auth-forms.tsx
-│   │       ├── login-form.tsx
-│   │       └── signup-form.tsx
-│   │
-│   ├── lib/
-│   │   ├── fonts.ts                    # next/font/local, three families
-│   │   ├── utils.ts                    # cn()
-│   │   └── storage/
-│   │       ├── repository.ts           # interface — the seam
-│   │       └── local.ts                # IndexedDB impl for now
-│   │
-│   ├── content/
-│   │   └── landing.ts                  # all marketing copy, no JSX
-│   │
-│   └── hooks/
-│
-└── public/
-    └── brand/                          # auth.png, logo.png, Milo.png, Cover*.png
+src/app/
+├── layout.js              html/body, fonts, metadata — NO chrome
+├── globals.css            Tailwind v4 + theme tokens
+├── (marketing)/
+│   ├── layout.js          navbar + pt-24 + footer  ← chrome lives here only
+│   ├── page.js            /          landing
+│   ├── about/page.js      /about     the brand page — positioning, research, live demo
+│   ├── pricing/page.js    /pricing   free / $9.99mo / $99.99yr / $299.99 lifetime
+│   └── features/page.js   /features  EMPTY STUB — renders <div />
+├── login/page.jsx         /login     renders bare, by design
+└── demo/                  scratch routes, safe to delete
+    ├── hero/              interactive hero candidate vs the shipped one
+    ├── color/             accent colour candidates — decision still open
+    └── faces/             drives MiloFace with a forced mood
 ```
 
-Note the `storage/repository.ts` seam: local (IndexedDB) now, swappable for a real backend
-(Firebase — see below) later without touching feature code, same pattern as the Flutter
-side's Hive-backed repositories.
+Route groups are how chrome is scoped. **Anything that shouldn't have a navbar goes
+outside `(marketing)/`** — that's the whole mechanism. The app shell will become
+`(app)/` with its own layout.
 
-## Auth — Firebase (decided, not yet built)
+## The Milo mascot — the best asset in the repo
 
-The user does not have a Firebase project yet; walking them through creating one is the
-next step before any integration code is written. Scope as agreed:
-- **Email/password** first.
-- **Google sign-in** later (the UI already has a "Continue with Google" button, currently
-  inert — wire it up in a second pass once email/password works).
+An SVG face that morphs between hand-drawn poses. It is the one thing here a competitor
+can't clone in an afternoon, and it's currently only used for decoration. **It belongs
+inside the app** — reacting when a block starts, a task lands, a block completes.
 
-## Platform plan (updated)
+**Two engines, and this is a known problem:**
 
-Build order is now: **Next.js web first → desktop app second, built on the web app's
-design and logic → mobile app last.** This is a change from the earlier plan (Flutter as
-the mobile app, developed in parallel) — Flutter (`lib/`) stays paused; whether desktop
-and mobile end up as Flutter, Electron, or something else wrapping the web build hasn't
-been decided, only the sequencing has.
+- `src/components/MiloFace.jsx` + `src/lib/milo-poses.js` — the navbar logo. Eight poses,
+  driven by scroll, hover, poke, idle.
+- `src/components/milo-reaction.jsx` — self-contained, own copy of the geometry code and
+  its own four-pose table. Used by the philosophy cards.
 
-## Flutter app (`lib/`) — mobile, paused
+`happy` and `cheer` are currently identical in both, kept in step **by hand**. One engine
+and one pose registry is the fix, and it should happen before the face goes into the app.
 
-**Stack:** Flutter 3.32, Riverpod (`Notifier`/`NotifierProvider`, no codegen), GoRouter
-with a Riverpod-aware `redirect`, Hive CE for local storage (chosen over sqflite/Drift
-because it works on every platform without native setup — the repository is swappable
-later without touching callers).
+**How it works:** every pose shares one vertex budget — brow 7, sclera 24, pupil 14,
+mouth 16, tongue 14 — which is what lets one morph into another instead of cutting.
+Points are converted Catmull-Rom → cubic bezier each frame; the pupil is re-fitted to the
+live sclera bounds every frame so it can't slide off an eye that changed shape.
 
-**Structure:** feature-first (`lib/features/<feature>/{data,logic,presentation}`), adapted
-from the folder conventions of an unrelated prior project of the user's ("WatchHub", an
-e-commerce app) that was pasted in early on purely as a structural template — its actual
-auth/product/cart code was stripped out entirely.
+**Scroll ladder** (`MiloFace.jsx`, in `onScroll`) — it only ever gets warmer:
 
-**Built so far:**
-- `features/today` + `features/tasks` — the Today screen MVP: add a task, complete a task,
-  Hive-persisted.
-- `features/onboarding` — the full wizard described above (`OnboardingProfile` model with
-  a computed `stage` enum driving `GoRouter`'s redirect), plus `login_screen.dart` /
-  `signup_screen.dart` mirroring the web auth design (split image layout, `LabeledField`,
-  `SocialAuthButtons`, `TestimonialCard`, black CTA buttons — same placeholder/no-backend
-  behavior as web).
-- `features/dashboard` — currently just wraps the Today screen with a blur + the
-  onboarding wizard modal on top; the real shell (sidebar/kanban/timebox) isn't built.
+| | pose | scroll |
+|---|---|---|
+| 01 | content | 0–22% |
+| 02 | focused | 22–46% |
+| 03 | proud | 46–68% |
+| 04 | happy | 68–90% |
+| 05 | cheer | 90–100% |
 
-**Theme:** light mode by default (`themeMode: ThemeMode.light` in `app.dart` — explicitly
-requested, don't default to system/dark). Sage-green/warm-ivory calm palette in
-`core/constants/app_colors.dart`, Manrope as the default font family.
+Plus `peek` (fast scroll, >320px jump, 6s cooldown), `sleepy` (12s idle), `happy` on
+hover, `cheer` for 1.1s on poke. `idle` exists but is **retired** — it's the anxious
+face that used to greet every visitor.
 
-**Testing gotcha worth knowing:** Flutter widget tests run in a fake-async zone, but
-Hive's writes are real disk I/O — a `pumpAndSettle()` after a Hive-backed state change can
-hang or silently not observe the write. Fix is `tester.runAsync(() async { ...await the
-real work...; await Future.delayed(...); })` followed by a plain `pump()`. See
-`test/widget_test.dart` for the working pattern.
+**Gotchas, all of them earned the hard way:**
 
-## Brand assets (`assets/`)
+- `peek` originally fired on a **90px** jump, which is about one mouse-wheel notch, so it
+  re-armed constantly and ate the poses either side of it. Hence 320px + cooldown.
+- `cheer`'s grin reaches ~364 units below the viewBox. **Don't widen `VIEWBOX` to fit it**
+  — that shrinks all eight faces by 15%. The svg carries `overflow: visible` instead.
+- Driven `mood` is read through `moodRef`, and `mood` is deliberately **not** in the
+  effect's dep array. Putting it back makes the face reset to its start pose on every
+  change instead of morphing.
+- `web/milo-faces.html` is a generated reference sheet of all twelve poses. Open it in a
+  browser. Regenerate from the scratchpad scripts if poses change.
 
-Shared source of truth for both platforms — copy into `web/public/` or reference via
-`Image.asset` in Flutter as needed; don't regenerate art, it already exists here.
+## Copy rules
 
-- `assets/images/auth.png` — the hero/split-screen background image used on both
-  platforms' auth pages.
-- `assets/images/Milo.png` — an earlier hand-lettered "Milo" logo image (superseded by the
-  Dancing Script text wordmark for most uses now, but still referenced in a couple of
-  places).
-- `assets/images/logo.png` — the Milo mascot icon (colorful blob character), used next to
-  the wordmark in navbars.
-- `assets/images/Cover.png`, `Cover1.png`, `Cover2.png` — App Store–style promo covers
-  (black / cream / mint variants) showing the "Milo Daily Planner" branding, kanban card
-  mockups, and pill badges ("Productive Life", "Kanban blocks", "Good Habits"). Used as
-  hero visuals — e.g. `Cover2.png` on the current landing page.
-- `assets/images/login.png`, `Register page (2).png` — pixel-reference screenshots for the
-  login/signup card designs (shadcn Card-based: labeled fields, black CTA button, "Or
-  continue with" divider + Apple/Google/Meta icon buttons on signup only).
-- `assets/fonts/Manrope/` — 7 weights (ExtraLight–ExtraBold), body font on both platforms.
-- `assets/fonts/DancingScript_Complete/` — the wordmark font (has ready-made woff2 files
-  under `.../Fonts/WEB/fonts/`).
-- `assets/fonts/cooper-black/COOPBL.TTF` — the single-weight display/heading font.
+From POSITIONING.md, enforced on every page:
 
-## Explicit "not yet" list
+- **Banned:** productivity, performance, efficiency, optimise, 10x, hustle, consistency,
+  discipline, "stay on track", "don't break the chain". These people left another app to
+  escape that vocabulary.
+- **Never name a competitor** — not in the hero, not on a card, not in a video. Knowing
+  what other tools do is a map for building, not the pitch.
+- **ADHD** may be named descriptively ("plenty of them have ADHD") but never as a claim
+  about what Milo does for a condition. Milo is not a medical or therapeutic product.
+- **No invented testimonials or user counts.** There are no users yet. The about page has
+  a marked empty slot for the first real review; leave it empty until one exists.
 
-Don't build these until asked — they're deliberately deferred:
-- Real backend / authentication (everything is local-first right now; auth forms are UI
-  skeletons that don't submit anywhere)
-- Cloud sync
-- The app shell (sidebar, kanban, timebox) — next major slice after auth/landing
-- Life Blocks / Tasks-within-blocks data model
-- Habits functionality
-- Notes + Smart Widgets (Tiptap-style block editor)
-- Vision board → Notion-style table with custom properties
-- Platform-aware routing (desktop-app-download vs. web landing) — the landing page's
-  "Download for Windows" button is an inert placeholder for this
+## Decisions made, don't relitigate
+
+- **Streaks are off Life Blocks entirely** — habits only, default off, never a loss state.
+- **No priority / urgent flag.** Block order decides what comes first.
+- **Habits must render a skipped day identically to an unscheduled day.** No chain, no
+  grid of misses, no "best streak". *If habits can't be built this way, Milo ships without
+  habits.*
+- **Start times are optional.** "Morning" is a complete answer.
+- **Reflection reports actuals** — "You showed up for 6 things", never "6 of 8".
+- Landing `Process` section is the **Plan → Live → Pause → Reflect → Adapt** loop. Its
+  three images are still hotlinked from `framerusercontent.com` — replace with real
+  screenshots before launch.
+
+## Open decisions
+
+1. **Accent colour.** `#5e17eb` is in use and hardcoded in 36 places across src/. It's chroma 0.269
+   — 1.7× more saturated than anything else in the brand including the mascot — and the
+   only cold colour in a warm palette. Recommendation on the table: a brand/action pair,
+   `#b459cf` (L 62%, big shapes) + `#84279e` (L 47%, buttons and text). See `/demo/color`.
+   **Not decided. Ask before changing it.**
+2. **The founder story** on `/about` is a `[Your story goes here.]` placeholder. Only
+   Abdiaziz can write it.
+3. **Landing features grid** — still 12 dashed "Add image" placeholders. `landingnotes.md`
+   says cut to 6–9, real captions, best cards first.
+4. `/features` and the footer's links point at an empty stub.
+5. Social links are placeholder `youtube.com` / `instagram.com` throughout.
+
+## Build order
+
+1. ✅ Landing page, pricing, about
+2. 🔄 **Here:** auth screens (`/login` exists with `login-form.jsx`, no backend)
+3. ⬜ App shell — sidebar, kanban (columns are status), timebox
+4. ⬜ Life Blocks + Tasks, fully wired
+5. ⬜ Habits
+6. ⬜ Reflection loop
+7. ⬜ Notes + Smart Widgets
+8. ⬜ Real auth + cloud sync
+9. ⬜ Polish + beta
+
+**Platform order:** web → desktop (built on the web app) → mobile last.
+
+## Working notes
+
+- The user works fast, wants opinions not options, and will say when something's wrong.
+  Give a recommendation, not a survey.
+- **Show, don't describe.** Every design question in this project has been settled faster
+  by building a throwaway route under `/demo/` than by arguing in prose.
+- Run `npx next build` after changes — it's fast and catches JSX mistakes immediately.
+- A pre-existing lint warning on `MiloFace.jsx:271` ("Cannot access refs during render")
+  is a false positive on a ref-callback factory. Leave it.

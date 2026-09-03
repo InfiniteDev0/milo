@@ -388,7 +388,7 @@ export default function About() {
             Plan calmly, live your day, pause when you need to, and look back
             without being told off.
           </p>
-          <Link href="/login">
+          <Link href="/auth">
             <Button className="flex h-12 w-fit items-center gap-2 rounded-full bg-[#5e17eb] px-5 py-2 text-md font-normal  transition-opacity duration-300 hover:bg-[#5e17eb] hover:opacity-85">
               Try Milo, it&apos;s Free
             </Button>

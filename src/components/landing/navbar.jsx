@@ -50,12 +50,14 @@ export default function Navbar() {
         </ul>
 
         {/* CTA button (desktop) */}
-        <Button className="hidden md:flex items-center gap-3 bg-[#5e17eb] text-white text-md font-normal rounded-full pl-5 py-2 h-auto transition-opacity duration-200 hover:opacity-85 hover:bg-[#5e17eb]">
-          Get started
-          <span className="flex items-center justify-center h-7 w-7 rounded-full bg-white">
-            <ArrowRight className="size-4 text-black" />
-          </span>
-        </Button>
+        <Link href="/auth" className="hidden md:block">
+          <Button className="flex items-center gap-3 bg-[#5e17eb] text-white text-md font-normal rounded-full pl-5 py-2 h-auto transition-opacity duration-200 hover:opacity-85 hover:bg-[#5e17eb]">
+            Get started
+            <span className="flex items-center justify-center h-7 w-7 rounded-full bg-white">
+              <ArrowRight className="size-4 text-black" />
+            </span>
+          </Button>
+        </Link>
 
         {/* Menu toggle (mobile/tablet) */}
         <button

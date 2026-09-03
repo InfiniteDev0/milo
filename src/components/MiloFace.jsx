@@ -137,6 +137,12 @@ export default function MiloFace({
     /* ---- write one frame to the DOM ---- */
     const paint = () => {
       const e = el.current;
+      // React nulls ref callbacks during commit, but this effect's cleanup (and
+      // so cancelAnimationFrame) runs later — so a frame can land after the
+      // nodes are gone. Unmounting, and every Fast Refresh, hits that window.
+      for (const k of ["bL", "bR", "sL", "sR", "pL", "pR", "wL", "wR", "mo", "tg"]) {
+        if (!e[k]) return;
+      }
       const gx = g.current.x, gy = g.current.y;
 
       // blink: squash the eye vertically about its own centre

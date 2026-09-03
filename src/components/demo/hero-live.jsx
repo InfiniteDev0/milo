@@ -233,7 +233,7 @@ export default function HeroLive() {
 
           {/* Add a block — unchanged */}
           <Link
-            href="/login"
+            href="/auth"
             className="flex h-10 w-[90%] cursor-pointer items-center justify-center rounded-sm border border-dotted border-gray-400 transition-all duration-500 hover:border hover:bg-white md:w-[62%]"
           >
             <span className="text-gray-600">Add a block</span>

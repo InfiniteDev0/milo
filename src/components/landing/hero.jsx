@@ -53,9 +53,11 @@ export default function Hero() {
             </span>
           </div>
         </div>
-        <Button className="flex items-center gap-2 bg-[#5e17eb] text-white text-md font-normal rounded-full px-5 py-2 h-12 w-fit transition-colors duration-300 hover:bg-black/90">
-          Try Milo, it's Free
-        </Button>
+        <Link href="/auth">
+          <Button className="flex items-center gap-2 bg-[#5e17eb] text-white text-md font-normal rounded-full px-5 py-2 h-12 w-fit transition-colors duration-300 hover:bg-black/90">
+            Try Milo, it&apos;s Free
+          </Button>
+        </Link>
       </div>
 
       {/* Right content */}
@@ -88,7 +90,7 @@ export default function Hero() {
         />
         {/* Add tasks block */}
         <Link
-          href="/login"
+          href="/auth"
           className="h-10 w-[90%] md:w-[62%] border border-dotted hover:bg-white hover:border transition-all duration-500 border-gray-400 flex items-center justify-center rounded-sm cursor-pointer"
         >
           <span className="text-gray-600">Add a block</span>

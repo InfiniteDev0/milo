@@ -1,0 +1,32 @@
+rules_version = '2';
+
+/* Deploy with:  firebase deploy --only firestore:rules
+ *
+ * Read this as the real security boundary. Client code can be edited by anyone
+ * with devtools — these rules run on Google's servers and cannot be bypassed.
+ * A Firebase app is only as private as this file.
+ */
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Everything a person owns lives under their own uid. One rule covers
+    // blocks, tasks, days, habits and anything added later.
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Anything not matched above is denied. Do not add a catch-all `allow`
+    // rule here — that is the single most common way Firebase apps leak.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

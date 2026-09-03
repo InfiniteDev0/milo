@@ -12,7 +12,7 @@ export default function CTA() {
           Plan calmly, live your day, pause when you need to, reflect
           without judgment.
         </p>
-        <Link href="/login">
+        <Link href="/auth">
           <Button className="flex items-center gap-2 bg-[#5e17eb] text-white text-md font-normal rounded-full px-5 py-2 h-12 w-fit transition-opacity duration-300 hover:opacity-85 hover:bg-[#5e17eb]">
             Try Milo, it&apos;s Free
           </Button>
