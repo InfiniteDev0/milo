@@ -97,6 +97,7 @@ export default function MiloFace({
   blink = true,
   reactToScroll = true,
   idleAfter = 12000,    // ms of stillness before it dozes off
+  instant = false,      // start ON the given mood instead of morphing into it
   onPoke,
 }) {
   const svgRef = useRef(null);
@@ -118,7 +119,9 @@ export default function MiloFace({
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const cur = clonePose(POSES.content);
+    const cur = clonePose(
+      (instant && POSES[moodRef.current]) || POSES.content,
+    );
     let raf = 0;
     let lastT = performance.now();
     let scrollMood = "content";
@@ -266,7 +269,7 @@ export default function MiloFace({
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [gaze, blink, reactToScroll, idleAfter]);
+  }, [gaze, blink, reactToScroll, idleAfter, instant]);
 
   const poke = () => {
     transient.current = { name: "cheer", until: Date.now() + 1100 };

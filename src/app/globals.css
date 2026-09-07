@@ -49,6 +49,15 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
   --animate-gradient: gradient 8s linear infinite;
+  --color-invert-foreground: var(--invert-foreground);
+  --color-invert: var(--invert);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning: var(--warning);
+  --color-info-foreground: var(--info-foreground);
+  --color-info: var(--info);
+  --color-success-foreground: var(--success-foreground);
+  --color-success: var(--success);
+  --color-destructive-foreground: var(--destructive-foreground);
   @keyframes gradient {
   to {
     background-position: var(--bg-size, 300%) 0;
@@ -89,6 +98,15 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --destructive-foreground: var(--color-red-800);
+  --success: var(--color-emerald-500);
+  --success-foreground: var(--color-emerald-900);
+  --info: var(--color-violet-500);
+  --info-foreground: var(--color-violet-900);
+  --warning: var(--color-yellow-500);
+  --warning-foreground: var(--color-yellow-900);
+  --invert: var(--color-zinc-900);
+  --invert-foreground: var(--color-zinc-50);
 }
 
 .dark {
@@ -123,6 +141,15 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --destructive-foreground: var(--color-red-600);
+  --success: var(--color-emerald-500);
+  --success-foreground: var(--color-emerald-600);
+  --info: var(--color-violet-500);
+  --info-foreground: var(--color-violet-600);
+  --warning: var(--color-yellow-500);
+  --warning-foreground: var(--color-yellow-600);
+  --invert: var(--color-zinc-700);
+  --invert-foreground: var(--color-zinc-50);
 }
 
 @layer base {
@@ -156,4 +183,105 @@ p , span{
 a{
   font-family: 'outfit';
   font-weight: 500;
+}
+
+/* ---- to-do checkboxes ----
+
+   @tiptap/extension-list changed the DOM contract for TaskItem. Its node view
+   now builds <label><input><span></label> where the SPAN is a visually-hidden
+   accessibility label — it gets
+
+     position:absolute;width:1px;height:1px;...;border:0
+
+   as an INLINE style, which no stylesheet can beat.
+
+   The Simple Editor template still styles that span as the visible box, and
+   hides the real <input> with opacity:0;width:0;height:0. Two rules aimed at
+   the wrong halves, so a to-do list rendered with no checkbox at all — which
+   is why bullets and numbers worked and this didn't.
+
+   So: leave the span alone (it is doing its real job now) and style the input
+   itself. The extra .simple-editor class outranks their rule whichever order
+   the stylesheets land in. */
+
+.tiptap.ProseMirror.simple-editor ul[data-type="taskList"] li label input[type="checkbox"] {
+  position: static;
+  display: block;
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  opacity: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  border: 1px solid var(--tt-checklist-border-color);
+  border-radius: var(--tt-radius-xs, 0.25rem);
+  background-color: var(--tt-checklist-bg-color);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 0.75em;
+  transition:
+    background-color 80ms ease-out,
+    border-color 80ms ease-out;
+}
+
+.tiptap.ProseMirror.simple-editor ul[data-type="taskList"] li label input[type="checkbox"]:checked {
+  background-color: var(--tt-checklist-bg-active-color);
+  border-color: var(--tt-checklist-border-active-color);
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='%23ffffff'%3E%3Cpath%20d='M21.4142%204.58579C22.1953%205.36683%2022.1953%206.63317%2021.4142%207.41421L10.4142%2018.4142C9.63317%2019.1953%208.36684%2019.1953%207.58579%2018.4142L2.58579%2013.4142C1.80474%2012.6332%201.80474%2011.3668%202.58579%2010.5858C3.36683%209.80474%204.63317%209.80474%205.41421%2010.5858L9%2014.1716L18.5858%204.58579C19.3668%203.80474%2020.6332%203.80474%2021.4142%204.58579Z'/%3E%3C/svg%3E");
+}
+
+.tiptap.ProseMirror.simple-editor ul[data-type="taskList"] li label input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--tt-checklist-border-active-color);
+  outline-offset: 2px;
+}
+
+/* ---- the note pane's tint has to reach the editor ----
+
+   Tiptap's toolbar paints itself with --tt-toolbar-bg-color and the editor
+   surface with --tt-bg-color. Left alone, both sit as opaque white slabs on
+   top of the tinted pane and the colour only shows in the margins. Setting
+   them transparent lets one colour run from the title to the last line. */
+
+.notes-tinted {
+  --tt-toolbar-bg-color: transparent;
+  --tt-bg-color: transparent;
+}
+
+.notes-tinted .tiptap-toolbar {
+  background: transparent;
+  border-color: rgb(0 0 0 / 0.06);
+}
+
+/* ---- the press ----
+
+   A solid drop shadow in the element's own darker shade, which collapses as
+   the element drops into it. No blur: blur reads as depth-of-field, a hard
+   edge reads as a physical object with a side to it — that difference is the
+   whole effect.
+
+   --lift is set per element, because the shadow has to be that block's
+   colour. A grey shadow under a yellow block reads as dirt. */
+
+.milo-lift {
+  box-shadow: 0 4px 0 var(--lift, rgb(0 0 0 / 0.2));
+  transition:
+    box-shadow 80ms ease,
+    transform 80ms ease,
+    opacity 300ms ease;
+}
+
+.milo-lift:active {
+  box-shadow: 0 0 0 var(--lift, transparent);
+  transform: translateY(4px);
+}
+
+/* A press is a press whether or not you can see it move. */
+@media (prefers-reduced-motion: reduce) {
+  .milo-lift {
+    transition: none;
+  }
+  .milo-lift:active {
+    transform: none;
+  }
 }

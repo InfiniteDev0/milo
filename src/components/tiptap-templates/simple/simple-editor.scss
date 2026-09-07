@@ -1,0 +1,65 @@
+/* MODIFIED FROM THE TIPTAP SOURCE.
+ *
+ * Their template is a whole page, so the original set font-family, height,
+ * background and overscroll on <body> and <html>. Dropped into Milo that
+ * repaints the entire app in Inter and fights the shell for the viewport.
+ *
+ * Removed: the global body/html blocks, the Google Fonts import, and the
+ * 100vw/100vh on .simple-editor-wrapper.
+ * Kept, unchanged: the toolbar variable, the scrollbars, and every rule that
+ * is scoped to the editor itself.
+ */
+
+body {
+  --tt-toolbar-height: 44px;
+}
+
+::-webkit-scrollbar {
+  width: 0.25rem;
+}
+
+.simple-editor-content * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tt-scrollbar-color) transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--tt-scrollbar-color);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.simple-editor-search-and-replace {
+  position: fixed;
+  top: calc(var(--tt-toolbar-height) + 0.5rem);
+  right: 0.5rem;
+  z-index: 51;
+  max-height: calc(100dvh - var(--tt-toolbar-height) - 1rem);
+}
+
+/* Their template centres a 648px column on a blank page. In the note pane
+   the title and date already set the left edge, so the writing has to line up
+   with them — centring pushed it into the middle of nowhere. */
+.simple-editor-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.simple-editor-content .tiptap.ProseMirror.simple-editor {
+  flex: 1;
+  /* No horizontal padding: the pane supplies it, and anything here would
+     indent the text away from the title above it. */
+  padding: 1.5rem 0 30vh;
+}
+
+@media screen and (max-width: 480px) {
+  .simple-editor-content .tiptap.ProseMirror.simple-editor {
+    padding: 1rem 0 30vh;
+  }
+}

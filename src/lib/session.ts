@@ -1,47 +1,35 @@
 import "server-only";
 
-import { cookies } from "next/headers";
-import { getAdminAuth } from "./firebase-admin";
-
-export const SESSION_COOKIE = "milo_session";
-
-/** Firebase caps session cookies at 14 days. */
-export const SESSION_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000;
-
-export const sessionCookieOptions = {
-  name: SESSION_COOKIE,
-  httpOnly: true, // JavaScript can never read it, so XSS can't steal the session
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const, // blocks cross-site POSTs from riding the cookie
-  path: "/",
-  maxAge: SESSION_MAX_AGE_MS / 1000,
-};
+import { createClient } from "./supabase/server";
 
 export type SessionUser = {
-  uid: string;
+  id: string;
   email: string | null;
-  emailVerified: boolean;
 };
 
 /**
  * The one place that decides whether a request is authenticated.
- * `checkRevoked` costs a lookup but means signing out — or disabling an
- * account — takes effect immediately instead of at cookie expiry.
+ *
+ * Always getUser(), never getSession(). getSession() only decodes the cookie
+ * and trusts whatever is inside it; getUser() revalidates the token against
+ * Supabase Auth, so a forged or revoked cookie fails here.
  */
 export async function getCurrentUser(): Promise<SessionUser | null> {
-  const store = await cookies();
-  const session = store.get(SESSION_COOKIE)?.value;
-  if (!session) return null;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  try {
-    const decoded = await getAdminAuth().verifySessionCookie(session, true);
-    return {
-      uid: decoded.uid,
-      email: decoded.email ?? null,
-      emailVerified: decoded.email_verified === true,
-    };
-  } catch {
-    // Expired, revoked, or tampered with — all the same answer.
-    return null;
+  if (!user) return null;
+  return { id: user.id, email: user.email ?? null };
+}
+
+/** For layouts that must not render for signed-out visitors. */
+export async function requireUser(): Promise<SessionUser> {
+  const user = await getCurrentUser();
+  if (!user) {
+    const { redirect } = await import("next/navigation");
+    redirect("/auth");
   }
+  return user;
 }

@@ -1,62 +1,99 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const SESSION_COOKIE = "milo_session";
-
-/* IMPORTANT — this is routing, not authentication.
+/* Two jobs:
  *
- * Proxy runs on the edge runtime, where firebase-admin cannot run, so the
- * cookie's signature is NOT verified here. All this does is keep signed-out
- * people from seeing an app shell flash before being bounced.
+ * 1. Refresh the auth tokens on every matched request and write the rotated
+ *    cookies onto the response. Server Components can't set cookies, so if this
+ *    doesn't happen here, sessions quietly expire mid-use.
  *
- * Real verification happens in the (app) layout via getCurrentUser(), which
- * calls verifySessionCookie on the server. Anyone can forge the *presence* of
- * a cookie; nobody can forge one that verifies. Never let this file be the
- * only thing standing between a request and someone's data.
+ * 2. Redirect. Unlike the Firebase version — which could only check that a
+ *    cookie *existed*, because firebase-admin can't run on the edge —
+ *    supabase.auth.getUser() revalidates the token against Supabase Auth, so
+ *    this is a real check, not an optimistic one.
+ *
+ * Pages still call getCurrentUser() for their own data. Defence in depth.
  */
-export function proxy(request: NextRequest) {
-  const hasCookie = request.cookies.has(SESSION_COOKIE);
+
+/* Every route under (app). Missing one is not an authorisation hole — the
+   (app) layout calls requireUser() and that is the real guarantee — but this
+   list also drives the matcher below, and the matcher decides where tokens
+   get REFRESHED. A signed-in user sitting on an unmatched route stops having
+   their session renewed and is eventually signed out mid-use. */
+const PROTECTED = [
+  "/daily",
+  "/notes",
+  "/ideas",
+  "/profile",
+  "/settings",
+];
+
+export async function proxy(request: NextRequest) {
+  let response = NextResponse.next({ request });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          );
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          );
+        },
+      },
+    },
+  );
+
+  // Do not put logic between createServerClient and getUser — a stray early
+  // return here is the classic way to end up with users randomly signed out.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { pathname } = request.nextUrl;
+  const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
 
-  const isAuthPage = pathname === "/auth";
-  const isProtected =
-    pathname.startsWith("/daily") ||
-    pathname.startsWith("/monthly") ||
-    pathname.startsWith("/yearly") ||
-    pathname.startsWith("/habits") ||
-    pathname.startsWith("/library") ||
-    pathname.startsWith("/projects") ||
-    pathname.startsWith("/ideas") ||
-    pathname.startsWith("/settings") ||
-    pathname.startsWith("/welcome");
-
-  if (isProtected && !hasCookie) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth";
-    url.search = "";
-    return NextResponse.redirect(url);
+  if (isProtected && !user) {
+    return redirectPreservingCookies(request, response, "/auth");
   }
 
-  if (isAuthPage && hasCookie) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/daily";
-    url.search = "";
-    return NextResponse.redirect(url);
+  if (pathname === "/auth" && user) {
+    return redirectPreservingCookies(request, response, "/daily");
   }
 
-  return NextResponse.next();
+  return response;
+}
+
+/** A fresh redirect response would drop the refreshed auth cookies, which logs
+ *  the user out on the very next request. Copy them across. */
+function redirectPreservingCookies(
+  request: NextRequest,
+  from: NextResponse,
+  pathname: string,
+) {
+  const url = request.nextUrl.clone();
+  url.pathname = pathname;
+  url.search = "";
+  const redirect = NextResponse.redirect(url);
+  from.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+  return redirect;
 }
 
 export const config = {
   matcher: [
     "/auth",
-    "/welcome/:path*",
     "/daily/:path*",
-    "/monthly/:path*",
-    "/yearly/:path*",
-    "/habits/:path*",
-    "/library/:path*",
-    "/projects/:path*",
+    "/notes/:path*",
     "/ideas/:path*",
+    "/profile/:path*",
     "/settings/:path*",
   ],
 };

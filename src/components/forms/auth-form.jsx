@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { sendLoginLink, signInWithGoogle, signInWithApple } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -66,12 +69,12 @@ function AppleIcon(props) {
   );
 }
 
-/* One form, two sets of words.
+/* Google and Apple are built but not enabled: neither provider is configured
+   in Supabase yet, and a button that does nothing is worse than no button on
+   the one screen where trust matters. Flip this to true once the provider is
+   set up in the dashboard — the handlers already exist in lib/auth.ts. */
+const SOCIAL_ENABLED = false;
 
-   With no password field there is no functional difference between signing in
-   and signing up — both are "here is my email, let me in", and the backend
-   decides which one it was. So mode only changes copy. If a password ever gets
-   added, this is where the two genuinely diverge. */
 const COPY = {
   login: {
     title: "Welcome back",
@@ -89,12 +92,65 @@ const COPY = {
   },
 };
 
-export function AuthForm({ mode = "login", className, ...props }) {
+const CALLBACK_ERRORS = {
+  link_invalid: "That link has expired or was already used. Here's a fresh one.",
+  missing_code: "That link looks incomplete. Try sending a new one.",
+};
+
+export function AuthForm({ mode = "login", error, className, ...props }) {
   const t = COPY[mode] ?? COPY.login;
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState("idle"); // idle | sending | sent
+
+  // Surface a failed callback once, on arrival.
+  useEffect(() => {
+    if (error) toast.error(CALLBACK_ERRORS[error] ?? "Something went wrong.");
+  }, [error]);
+
+  async function onSubmit(e) {
+    e.preventDefault();
+    if (status === "sending") return;
+
+    setStatus("sending");
+    try {
+      await sendLoginLink(email);
+      setStatus("sent");
+    } catch (err) {
+      setStatus("idle");
+      // Never echo the provider's message — it can reveal whether an address
+      // exists. One line, same for every failure.
+      toast.error("Couldn't send that link. Check the address and try again.");
+      console.error(err);
+    }
+  }
+
+  if (status === "sent") {
+    return (
+      <div className={cn("flex flex-col items-center gap-6 text-center", className)} {...props}>
+        <MiloFace mood="happy" className="size-16 touch-none select-none" />
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl">Check your inbox</h1>
+          <FieldDescription>
+            We sent a sign-in link to <span className="text-black">{email}</span>.
+            Open it on this device and you're in — no password to remember.
+          </FieldDescription>
+        </div>
+        <button
+          type="button"
+          onClick={() => setStatus("idle")}
+          className="cursor-pointer text-sm text-black/50 underline underline-offset-2 transition-colors hover:text-black"
+        >
+          Use a different email
+        </button>
+      </div>
+    );
+  }
+
+  const sending = status === "sending";
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <form>
+      <form onSubmit={onSubmit}>
         <FieldGroup>
           <div className="flex flex-col items-center gap-2 text-center">
             <Link
@@ -122,6 +178,9 @@ export function AuthForm({ mode = "login", className, ...props }) {
               autoComplete="email"
               placeholder="Enter your Email"
               icon={<MailIcon />}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={sending}
               required
             />
           </Field>
@@ -130,29 +189,35 @@ export function AuthForm({ mode = "login", className, ...props }) {
             <Button
               className={"h-10 text-md font-normal cursor-pointer"}
               type="submit"
+              disabled={sending || email.trim() === ""}
             >
-              {t.submit}
+              {sending ? "Sending…" : t.submit}
             </Button>
           </Field>
 
-          <FieldSeparator>Or</FieldSeparator>
-
-          <Field className="flex-row items-center gap-2.5">
-            <button
-              type="button"
-              className="flex h-[40px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-[10px] bg-white text-sm font-medium text-black transition-colors duration-200 ease-in-out hover:border-[#5e17eb]"
-            >
-              <GoogleIcon />
-              Google
-            </button>
-            <button
-              type="button"
-              className="flex h-[40px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-[10px] bg-white text-sm font-medium text-black transition-colors duration-200 ease-in-out hover:border-[#5e17eb]"
-            >
-              <AppleIcon />
-              Apple
-            </button>
-          </Field>
+          {SOCIAL_ENABLED && (
+            <>
+              <FieldSeparator>Or</FieldSeparator>
+              <Field className="flex-row items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => signInWithGoogle().catch(() => toast.error("Google sign-in failed."))}
+                  className="flex h-[40px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-[10px] bg-white text-sm font-medium text-black transition-colors duration-200 ease-in-out hover:border-[#5e17eb]"
+                >
+                  <GoogleIcon />
+                  Google
+                </button>
+                <button
+                  type="button"
+                  onClick={() => signInWithApple().catch(() => toast.error("Apple sign-in failed."))}
+                  className="flex h-[40px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-[10px] bg-white text-sm font-medium text-black transition-colors duration-200 ease-in-out hover:border-[#5e17eb]"
+                >
+                  <AppleIcon />
+                  Apple
+                </button>
+              </Field>
+            </>
+          )}
         </FieldGroup>
       </form>
 

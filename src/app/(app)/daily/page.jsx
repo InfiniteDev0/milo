@@ -1,0 +1,49 @@
+import { DatePicker } from "@/components/app/date-picker";
+import { BlockLineup } from "@/components/app/block-lineup";
+import { TaskBoard } from "@/components/app/task-board";
+import { DayBar } from "@/components/app/day-bar";
+import { ScopeSwitcher } from "@/components/app/scope-switcher";
+import { DayLabel } from "@/components/app/day-label";
+
+export const metadata = {
+  title: "Today — Milo",
+};
+
+/* The day.
+ *
+ * The greeting and the date picker belong to this page rather than the shell —
+ * they describe the day being shown, and the shell is the same whatever day
+ * that is.
+ *
+ * Below them goes the day itself: blocks, the board, the timebox. Nothing yet,
+ * because the data model isn't settled — see CLAUDE.md's open decisions.
+ */
+export default function DailyPage() {
+  return (
+    <div className="flex h-full flex-col gap-3 px-4 pt-4">
+      {/* Pinned — never scrolls */}
+      <div className="flex shrink-0 flex-col items-center gap-3">
+        <div className="flex  items-center justify-between w-full">
+          <DayLabel className="text-center" />
+          <div className="flex items-center gap-3">
+            <ScopeSwitcher />
+            <DatePicker />
+          </div>
+        </div>
+        {/* ongoing block card */}
+        <div className="flex items-center justify-between w-full">
+          <BlockLineup />
+          <DayBar />
+          <div>
+            
+          </div>
+        </div>
+      </div>
+
+      {/* the board — columns are status, cards pooled from every block */}
+      <div className="min-h-0 w-full flex-1 overflow-y-auto overflow-x-hidden overscroll-contain pb-4">
+        <TaskBoard />
+      </div>
+    </div>
+  );
+}

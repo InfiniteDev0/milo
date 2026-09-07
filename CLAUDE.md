@@ -3,13 +3,15 @@
 A snapshot of where Milo actually is, written to be read cold by a human or a fresh
 session. **If something here disagrees with the code, the code wins — fix this file.**
 
-## The three documents
+## The documents
 
 | File | What it owns |
 |---|---|
 | `../PRODUCT.md` | What Milo does. Features, entities, rules, build order. |
 | `../POSITIONING.md` | Who it's for and what it promises. The nine commitments. |
 | `web/CLAUDE.md` (this) | How it's built. Stack, structure, gotchas, open decisions. |
+| `../BACKLOG.md` | What's missing. Dead ends, unbuilt flows, deferred plumbing. |
+| `../TIME.md` | How time is recorded. The interval log, and the rules that keep it from becoming a scoreboard. |
 
 Read POSITIONING.md before writing any user-facing copy. It contains a banned-word
 list and a no-competitors rule that are not optional.
