@@ -8,9 +8,10 @@
  * by a plan you made in advance. Tapping works too.
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { shade } from "@/lib/shade";
 import { spent, useNow } from "@/lib/time";
+import MiloFace from "@/components/MiloFace";
 import { useBlocks } from "./blocks-provider";
 import { DropZone } from "./drop-zone";
 import { TaskRings } from "./task-rings";
@@ -20,7 +21,7 @@ import { Button } from "../ui/button";
    chip are all still here and still wired to the provider — flip this back
    to true and they return. Kept as a switch rather than deleted because the
    decision was to hold it, not to drop the idea. */
-const DROP_ENABLED = false;
+const DROP_ENABLED = true;
 
 /* Held while localStorage is read. Same height and spacing as the real
    lineup, and grey rather than coloured — a coloured placeholder would read
@@ -39,10 +40,11 @@ function LineupSkeleton() {
 }
 
 export function BlockLineup() {
-  const { blocks, countsFor, start, reorderBlocks, focusLocked, droppedToday, undropBlock, hydrated, spentOnBlock } =
+  const { blocks, countsFor, start, reorderBlocks, focusLocked, droppedToday, undropBlock, hydrated, spentOnBlock, paused, pause, loadFailed, retry } =
     useBlocks();
   const [draggingId, setDraggingId] = useState(null);
   const [showDropped, setShowDropped] = useState(false);
+  const asideRef = useRef(null);
   const [over, setOver] = useState(null);
 
   /* Above the early returns, and it has to stay there: the skeleton path
@@ -51,8 +53,46 @@ export function BlockLineup() {
      position, so that is a crash, not a warning. */
   const now = useNow(blocks.some((b) => b.status === "ongoing"));
 
+  // pointerdown, not click: it fires before a button underneath swallows the event
+  useEffect(() => {
+    if (!showDropped) return;
+    const away = (e) => {
+      if (!asideRef.current?.contains(e.target)) setShowDropped(false);
+    };
+    document.addEventListener("pointerdown", away);
+    return () => document.removeEventListener("pointerdown", away);
+  }, [showDropped]);
+
   // seed blocks would flash before the real ones arrive
   if (!hydrated) return <LineupSkeleton />;
+
+  /* COULDN'T READ ≠ NOTHING THERE.
+
+     This has to come first, and it is the more important of the two. An
+     empty state ASSERTS something — 'you have no blocks' — and when the read
+     failed we do not know that. Saying it anyway tells someone with a month
+     of work behind them that their day is gone, which is the single worst
+     sentence this app could put on a screen.
+
+     So when we don't know, we say we don't know, and we offer to look
+     again. */
+  if (loadFailed) {
+    return (
+      <div className="flex h-16 w-full items-center gap-3 rounded-xl border border-dashed border-black/15 px-4 text-sm">
+        <span className="text-black/50">
+          Couldn&rsquo;t reach your blocks.
+          <span className="text-black/35"> Nothing is lost — they&rsquo;re still saved.</span>
+        </span>
+        <button
+          type="button"
+          onClick={retry}
+          className="ml-auto shrink-0 cursor-pointer rounded-lg bg-foreground px-3 py-1.5 text-xs text-white"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
 
   if (blocks.length === 0) {
     return (
@@ -74,11 +114,52 @@ export function BlockLineup() {
       : blocks.filter((b) => b.status !== "done");
 
   return (
-    /* pb-2 leaves room for the 4px shadow AND the 4px the card travels when
+    /* The wrapper exists for the badge. It has to sit OUTSIDE the scroller —
+       inside, it would scroll away with the blocks and stop being centred the
+       moment you nudged the strip sideways. */
+    <div className="relative flex w-full items-start gap-3">
+      {paused && (
+        /* The day is asleep, said the way the rest pill in day-bar.jsx says it:
+           black pill, white disc, Milo's face in the disc. Same shape because
+           it is the same kind of message — the app is quiet on purpose.
+
+           It reports; it is not a button. There is exactly one door back and
+           it is the panel below, which can also say where you were. Two
+           buttons doing one thing is how you end up reading both. */
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center pb-2">
+          <span className="flex items-center gap-2.5 rounded-full bg-[#141414] py-1.5 pl-1.5 pr-5 shadow-[0_6px_24px_rgba(0,0,0,0.25)]">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
+              <MiloFace mood="sleepy" instant gaze={false} reactToScroll={false} className="size-8" />
+            </span>
+            <span className="text-sm text-white">
+              Day paused
+              {pause?.pausedAt && (
+                <span className="text-white/45">
+                  {" · "}
+                  {new Date(pause.pausedAt).toLocaleTimeString([], {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </span>
+              )}
+            </span>
+          </span>
+        </div>
+      )}
+
+    {/* pb-2 leaves room for the 4px shadow AND the 4px the card travels when
        pressed. overflow-y-hidden is the other half: `overflow-x-auto` makes
        overflow-y compute to auto as well, so without it the press pushed the
-       card 4px past the bottom and a vertical scrollbar appeared mid-click. */
-    <div className="flex w-full gap-3 overflow-x-auto overflow-y-hidden pb-2">
+       card 4px past the bottom and a vertical scrollbar appeared mid-click.
+
+       Blurred while paused, and inert with it: a block you cannot read is a
+       block you should not be able to drag. Nothing is refused — pick the day
+       back up and every block is there, including a different one. */}
+    <div
+      className={`flex min-w-0 flex-1 gap-3 overflow-x-auto overflow-y-hidden scrollbar-pill pb-2 transition-all duration-300 ${
+        paused ? "pointer-events-none select-none blur-[3px] opacity-60" : ""
+      }`}
+    >
       {ordered.map((b) => {
         const counts = countsFor(b.id);
         const total = counts.todo + counts.doing + counts.done;
@@ -94,7 +175,19 @@ export function BlockLineup() {
           <Button 
             key={b.id}
             type="button"
-            onClick={() => start(b.id)}
+            /* OPENS IT. Starting is the drag — which is what the empty
+               state under the board has always said: "Drag a block down
+               here to start it." Click was quietly starting it too, so
+               there was no way to look inside a block without committing
+               to it, and the copy was describing a gesture nobody needed.
+
+               Now the two are separate: drag to commit, click to look.
+               The sheet's own button starts it, so clicking is never a
+               dead end — one extra tap, and you get to see what you are
+               agreeing to first. */
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("milo:open-block", { detail: b.id }))
+            }
             draggable
             onDragOver={(e) => {
               if (!e.dataTransfer.types.includes("application/milo-block")) return;
@@ -148,43 +241,53 @@ export function BlockLineup() {
         );
       })}
 
-      {/* One quiet chip, not N faded cards — the whole point of dropping is
-          that they stop asking for you. */}
-      {DROP_ENABLED && droppedToday.length > 0 && !focusLocked && (
-        <div className="relative flex shrink-0 items-center">
-          <button
-            type="button"
-            onClick={() => setShowDropped((v) => !v)}
-            className="h-16 cursor-pointer rounded-xl border border-dashed border-black/15 px-4 text-xs text-black/40 transition-colors hover:border-black/30 hover:text-black/70"
-          >
-            {droppedToday.length} set aside
-          </button>
+      {DROP_ENABLED && (
+        <DropZone draggingId={draggingId} onDone={() => setDraggingId(null)} />
+      )}
+    </div>
 
-          {showDropped && (
-            <div className="absolute left-0 top-[72px] z-30 flex w-56 flex-col gap-1.5 rounded-xl bg-white p-2 shadow-[0_10px_40px_rgba(0,0,0,0.15)] ring-1 ring-black/5">
-              {droppedToday.map((b) => (
-                <button
-                  key={b.id}
-                  type="button"
+    {/* Outside the scroller on purpose: its dropdown is absolutely positioned,
+        and overflow-y-hidden in there clipped it clean off. */}
+    {DROP_ENABLED && droppedToday.length > 0 && !focusLocked && (
+      <div ref={asideRef} className="relative flex shrink-0 items-center">
+        <button
+          type="button"
+          onClick={() => setShowDropped((v) => !v)}
+          className={`h-16 cursor-pointer rounded-xl border border-dashed px-4 text-sm transition-colors ${
+            showDropped
+              ? "border-black/40 bg-black/[0.03] text-black"
+              : "border-black/25 text-black/60 hover:border-black/40 hover:text-black"
+          }`}
+        >
+          {droppedToday.length} set aside
+        </button>
+
+        {showDropped && (
+          <div className="absolute right-0 top-[72px] z-40 flex w-60 flex-col gap-1.5 rounded-xl bg-white p-2 shadow-[0_10px_40px_rgba(0,0,0,0.15)] ring-1 ring-black/5">
+            {droppedToday.map((b) => (
+              <div
+                key={b.id}
+                className="flex items-center justify-between gap-2 rounded-lg py-1.5 pl-3 pr-1.5"
+                style={{ background: b.bg, color: b.ink }}
+              >
+                <span className="truncate text-xs">{b.name.replace(" Block", "")}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => {
                     undropBlock(b.id);
                     setShowDropped(false);
                   }}
-                  className="flex cursor-pointer items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs"
-                  style={{ background: b.bg, color: b.ink }}
+                  className="shrink-0 cursor-pointer bg-white text-black hover:bg-white/90"
                 >
-                  <span className="truncate">{b.name.replace(" Block", "")}</span>
-                  <span className="shrink-0 opacity-60">bring back</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {DROP_ENABLED && (
-        <DropZone draggingId={draggingId} onDone={() => setDraggingId(null)} />
-      )}
+                  Bring back
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )}
     </div>
   );
 }

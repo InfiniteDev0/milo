@@ -12,7 +12,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { Undo2 } from "lucide-react";
+import { Archive, Undo2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,15 @@ import { useBlocks } from "./blocks-provider";
 export function ArchivePanel() {
   const { archived, restoreBlock, countsFor } = useBlocks();
   const [open, setOpen] = useState(false);
+
+  /* The button lives in the day header and the panel lives in the shell,
+     so they cannot pass a prop between them. One event, no shared parent,
+     and the shortcut keeps working exactly as it did. */
+  useEffect(() => {
+    const open = () => setOpen(true);
+    window.addEventListener("milo:archive", open);
+    return () => window.removeEventListener("milo:archive", open);
+  }, []);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -109,5 +118,24 @@ export function ArchivePanel() {
         </p>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/* The way in that isn't a keyboard shortcut. A feature reachable only by
+   Ctrl+Shift+A is a feature almost nobody finds. */
+export function ArchiveButton() {
+  const { archived } = useBlocks();
+  if (archived.length === 0) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={() => window.dispatchEvent(new Event("milo:archive"))}
+      title="Blocks you keep but aren't running today"
+      className="flex h-9 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm text-black/45 transition-colors hover:bg-black/5 hover:text-black"
+    >
+      <Archive className="size-4" />
+      {archived.length}
+    </button>
   );
 }

@@ -23,7 +23,6 @@ import { NextResponse, type NextRequest } from "next/server";
 const PROTECTED = [
   "/daily",
   "/notes",
-  "/ideas",
   "/profile",
   "/settings",
 ];
@@ -92,7 +91,6 @@ export const config = {
     "/auth",
     "/daily/:path*",
     "/notes/:path*",
-    "/ideas/:path*",
     "/profile/:path*",
     "/settings/:path*",
   ],

@@ -21,7 +21,6 @@ import {
 const ITEMS = [
   { href: "/daily", label: "Today", icon: "/calendar.svg" },
   { href: "/notes", label: "Notes", icon: "/notes.svg" },
-  { href: "/ideas", label: "Idea Dump", icon: "/idea.svg" },
 ];
 
 const PINNED = [{ href: "/settings", label: "Settings", icon: "/seetings.svg" }];

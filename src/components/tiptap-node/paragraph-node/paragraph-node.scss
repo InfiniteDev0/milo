@@ -34,6 +34,18 @@
     margin-top: 20px;
   }
 
+  // Lines of the same thought sit closer. 20px between every consecutive
+  // paragraph reads as a gap rather than a rhythm — but a paragraph that
+  // follows a list, a code block or an image keeps the full 20, because that
+  // really is a change of subject.
+  //
+  // `p +` first and the :not()s on the second p, or this loses on specificity:
+  // :not(:first-child) contributes a class-level weight the plain `p + p`
+  // version cannot match.
+  p + p:not(:first-child):not(td p):not(th p) {
+    margin-top: 8px;
+  }
+
   p:not(td p):not(th p) {
     font-size: 1rem;
     line-height: 1.6;

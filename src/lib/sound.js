@@ -2,24 +2,14 @@
 
 /* Milo's three sounds.
  *
- * Synthesised with the Web Audio API rather than shipped as files. That is
- * deliberate on two counts:
+ * Plays a file when one is there, and synthesises the cue when one isn't.
  *
- *   1. The reference clips are Duolingo's own audio. Milo is a paid product;
- *      using another company's assets in one is a takedown, not a warning.
- *   2. No files means no network request, no decode, and no latency — a reward
- *      sound that arrives 200ms late reads as a glitch, not a reward.
+ * The files live in web/public/sounds and are named in FILES below. Nothing
+ * else needs to change to swap a clip — rename the new one over the old.
  *
- * FILES WIN IF THEY EXIST. Drop an audio file at any of these paths and it is
- * used instead of the synth, no code change:
- *
- *     web/public/sounds/lock.mp3
- *     web/public/sounds/task.mp3
- *     web/public/sounds/block.mp3
- *
- * (.mp3, .wav, .ogg and .m4a all work — see FILES below.) If a file isn't
- * there, the request fails quietly and the synthesised cue plays instead, so
- * a half-filled folder still works.
+ * The synth is the fallback, not the plan: a missing or slow file becomes a
+ * quieter version of the same moment rather than silence, which is what makes
+ * the very first play work before anything has finished loading.
  *
  * THE RULE: sound only ever fires for something that HAPPENED. There is no
  * sound for a block you dropped, a day you ended early, or a task you moved
@@ -29,10 +19,24 @@
 
 const KEY = "milo:sound";
 
+/* The files in web/public/sounds, first match wins. Generic names are listed
+   after the real ones so replacing a clip later is a rename, not an edit. */
 const FILES = {
-  lock: ["/sounds/lock.mp3", "/sounds/lock.wav", "/sounds/lock.ogg", "/sounds/lock.m4a"],
-  task: ["/sounds/task.mp3", "/sounds/task.wav", "/sounds/task.ogg", "/sounds/task.m4a"],
-  block: ["/sounds/block.mp3", "/sounds/block.wav", "/sounds/block.ogg", "/sounds/block.m4a"],
+  lock: [
+    "/sounds/duolingo_correct.mp3",
+    "/sounds/lock.mp3",
+    "/sounds/lock.wav",
+  ],
+  task: [
+    "/sounds/duolingo.mp3",
+    "/sounds/task.mp3",
+    "/sounds/task.wav",
+  ],
+  block: [
+    "/sounds/Duolingo_completed_lesson.mp3",
+    "/sounds/block.mp3",
+    "/sounds/block.wav",
+  ],
 };
 
 /* Which of those actually exist, worked out once and remembered. `false` means
@@ -115,26 +119,25 @@ function file(name) {
     }
   }
 
-  // first time: ask the browser which of the candidates it can actually play
-  const audio = new Audio();
-  const src = FILES[name].find((f) => {
-    const ext = f.split(".").pop();
-    const type = { mp3: "audio/mpeg", wav: "audio/wav", ogg: "audio/ogg", m4a: "audio/mp4" }[ext];
-    return type && audio.canPlayType(type);
-  });
-  if (!src) {
-    found[name] = false;
-    return false;
-  }
-
-  audio.src = src;
-  audio.oncanplaythrough = () => {
-    found[name] = audio;
+  /* Walk the candidates until one actually loads. canPlayType only says the
+     browser understands the FORMAT — a name that is listed but not on disk
+     passes it and then 404s, so the file has to be tried, not just typed. */
+  const tryFrom = (i) => {
+    const src = FILES[name][i];
+    if (!src) {
+      found[name] = false;
+      return;
+    }
+    const el = new Audio();
+    el.preload = "auto";
+    el.src = src;
+    el.oncanplaythrough = () => {
+      found[name] = el;
+    };
+    el.onerror = () => tryFrom(i + 1);
+    el.load();
   };
-  audio.onerror = () => {
-    found[name] = false;
-  };
-  audio.load();
+  tryFrom(0);
 
   // nothing to play yet on this first call; the synth covers it
   return false;
@@ -147,6 +150,14 @@ const play = (name, fn) => {
     fn();
   } catch {}
 };
+
+/* Fetch all three now, while nothing is happening. Loading a clip is just a
+   network request — no user gesture required, unlike PLAYING one — so by the
+   time the first task lands the file is decoded and ready. Without this the
+   first completion of every session would fall through to the synth. */
+if (typeof window !== "undefined") {
+  Object.keys(FILES).forEach((name) => file(name));
+}
 
 /* Locking in. Two notes rising a fifth — the shortest phrase that reads as
    "yes" rather than "ping". */

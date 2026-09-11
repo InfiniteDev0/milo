@@ -10,8 +10,11 @@ session. **If something here disagrees with the code, the code wins — fix this
 | `../PRODUCT.md` | What Milo does. Features, entities, rules, build order. |
 | `../POSITIONING.md` | Who it's for and what it promises. The nine commitments. |
 | `web/CLAUDE.md` (this) | How it's built. Stack, structure, gotchas, open decisions. |
+| `../ROADMAP.md` | The phases, in dependency order, each with a checkable "done when". |
 | `../BACKLOG.md` | What's missing. Dead ends, unbuilt flows, deferred plumbing. |
 | `../TIME.md` | How time is recorded. The interval log, and the rules that keep it from becoming a scoreboard. |
+| `../SYSTEM.md` | Where the mechanics came from — the journal system underneath Milo. Settles several PRODUCT.md open questions. |
+| `../RESEARCH.md` | Findings that decided a build, with sources. Read before reopening one. |
 
 Read POSITIONING.md before writing any user-facing copy. It contains a banned-word
 list and a no-competitors rule that are not optional.
@@ -67,7 +70,12 @@ gone, not paused. Brand assets live in `web/public/`.
 - **`@base-ui/react`** — Base UI, *not* Radix. `shadcn` is a dependency but components in
   `src/components/ui/` are hand-held, not regenerated
 - **motion** (v13) for animation, **lucide-react** for icons
-- **No backend.** No auth, no database, no persistence of any kind yet
+- **Supabase** — Postgres + Auth, via `@supabase/ssr`. Schema and RLS policies in
+  `supabase/migrations/0001_init.sql`, already applied. `npm run verify:db` proves
+  every table is unreadable and unwritable without a session.
+- **Auth is real and wired**: `proxy.ts` refreshes tokens and redirects, the `(app)`
+  layout calls `requireUser()`. Always `getUser()`, never `getSession()` — the
+  latter trusts the cookie without revalidating it.
 
 **Fonts:** Outfit + Albert Sans via `next/font/google` in `src/app/layout.js`, *and*
 again via `@import` at the top of `globals.css`, which also hardcodes
@@ -161,6 +169,16 @@ From POSITIONING.md, enforced on every page:
 
 ## Decisions made, don't relitigate
 
+- **No app data in localStorage. Ever.** Supabase is the store. It is plaintext and
+  readable by any script on the origin, and notes are the most personal thing here.
+  Don't add a cache there for speed — use a skeleton.
+- **Offline is PowerSync's job**, when it gets set up. Note for whoever does it: the
+  web SDK persists SQLite through IndexedDB or OPFS, which are same-origin readable
+  exactly like localStorage, and encryption is opt-in (a `sqlite3mc.wasm` build).
+  **PowerSync is a sync tool, not a security control** — the XSS answer is CSP.
+- **The write path is optimistic**: state changes in memory, `src/lib/db/sync.js`
+  queues the write, retries with backoff, and says nothing to the user. An alert
+  because a write is three seconds late is the anxiety this app exists to remove.
 - **Streaks are off Life Blocks entirely** — habits only, default off, never a loss state.
 - **No priority / urgent flag.** Block order decides what comes first.
 - **Habits must render a skipped day identically to an unscheduled day.** No chain, no
@@ -189,14 +207,16 @@ From POSITIONING.md, enforced on every page:
 ## Build order
 
 1. ✅ Landing page, pricing, about
-2. 🔄 **Here:** auth screens (`/login` exists with `login-form.jsx`, no backend)
-3. ⬜ App shell — sidebar, kanban (columns are status), timebox
-4. ⬜ Life Blocks + Tasks, fully wired
-5. ⬜ Habits
-6. ⬜ Reflection loop
-7. ⬜ Notes + Smart Widgets
-8. ⬜ Real auth + cloud sync
-9. ⬜ Polish + beta
+2. ✅ Auth — Supabase, magic link + OAuth, proxy + layout guard
+3. ✅ App shell, kanban, block lineup, month calendar, notes editor
+4. ✅ Time tracking — the interval log (`TIME.md`)
+5. ✅ Database schema + RLS
+6. 🔄 **Here:** moving each feature off local state onto Supabase.
+   Notes done. Blocks + tasks next, then days + sessions.
+7. ⬜ Offline via PowerSync
+8. ⬜ The flows in `BACKLOG.md` — partial-day close, month-end swap, block CRUD
+9. ⬜ Habits *(or shipping without them — PRODUCT.md allows it)*
+10. ⬜ Polish + beta
 
 **Platform order:** web → desktop (built on the web app) → mobile last.
 

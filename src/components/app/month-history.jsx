@@ -109,7 +109,7 @@ function DayCell({ date, entry, isToday, muted, onOpen }) {
           {bands.map((b) => (
             <span
               key={b.id}
-              title={b.name.replace(" Block", "")}
+              title={b.name?.replace(" Block", "") ?? "A block"}
               className="h-2.5 w-6 rounded-full"
               style={{ background: b.bg }}
             />
@@ -236,7 +236,16 @@ export function MonthHistory() {
   const tasksDone = lived.reduce((n, h) => n + h.tasks, 0);
   const minutes = lived.reduce((n, h) => n + h.minutes, 0);
 
+  /* Back as far as you like; forward stops at this month.
+
+     This is a record of what happened, and a future month can only ever be
+     blank — an empty October in September is not information, it is a grid
+     of nothing that looks like a grid of failures. Milo also has no forward
+     plan to show: a block is started, never scheduled. */
+  const atLatest = y === today.y && m === today.m;
+
   const step = (by) => {
+    if (by > 0 && atLatest) return;
     const next = new Date(y, m + by, 1);
     setCursor({ y: next.getFullYear(), m: next.getMonth() });
   };
@@ -245,7 +254,9 @@ export function MonthHistory() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl uppercase">{monthName(y, m)}</h1>
+          <h2 className="text-sm tracking-wide text-black/45 uppercase">
+            {monthName(y, m)}
+          </h2>
 
           <div className="flex items-center gap-1">
             <Button
@@ -259,6 +270,7 @@ export function MonthHistory() {
             <Button
               variant="outline"
               onClick={() => step(1)}
+              disabled={atLatest}
               aria-label="Next month"
               className="flex size-7 cursor-pointer items-center justify-center rounded-lg text-black/40 transition-colors hover:bg-black/5 hover:text-black/70"
             >

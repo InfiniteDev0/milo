@@ -3,6 +3,7 @@ import { BlockLineup } from "@/components/app/block-lineup";
 import { TaskBoard } from "@/components/app/task-board";
 import { DayBar } from "@/components/app/day-bar";
 import { ScopeSwitcher } from "@/components/app/scope-switcher";
+import { ArchiveButton } from "@/components/app/archive-panel";
 import { DayLabel } from "@/components/app/day-label";
 
 export const metadata = {
@@ -19,6 +20,7 @@ export const metadata = {
  * because the data model isn't settled — see CLAUDE.md's open decisions.
  */
 export default function DailyPage() {
+
   return (
     <div className="flex h-full flex-col gap-3 px-4 pt-4">
       {/* Pinned — never scrolls */}
@@ -27,6 +29,10 @@ export default function DailyPage() {
           <DayLabel className="text-center" />
           <div className="flex items-center gap-3">
             <ScopeSwitcher />
+            {/* the shelf of blocks you keep but are not running today */}
+            <ArchiveButton />
+            {/* Pause and end live inside this now — they are the two things
+                you can do to a day, and this button is the day. */}
             <DatePicker />
           </div>
         </div>

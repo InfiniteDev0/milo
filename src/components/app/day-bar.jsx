@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useBlocks } from "./blocks-provider";
+import { CloseDay } from "./close-day";
 import { Button } from "../ui/button";
 
 function format(ms) {
@@ -36,6 +37,14 @@ export function DayBar() {
   const { rest, skipRest, summary, blocks } = useBlocks();
   const [now, setNow] = useState(() => Date.now());
   const [showReflection, setShowReflection] = useState(false);
+  const [closing, setClosing] = useState(false);
+
+  // opened from the date button, which is a sibling and cannot pass a prop
+  useEffect(() => {
+    const open = () => setClosing(true);
+    window.addEventListener("milo:close-day", open);
+    return () => window.removeEventListener("milo:close-day", open);
+  }, []);
 
   // Only ticks while resting — no interval running through the whole day.
   useEffect(() => {
@@ -67,6 +76,20 @@ export function DayBar() {
 
   return (
     <>
+      {/* No button here any more. Ending the day is one of the two things
+          you can do TO a day, and both of them now live under the date —
+          which is the day. Three doors to two actions was one door too
+          many, and none of them said what they did. */}
+
+      <Dialog open={closing} onOpenChange={setClosing}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Close the day</DialogTitle>
+          </DialogHeader>
+          <CloseDay onClose={() => setClosing(false)} />
+        </DialogContent>
+      </Dialog>
+
       {rest && (
         <div className="fixed bottom-6 right-8 z-40 flex items-center">
           <div className="flex items-center gap-2.5 rounded-xl bg-[#141414] py-1.5 pl-1.5 pr-1.5 shadow-[0_6px_24px_rgba(0,0,0,0.25)]">

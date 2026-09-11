@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "verify:db": "node scripts/verify-db.mjs",
+    "predev": "node scripts/verify-db.mjs",
+    "prebuild": "node scripts/verify-db.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -50,6 +53,7 @@
     "clsx": "^2.1.1",
     "cn": "^0.2.5",
     "date-fns": "^4.4.0",
+    "embla-carousel-react": "^8.6.0",
     "katex": "^0.18.6",
     "lodash.throttle": "^4.1.1",
     "lowlight": "^3.3.0",

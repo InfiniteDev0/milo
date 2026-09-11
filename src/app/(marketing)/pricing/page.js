@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import Text3DFlip from "@/components/ui/text-3d-flip";
 import { cn } from "@/lib/utils";
 
+/* Every line below is a thing the app does today. Idea Dump was cut,
+   the timebox was never built, and habits are not shipped — selling any of
+   the three is the one mistake on this site somebody could pay for. */
 const PLANS = [
   {
     name: "Free",
@@ -17,7 +20,7 @@ const PLANS = [
     features: [
       "Unlimited Life Blocks & tasks",
       "Kanban — To Do / In Progress / Done",
-      "Idea Dump",
+      "Notes",
       "Web app",
     ],
   },
@@ -35,12 +38,12 @@ const PLANS = [
     subCta: "No credit card required",
     featuresLabel: "Everything in Free, plus",
     features: [
-      "Timebox your day",
-      "Habits & streaks",
-      "Saved blocks you reuse any day",
+      "Time spent, per block and per task",
       "Rest timer & check-in nudges",
-      "Daily reflection",
-      "Monthly keep-or-swap & year view",
+      "Daily reflection & the day's journal",
+      "Your month, in the colours of what you did",
+      "Tasks on the days you choose",
+      "Steps inside a task",
     ],
   },
   {

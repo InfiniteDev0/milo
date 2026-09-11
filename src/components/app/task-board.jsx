@@ -24,7 +24,7 @@
  */
 
 import { useState } from "react";
-import { Check, Clock } from "lucide-react";
+import { Check, Clock, ListChecks, Plus, X } from "lucide-react";
 import { CircleCheckIcon, CircleDot, CircleIcon } from "lucide-react";
 import {
   Kanban,
@@ -46,18 +46,18 @@ import {
 } from "@/components/ui/dialog";
 import { restrictToFirstScrollableAncestor } from "@dnd-kit/modifiers";
 import { spent, useNow } from "@/lib/time";
+import { shade } from "@/lib/shade";
+import { DAYS, onDay } from "@/lib/days";
+import { IconInput } from "@/components/ui/icon-input";
+import { BlockChip, COLUMNS, Tick, isQuick } from "./task-bits";
+import { TaskSheet } from "./task-sheet";
 import { useBlocks } from "./blocks-provider";
+import { PausedPanel } from "./paused-panel";
 import { DayComplete } from "./day-complete";
 import { TaskRings } from "./task-rings";
 
 // Module scope, so the array identity never changes between renders.
 const DRAG_BOUNDS = [restrictToFirstScrollableAncestor];
-
-/* Standing in for a real field. Properly this is a property of the task, set
-   when you add it — but adding tasks isn't in the MVP yet, so length is the
-   best available guess and the UI won't change when the field arrives. */
-const QUICK_MINUTES = 5;
-const isQuick = (t) => (t.minutes ?? 0) <= QUICK_MINUTES;
 
 /* Said as words. A numeral in the middle of the screen reads like a score,
    and a score implies a target you could have missed. */
@@ -94,49 +94,6 @@ const ART = [
   "/motiv.svg",
 ];
 
-const COLUMNS = {
-  todo: { title: "To Do", icon: <CircleIcon className="size-4 text-black/40" /> },
-  doing: { title: "In Progress", icon: <CircleDot className="size-4 text-black/40" /> },
-  done: { title: "Done", icon: <CircleCheckIcon className="size-4 text-black/40" /> },
-};
-
-function BlockChip({ block, className = "" }) {
-  return (
-    <span
-      className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] ${className}`}
-      style={{ background: `${block.bg}26`, color: block.ink }}
-    >
-      <span className="size-1.5 shrink-0 rounded-full" style={{ background: block.bg }} />
-      {block.name.replace(" Block", "")}
-    </span>
-  );
-}
-
-/* Ticking is always reversible and never asks. Un-ticking is a correction, not
-   an undoing of something you achieved, so it costs exactly one tap too. */
-function Tick({ done, onToggle, className = "size-5" }) {
-  return (
-    <button
-      type="button"
-      aria-label={done ? "Put it back" : "Done"}
-      /* stop both, and for different reasons: the click would open the detail
-         dialog, and the pointerdown would arm a drag */
-      onPointerDown={(e) => e.stopPropagation()}
-      onClick={(e) => {
-        e.stopPropagation();
-        onToggle();
-      }}
-      className={`flex shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors ${
-        done
-          ? "bg-foreground text-white"
-          : "ring-1 ring-black/20 hover:ring-black/50"
-      } ${className}`}
-    >
-      {done && <Check className="size-3" strokeWidth={3} />}
-    </button>
-  );
-}
-
 /* A moment: one line, one tap. This is the to-do list hiding inside the board,
    and it is deliberately not draggable — there is nowhere for it to go. */
 function QuickRow({ task, onToggle, onOpen }) {
@@ -157,10 +114,42 @@ function QuickRow({ task, onToggle, onOpen }) {
   );
 }
 
-function TaskCard({ task, block, asHandle, isOverlay, onOpen, onToggle, isRunning, elapsed }) {
+function TaskCard({ task, asHandle, isOverlay, onOpen, onToggle, isRunning, elapsed }) {
   const done = task.status === "done";
+
+  /* A COUNT, not the list. The tickable list was here for one build and came
+     straight back out: the detail dialog already owns the steps, so putting
+     working checkboxes on the card meant two places to do the same thing and
+     a card that grew taller the more you thought about a task.
+
+     `2/5` says the one thing the card needs to say — this has parts, and you
+     are somewhere in them. Tap it for the parts. */
+  const steps = task.steps ?? [];
+  const doneSteps = steps.filter((x) => x.done).length;
+  const allSteps = steps.length > 0 && doneSteps === steps.length;
+
+  /* The bottom row is not always there. It used to be, because the block chip
+     was always in it — with the chip gone, a task with no estimate, no steps
+     and no recorded time has nothing to put on that line, and an empty row is
+     just a gap under the title. */
+  const hasMeta = task.minutes != null || isRunning || Boolean(elapsed);
   const content = (
-    <Card className="cursor-pointer transition-colors hover:border-black/20">
+    /* White, with a thin grey border all the way round and the lift under it.
+
+       The block's colour was tried here — spine and wash — and it was too
+       much: a column of tinted cards becomes a colour field you read past
+       rather than through. The border is what gives the card an edge; the
+       lift gives it a side.
+
+       There is no block chip either, for the same reason one level up. The
+       board only ever shows the RUNNING block's tasks, so the chip put the
+       same word on every card, under a column header, under a bar already
+       naming the block. Three times is not reinforcement, it is noise. It
+       earned its place back when the board pooled cards from every block. */
+    <Card
+      className="milo-lift cursor-pointer border border-black/10 bg-white"
+      style={{ "--lift": shade("#ffffff", 0.14) }}
+    >
       <CardContent
         onClick={() => onOpen?.(task)}
         className="flex flex-col gap-2 py-3"
@@ -168,29 +157,98 @@ function TaskCard({ task, block, asHandle, isOverlay, onOpen, onToggle, isRunnin
         <div className="flex items-start gap-2">
           {onToggle && <Tick done={done} onToggle={onToggle} className="mt-0.5 size-5" />}
           <span
-            className={`line-clamp-2 break-words text-sm ${done ? "text-black/40 line-through" : ""}`}
+            className={`min-w-0 flex-1 line-clamp-2 break-words text-sm ${done ? "text-black/40 line-through" : ""}`}
           >
             {task.name}
           </span>
-        </div>
-        <div className="flex items-center gap-2 pl-7">
-          <BlockChip block={block} className="pointer-events-none" />
-          {/* The estimate, and only the estimate. TIME.md: never put this
-              and the elapsed figure in the same row — people underestimate
-              their own tasks as a rule, so the delta would show a shortfall
-              on most tasks on most days. */}
-          <span className="pointer-events-none flex items-center gap-1 text-[11px] text-black/35">
-            <Clock className="size-3" />
-            {task.minutes}m
-          </span>
 
-          {isRunning && (
+          {/* `2/5`, in the corner — a position in a list you wrote, not a score.
+
+              It sits up here rather than in the bottom row because it belongs
+              to the TASK, the way the title does, while everything down there
+              belongs to today: an estimate, a clock, time spent. Those change
+              as the day goes; this changes as the work does.
+
+              The accent colour, because the card is otherwise white and a grey
+              badge on a white card at 11px is a whisper. Purple rather than
+              the block's colour on purpose: a step count is not a fact about
+              the block, and a tinted card was tried here and rejected — the
+              badge is the one place colour earns its keep. It also matches the
+              step field in the dialog, which is already purple.
+
+              Filled when every step is ticked, tinted until then. Colour marks
+              the finish; it never marks the shortfall — `0/5` is the same calm
+              badge as `4/5`, because a list you have not started is not a
+              failing, it is a list.
+
+              The denominator is your own breakdown, so it can only count up
+              toward a number you chose — no target anyone else set. That is
+              what makes it a ratio Milo is allowed to show when '4 of 8
+              blocks' would be forbidden.
+
+              It still never rolls up. Ticking all five does not complete the
+              task and the day does not count them — a task broken into five
+              pieces is worth exactly what it was worth whole, or breaking
+              things down would quietly make your day look emptier. */}
+          {steps.length > 0 && (
+            <span
+              className={`pointer-events-none flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium tabular-nums ${
+                allSteps
+                  ? "bg-[#5e17eb] text-white"
+                  : "bg-[#5e17eb]/12 text-[#5e17eb]"
+              }`}
+            >
+              <ListChecks className="size-3.5" />
+              {doneSteps}/{steps.length}
+            </span>
+          )}
+        </div>
+
+        {/* The note, in the chip's old place. Two lines at most — it is a
+            reminder of what this is, not the thing itself. The whole note is
+            in the dialog, and the card is a card. */}
+        {task.note && (
+          <p className="line-clamp-2 break-words pl-7 text-xs leading-relaxed text-black/45">
+            {task.note}
+          </p>
+        )}
+
+        {hasMeta && (
+        <div className="flex items-center gap-2 pl-7">
+          {/* Only if there is one. TIME.md: never put this and the elapsed
+              figure in the same row — people underestimate their own tasks as
+              a rule, so the delta would show a shortfall on most tasks on
+              most days. */}
+          {task.minutes != null && (
+            <span className="pointer-events-none flex items-center gap-1 text-[11px] text-black/35">
+              <Clock className="size-3" />
+              {task.minutes}m
+            </span>
+          )}
+
+
+
+          {/* Time spent is a FACT, not a live readout. It showed only while
+              the clock was on the card, so pausing the day made half an hour
+              of work vanish from the screen — the record had it, the card just
+              refused to say so.
+
+              Running gets the dark pill and the pulse. Not running keeps the
+              number, quietly. */}
+          {isRunning ? (
             <span className="ml-auto flex items-center gap-1 rounded-full bg-foreground px-2 py-0.5 text-[11px] text-white tabular-nums">
               <span className="size-1.5 animate-pulse rounded-full bg-white" />
               {elapsed ?? "Running"}
             </span>
+          ) : (
+            elapsed && (
+              <span className="ml-auto text-[11px] text-black/45 tabular-nums">
+                {elapsed}
+              </span>
+            )
           )}
         </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -217,10 +275,12 @@ function BoardSkeleton() {
 }
 
 export function TaskBoard() {
-  const { tasks, blocks, blockById, countsFor, setTaskStatus, ongoing, startAndLead, hydrated, runningTaskId, spentOnTask, spentOnBlock } =
+  const { tasks, blocks, blockById, countsFor, setTaskStatus, ongoing, startAndLead, hydrated, runningTaskId, spentOnTask, spentOnBlock, setTaskNote, setTaskMinutes, addStep, toggleStep, removeStep, setTaskDays, setTaskKind , paused, loadFailed, retry } =
     useBlocks();
   const [dropping, setDropping] = useState(false);
-  const now = useNow(runningTaskId !== null);
+  /* Ticks whenever anything is running, not only when a TASK is — otherwise
+     the numbers on the other cards freeze the moment you pause. */
+  const now = useNow(Boolean(ongoing));
 
   /* Takes a block dragged out of the lineup. Starting it here pauses
      whatever was running and puts it at the head of the line. */
@@ -240,8 +300,14 @@ export function TaskBoard() {
     },
   };
   const [open, setOpen] = useState(null);
+  const [stepDraft, setStepDraft] = useState("");
 
-  const mine = ongoing ? tasks.filter((t) => t.blockId === ongoing.id) : [];
+  /* Today's tasks only. A task scheduled for other days is ABSENT here, not
+     greyed out — a dimmed row is still a row telling you what you are not
+     doing today, and it isn't yours to do today. */
+  const mine = ongoing
+    ? tasks.filter((t) => t.blockId === ongoing.id && onDay(t))
+    : [];
 
   // everything in the column, for the count on the header
   const all = {
@@ -280,9 +346,53 @@ export function TaskBoard() {
      by a stale snapshot). Nothing to persist to yet, so it's a no-op. */
   const onValueCommit = (_next, _meta) => {};
 
+  /* `open` is a snapshot taken when the dialog opened. Steps live on the
+     real task, so read that back — otherwise ticking one changes state that
+     nothing on screen is looking at. */
+  const openTask = open ? (tasks.find((t) => t.id === open.id) ?? open) : null;
+
+  /* Every step ticked, on a task that actually has steps.
+
+     This does NOT complete the task. It offers. Steps never roll up — a task
+     broken into six pieces has to be worth exactly what it was worth whole, or
+     breaking things down would quietly make the day count differently. What
+     the rule protects is the COUNTING, and an offer counts nothing.
+
+     What it fixes is the dead end: you tick the last step, and until now the
+     app said nothing and made you go find a second button to say the thing you
+     had just finished saying. */
+  const stepsAllDone =
+    (openTask?.steps?.length ?? 0) > 0 &&
+    openTask.steps.every((x) => x.done);
   const openBlock = open ? blockById[open.blockId] : null;
 
   if (!hydrated) return <BoardSkeleton />;
+
+  /* Same rule as the lineup. 'Nothing running' next to a day that failed to
+     load reads as a day that never happened. */
+  if (loadFailed) {
+    return (
+      <div className="flex h-full min-h-48 flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-black/10 px-6 text-center">
+        <p className="text-sm text-black/60">Couldn&rsquo;t reach today.</p>
+        <p className="max-w-xs text-xs text-black/40">
+          Your blocks, tasks and the time you&rsquo;ve put in are all still
+          saved. This screen just couldn&rsquo;t read them.
+        </p>
+        <button
+          type="button"
+          onClick={retry}
+          className="cursor-pointer rounded-xl bg-foreground px-4 py-2 text-xs text-white"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  /* Before the nothing-running check, because a paused day has nothing
+     running either — whichever comes first is the screen you get, and while
+     the day is paused the only thing worth saying is where you were. */
+  if (paused) return <PausedPanel />;
 
   if (!ongoing) {
     /* Nothing running. Once the day has anything in it, this space stops
@@ -373,7 +483,8 @@ export function TaskBoard() {
                       the sum of its tasks' estimates — that comparison is the
                       one thing TIME.md rules out. */}
                   <span className="text-xs opacity-60">
-                    {spent(spentOnBlock(b.id, Date.now())) ?? "Done"}
+                    {/* every interval is closed on a finished block, so no clock is needed */}
+                    {spent(spentOnBlock(b.id)) ?? "Done"}
                   </span>
                 </div>
                 <TaskRings {...countsFor(b.id)} className="size-9 shrink-0" />
@@ -445,7 +556,6 @@ export function TaskBoard() {
                         <TaskCard
                           key={task.id}
                           task={task}
-                          block={blockById[task.blockId]}
                           asHandle
                           onOpen={setOpen}
                           onToggle={() => toggle(task)}
@@ -472,66 +582,7 @@ export function TaskBoard() {
         <KanbanOverlay className="rounded-md border-2 border-dashed bg-black/5" />
       </Kanban>
 
-      <Dialog open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>
-        <DialogContent className="sm:max-w-md">
-          {open && openBlock && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-left">{open.name}</DialogTitle>
-                {/* the reason gets the most prominent line — it's the field
-                    that separates Milo from a task list */}
-                <DialogDescription className="text-left">
-                  {open.reason}
-                </DialogDescription>
-              </DialogHeader>
-
-              <dl className="flex flex-col gap-3 text-sm">
-                <div className="flex items-center justify-between gap-4">
-                  <dt className="text-black/45">Block</dt>
-                  <dd>
-                    <BlockChip block={openBlock} />
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <dt className="text-black/45">Takes</dt>
-                  <dd>{open.minutes} minutes</dd>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <dt className="text-black/45">Status</dt>
-                  <dd className="flex items-center gap-1.5">
-                    {COLUMNS[open.status].icon}
-                    {COLUMNS[open.status].title}
-                  </dd>
-                </div>
-              </dl>
-
-              {/* No due date here, and no date field on a task anywhere. A task
-                  belongs to a block, not to a day, so it cannot be late. */}
-              <div className="flex gap-2 pt-1">
-                {Object.entries(COLUMNS)
-                  /* a moment has no middle, so it isn't offered one here
-                     either — the dialog and the board have to agree */
-                  .filter(([id]) => id !== open.status)
-                  .filter(([id]) => !(isQuick(open) && id === "doing"))
-                  .map(([id, col]) => (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => {
-                        setTaskStatus(open.id, id);
-                        setOpen({ ...open, status: id });
-                      }}
-                      className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-black/10 px-3 py-2 text-xs transition-colors hover:bg-black/[0.03]"
-                    >
-                      {col.icon}
-                      {col.title}
-                    </button>
-                  ))}
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <TaskSheet taskId={open?.id} onClose={() => setOpen(null)} />
     </div>
   );
 }

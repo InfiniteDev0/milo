@@ -6,9 +6,14 @@ import { AppNav } from "@/components/app/app-nav";
 import { FocusLock } from "@/components/app/focus-lock";
 import { SoundToggle } from "@/components/app/sound-toggle";
 import { ArchivePanel } from "@/components/app/archive-panel";
+import { BlockSheet } from "@/components/app/block-sheet";
+import { Tray } from "@/components/app/tray";
+import { CheckIn } from "@/components/app/check-in";
+import { MorningRecap } from "@/components/app/morning-recap";
 import { UserAvatar } from "@/components/app/user-avatar";
 import { BlocksProvider } from "@/components/app/blocks-provider";
 import { SetupWizard } from "@/components/app/setup-wizard";
+import { MonthReview } from "@/components/app/month-review";
 import { requireUser } from "@/lib/session";
 
 /* The workspace shell — three columns, no header.
@@ -65,7 +70,18 @@ export default async function AppLayout({ children }) {
       </div>
 
       <ArchivePanel />
+      {/* one block, looked at without starting it */}
+      <BlockSheet />
+      {/* loose tasks. the handle is a placeholder trigger, not the design */}
+      <Tray />
+      {/* speaks while a block runs — see check-in.jsx for why this one
+          interruption is allowed */}
+      <CheckIn />
+      {/* what yesterday held, if midnight filed it and nobody looked */}
+      <MorningRecap />
       <SetupWizard />
+      {/* the other door: opens when the calendar month turns over */}
+      <MonthReview />
     </BlocksProvider>
   );
 }

@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { shade } from "@/lib/shade";
 import { ArrowLeft, Check, Plus, X } from "lucide-react";
 import MiloFace from "@/components/MiloFace";
+import { playLock } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
 import { IconInput } from "@/components/ui/icon-input";
 import { useBlocks } from "./blocks-provider";
@@ -38,7 +39,7 @@ const SPARE_COLOURS = [
 ];
 
 export function SetupWizard() {
-  const { completeSetup } = useBlocks();
+  const { completeSetup, blocks, hydrated, loadFailed } = useBlocks();
 
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
@@ -58,20 +59,27 @@ export function SetupWizard() {
   const [tasksByBlock, setTasksByBlock] = useState({});
   const [custom, setCustom] = useState([]);
 
-  // localStorage is read after mount so the server and client render the same
-  // thing — reading it during render is a hydration mismatch waiting to happen.
+  /* Set up means HAVING BLOCKS. Not a flag, not a profile row — the thing
+     itself. A separate done-marker can drift from the data and leave someone
+     marked as finished with nothing to run, which is a worse state than
+     being asked twice.
+
+     Waits for `hydrated`, because before the blocks arrive an empty list and
+     a real one look identical, and opening the wizard over somebody's
+     existing day would be alarming. */
   useEffect(() => {
-    // Ask the same store the provider writes to. A separate done-flag can
-    // drift out of sync with the data and leave someone marked as set up
-    // with nothing set up.
-    try {
-      const raw = window.localStorage.getItem("milo:state");
-      const saved = raw ? JSON.parse(raw) : null;
-      if (!saved?.profile) setOpen(true);
-    } catch {
-      setOpen(true);
-    }
-  }, []);
+    if (!hydrated) return;
+
+    /* `loadFailed` is the other half of this, and it was missing. Waiting for
+       hydrated only rules out the moment BEFORE the blocks arrive — it says
+       nothing about a read that arrived and failed, which leaves the same
+       empty list behind. Both look like a new account; only one is.
+
+       This is not theoretical. Adding a column to the tasks query before its
+       migration had run put this wizard in front of a month-old account, and
+       finishing it would have written a duplicate set of blocks. */
+    setOpen(blocks.length === 0 && !loadFailed);
+  }, [hydrated, loadFailed, blocks.length]);
 
   if (!open) return null;
 
@@ -102,7 +110,16 @@ export function SetupWizard() {
     setTaskDraft((d) => ({ ...d, [blockId]: "" }));
   };
 
+  /* The lock-in chime, not the completion fanfare. This is a beginning —
+     you've just committed to a shape for the month — and the fanfare belongs
+     to things that finished.
+
+     It also does a second job. Browsers refuse to play audio until the user
+     has interacted with the page, and this is the first real click Milo
+     gets: it wakes the AudioContext, so the first finished task later in the
+     day has sound ready instead of silently falling back. */
   const finish = () => {
+    playLock();
     completeSetup({
       year: { name: yearName, icon: yearIcon, goals, vision },
       month: { name: monthName, icon: monthIcon },
@@ -162,7 +179,7 @@ export function SetupWizard() {
     },
     {
       title: "Your vision board",
-      hint: "Things you want this year. Just names — no categories, no dates.",
+      hint: "Things you want this year. Just names — no categories, no dates. Three or more, or skip it.",
       body: (
         <div className="flex w-full max-w-sm flex-col gap-3">
           <div className="flex gap-2">
@@ -203,7 +220,13 @@ export function SetupWizard() {
           </ul>
         </div>
       ),
-      can: true,
+      /* Three or none. One line is not a vision board, and a board with one
+         line on it is a screen that will make someone feel like they failed
+         at a list they wrote themselves.
+
+         Skip stays, so nobody is trapped — a complete answer or no answer,
+         and no half-finished version to feel bad about. */
+      can: vision.length >= 3,
       skippable: true,
     },
     {
@@ -356,11 +379,11 @@ export function SetupWizard() {
       title: "Here's your day",
       hint: `${monthIcon} ${monthName || "This month"} — one block at a time, and nothing goes overdue.`,
       body: (
-        <div className="flex w-full max-w-sm flex-col gap-2">
+        <div className="flex w-full max-w-sm flex-col gap-1.5">
           {allBlocks.map((b) => (
             <div
               key={b.id}
-              className="rounded-lg px-4 py-2.5 text-sm"
+              className="rounded-lg px-4 py-2 text-sm"
               style={{ background: b.bg, color: b.ink }}
             >
               {b.name}
@@ -380,14 +403,22 @@ export function SetupWizard() {
 
      `idle` is deliberately absent: that is the anxious face, and it is
      retired. Nobody is greeted by worry. */
+  /* Indexed by step, greeting included — it is step 0, and leaving it out
+     put every mood one step early and dropped the last one off the end.
+
+     It only ever gets warmer, the same rule as the landing page's scroll
+     ladder, so setup never shows a face that looks disappointed in what you
+     just typed. `idle` is absent on purpose: that is the anxious one, and it
+     is retired. Nobody is greeted by worry. */
   const MOODS = [
-    "content", // name your year
-    "content", // what it's about
-    "focused", // vision board
-    "focused", // name your month
-    "proud", //  what your day is made of
-    "happy", //  what goes in each block
-    "cheer", //  here's your day
+    "content", // 0 — hi, I'm Milo
+    "content", // 1 — name your year
+    "focused", // 2 — what it's about
+    "focused", // 3 — vision board
+    "proud", //   4 — name your month
+    "proud", //   5 — what your day is made of
+    "happy", //   6 — what goes in each block
+    "cheer", //   7 — here's your day
   ];
 
   const current = STEPS[step];
@@ -395,7 +426,9 @@ export function SetupWizard() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4 backdrop-blur-sm">
-      <div className="flex h-[min(560px,90vh)] w-full max-w-2xl flex-col rounded-3xl bg-white shadow-2xl">
+      {/* Six blocks is a normal answer, and at 560px the last one sat under
+          the button with an inner scrollbar over it. */}
+      <div className="flex h-[min(660px,92vh)] w-full max-w-2xl flex-col rounded-3xl bg-white shadow-2xl">
         <div className="flex shrink-0 items-center justify-between p-4">
           {step > 0 ? (
             <button
@@ -414,20 +447,27 @@ export function SetupWizard() {
           </span>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-5 overflow-y-auto px-6 pb-2 text-center">
-          {/* Every step, so it reads as one companion walking you through
-              rather than a face that shows up when there's news.
+        {/* pt-4 is not spacing — it is clearance. MiloFace draws outside its
+            own box by design (overflow: visible, because widening the viewBox
+            to fit the brows shrinks every pose), and a scrolling container
+            clips at its padding edge. Without this the brows are cut off. */}
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-5 overflow-y-auto px-6 pt-4 pb-2 text-center">
+          {/* On every step except the greeting, which is nothing BUT a face
+              and owns a bigger one of its own. Two Milos on one screen reads
+              as a bug, which it was.
 
               No gaze and no scroll reaction: inside a modal there is nothing
               to look at and nothing to scroll, and a face tracking the cursor
               while you are typing your year into a box is distracting rather
               than warm. It blinks, and that is enough to be alive. */}
-          <MiloFace
-            mood={MOODS[step] ?? "content"}
-            gaze={false}
-            reactToScroll={false}
-            className="size-20 shrink-0"
-          />
+          {step > 0 && (
+            <MiloFace
+              mood={MOODS[step] ?? "cheer"}
+              gaze={false}
+              reactToScroll={false}
+              className="size-20 shrink-0"
+            />
+          )}
 
           {current.title && (
             <div className="flex flex-col gap-1.5">

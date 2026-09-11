@@ -8,9 +8,12 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { shade } from "@/lib/shade";
-import { CalendarIcon } from "lucide-react";
+/* Shared, not copied. The block sheet paints Stop the same yellow, and two
+   hardcoded copies of a colour that MEANS something drift apart. */
+import { PAUSE as DAY_PAUSE, PAUSE_INK as DAY_PAUSE_INK, END as DAY_END, END_LIFT as DAY_END_LIFT } from "@/lib/palette";
+import { CalendarIcon, Moon, Pause, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { useBlocks } from "./blocks-provider";
 import {
   Popover,
   PopoverContent,
@@ -18,10 +21,14 @@ import {
 } from "@/components/ui/popover";
 
 export function DatePicker({ className }) {
-  const [date, setDate] = useState(new Date());
+  const { day, paused, pauseDay, resumeDay } = useBlocks();
+  const [open, setOpen] = useState(false);
+
+  // Milo runs one day. The button names it; the popover is what you can do to it.
+  const date = new Date();
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         render={
           <Button
@@ -43,13 +50,75 @@ export function DatePicker({ className }) {
           </Button>
         }
       />
-      <PopoverContent className="w-auto p-0" align="center" sideOffset={10}>
-        <Calendar
-          mode="single"
-          selected={date}
-          defaultMonth={date}
-          onSelect={(next) => next && setDate(next)}
-        />
+      <PopoverContent className="w-72 p-0" align="center" sideOffset={10}>
+        {/* The day's two controls, under the day it belongs to.
+
+            They are different things and the copy has to say so, because
+            getting them the wrong way round costs you either your place or
+            your day:
+
+              PAUSE stops the clock and remembers where you were — the block
+              and the task. Nothing accrues while you are away and nothing is
+              lost. It is for making your bed.
+
+              END files the day and resets tomorrow's. It is the closing
+              screen, and it is not undoable.
+
+            Pausing a TASK is a third thing and is not here: you do that by
+            starting a different one, and the clock simply moves from the
+            task to the block. You never left. */}
+        <div className="flex flex-col gap-3 p-3">
+          {/* Yellow is the day still going — the Morning block's colour, the
+              first one in the palette, the one this app already means 'awake'
+              by. Blue is night. You should be able to tell these two apart
+              with the words blurred out. */}
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              paused ? resumeDay() : pauseDay();
+            }}
+            disabled={!day.startedAt}
+            style={{ backgroundColor: DAY_PAUSE, color: DAY_PAUSE_INK, "--lift": shade(DAY_PAUSE) }}
+            className="milo-lift flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm disabled:cursor-default disabled:opacity-40 disabled:shadow-none disabled:active:translate-y-0"
+          >
+            {paused ? (
+              <Play className="size-4 shrink-0 opacity-60" />
+            ) : (
+              <Pause className="size-4 shrink-0 opacity-60" />
+            )}
+            <span className="flex flex-col">
+              {paused ? "Pick the day back up" : "Pause the day"}
+              <span className="text-xs opacity-55">
+                {paused
+                  ? "Back to exactly where you were"
+                  : "Stops the clock. Nothing is lost."}
+              </span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            /* The closing screen lives in the day bar, which is a sibling
+               of this button, not a parent — so they cannot pass a prop.
+               One event, no shared state, and the page it sits on stays a
+               server component. */
+            onClick={() => {
+              setOpen(false);
+              window.dispatchEvent(new Event("milo:close-day"));
+            }}
+            style={{ backgroundColor: DAY_END, color: "#ffffff", "--lift": DAY_END_LIFT }}
+            className="milo-lift flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm"
+          >
+            <Moon className="size-4 shrink-0 opacity-70" />
+            <span className="flex flex-col">
+              End the day
+              <span className="text-xs opacity-55">
+                What happened, and tonight&rsquo;s entry
+              </span>
+            </span>
+          </button>
+        </div>
       </PopoverContent>
     </Popover>
   );

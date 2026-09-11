@@ -10,13 +10,14 @@
  * of, because nobody was asked to set one.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Archive, Plus, X } from "lucide-react";
 import { ScopeSwitcher } from "@/components/app/scope-switcher";
 import { TaskRings } from "@/components/app/task-rings";
 import { shade } from "@/lib/shade";
 import { useBlocks } from "@/components/app/blocks-provider";
 import { MonthHistory } from "@/components/app/month-history";
+import { DeleteBlock } from "@/components/app/delete-block";
 import { IconInput } from "@/components/ui/icon-input";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,10 +28,16 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 
+const ICONS = ["🌙", "🌱", "🔥", "📖", "🧭", "🛠️", "🌊", "☀️", "🏔️", "✍️"];
+
 export default function MonthlyPage() {
-  const { blocks, profile, countsFor, tasks, addTask, removeTask, archiveBlock, hydrated } =
+  const [pickingIcon, setPickingIcon] = useState(false);
+
+
+  const { blocks, profile, setProfile, countsFor, tasks, addTask, addBlock, removeTask, archiveBlock, hydrated } =
     useBlocks();
   const [openId, setOpenId] = useState(null);
+  const [blockDraft, setBlockDraft] = useState("");
   const [draft, setDraft] = useState("");
 
   const block = blocks.find((b) => b.id === openId) ?? null;
@@ -45,16 +52,68 @@ export default function MonthlyPage() {
   return (
     <div className="flex h-full flex-col gap-5 px-8 pt-5 sm:px-12">
       <div className="flex shrink-0 items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center bg-black p-1 px-2 rounded-md text-white gap-3">
-          {profile?.month?.icon && (
-            <span className="text-xl">{profile.month.icon}</span>
-          )}
-          <h1 className="truncate text-xl">
-            {profile?.month?.name || "This month"}
-          </h1>
+        {/* The name you gave this month, editable where it is shown. There is
+            no settings screen for it and no pencil to find — it is your word
+            for the month, so it should be as easy to change as it was to
+            write. */}
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setPickingIcon((v) => !v)}
+            aria-label="Change the icon"
+            className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-2xl transition-colors hover:bg-black/5"
+          >
+            {profile?.month?.icon ?? "🌙"}
+          </button>
+
+          <input
+            value={profile?.month?.name ?? ""}
+            onChange={(e) =>
+              setProfile({
+                ...profile,
+                month: { ...(profile?.month ?? {}), name: e.target.value },
+              })
+            }
+            /* Not the month name. The calendar below already says which
+               month it is, and echoing it here put SEPTEMBER above
+               SEPTEMBER 2026 at the same size. This asks for the thing
+               only you can supply. */
+            placeholder="Name this month"
+            aria-label="Name this month"
+            className="min-w-0 flex-1 bg-transparent text-2xl uppercase outline-none placeholder:text-black/25"
+          />
         </div>
-        <ScopeSwitcher />
+
+        <div className="flex items-center gap-3">
+          <ScopeSwitcher />
+        </div>
       </div>
+
+      {pickingIcon && (
+        <div className="flex shrink-0 flex-wrap gap-1 pb-1">
+          {ICONS.map((e) => (
+            <button
+              key={e}
+              type="button"
+              onClick={() => {
+                setProfile({
+                  ...profile,
+                  month: { ...(profile?.month ?? {}), icon: e },
+                });
+                setPickingIcon(false);
+              }}
+              aria-label={`Pick ${e}`}
+              className={`flex size-9 cursor-pointer items-center justify-center rounded-lg text-lg transition-colors ${
+                profile?.month?.icon === e
+                  ? "bg-black/10"
+                  : "hover:bg-black/5"
+              }`}
+            >
+              {e}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* pr-3 keeps the scrollbar off the content — it lives inside this box,
           so without it the right-hand column sits under the thumb.
@@ -65,15 +124,7 @@ export default function MonthlyPage() {
           they had no left border. */}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pl-1 pr-3 pb-6">
 
-        {/* What already happened, above what is still being composed — the
-            month reads as a record first and a plan second. */}
-        <div className="pb-6">
-          <MonthHistory />
-        </div>
-
-        <Separator/>
-
-        <div className="mt-10 flex flex-col gap-3">
+        <div className=" flex flex-col gap-3">
           {/* The counts are placeholder numbers until localStorage has been
               read. Showing them and then correcting them is worse than a
               blank line for a beat. */}
@@ -131,8 +182,39 @@ export default function MonthlyPage() {
             })}
           </div>
 
-          {/* Month-end keep-or-swap goes here — the day-30 return reason. */}
+          {/* Here and not on /daily: the month decides the containers. Until
+              now the only way to add one was the review that fires on the 1st,
+              so a block you thought of on the 5th had to wait a month. */}
+          {hydrated && (
+            <form
+              className="pt-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                addBlock(blockDraft);
+                setBlockDraft("");
+              }}
+            >
+              <IconInput
+                value={blockDraft}
+                onChange={(e) => setBlockDraft(e.target.value)}
+                placeholder="Add a block to this month…"
+                aria-label="Add a block"
+                icon={<Plus className="size-4" />}
+              />
+            </form>
+          )}
+
+          {/* Month-end keep-or-swap is built — it opens by itself when the
+              calendar month turns over. See month-review.jsx. */}
         </div>
+
+        {/* What already happened, above what is still being composed — the
+            month reads as a record first and a plan second. */}
+        <div className="pt-6">
+          <MonthHistory />
+        </div>
+
+
       </div>
 
       <Dialog open={block !== null} onOpenChange={(o) => !o && setOpenId(null)}>
@@ -209,6 +291,9 @@ export default function MonthlyPage() {
                 <Archive className="size-3.5" />
                 Tuck into the archive
               </button>
+
+              {/* Below archive on purpose: the reversible one is the offer. */}
+              <DeleteBlock block={block} onDone={() => setOpenId(null)} />
             </>
           )}
         </DialogContent>
