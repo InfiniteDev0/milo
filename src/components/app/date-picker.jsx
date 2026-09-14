@@ -34,7 +34,7 @@ export function DatePicker({ className }) {
           <Button
             id="milo-date"
             aria-label="Pick a date"
-            className={`milo-lift h-9 w-56 justify-between gap-3 rounded-xl bg-[#262626] px-4 border-0 font-normal text-white hover:bg-[#303030] ${className ?? ""}`}
+            className={`milo-lift h-9 w-56 justify-between gap-3 rounded-xl bg-solid px-4 border-0 font-normal text-solid-ink hover:bg-solid-hover ${className ?? ""}`}
             /* Two shades on purpose: a face light enough to read as a
                surface, and a side dark enough to look like a side. Same rule
                as the blocks — the face's own colour, darkened — just taken
@@ -43,10 +43,10 @@ export function DatePicker({ className }) {
 
                Hover moves the face only. The side stays put, so the button
                keeps its shape instead of flattening under the cursor. */
-            style={{ "--lift": shade("#262626", 0.72) }}
+            style={{ "--lift": "var(--solid-lift)" }}
           >
             {format(date, "PPP")}
-            <CalendarIcon className="size-4 shrink-0 text-white/45" />
+            <CalendarIcon className="size-4 shrink-0 text-solid-ink/45" />
           </Button>
         }
       />
@@ -78,7 +78,7 @@ export function DatePicker({ className }) {
               setOpen(false);
               paused ? resumeDay() : pauseDay();
             }}
-            disabled={!day.startedAt}
+            disabled={!day.startedAt || (day.endedAt != null && !paused)}
             style={{ backgroundColor: DAY_PAUSE, color: DAY_PAUSE_INK, "--lift": shade(DAY_PAUSE) }}
             className="milo-lift flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm disabled:cursor-default disabled:opacity-40 disabled:shadow-none disabled:active:translate-y-0"
           >

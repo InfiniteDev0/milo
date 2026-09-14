@@ -92,7 +92,7 @@ export function BlockSheet() {
 
           <div className="scrollbar-pill min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-5 py-4">
             {mine.length === 0 ? (
-              <p className="py-8 text-center text-sm text-black/35">
+              <p className="py-8 text-center text-sm text-foreground/35">
                 Nothing in this block today.
               </p>
             ) : (
@@ -121,7 +121,7 @@ export function BlockSheet() {
             )}
           </div>
 
-          <div className="shrink-0 border-t border-black/8 p-3">
+          <div className="shrink-0 border-t border-foreground/8 p-3">
             <Footer
               block={block}
               running={running}

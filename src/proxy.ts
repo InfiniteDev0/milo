@@ -23,6 +23,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const PROTECTED = [
   "/daily",
   "/notes",
+  "/journal",
   "/profile",
   "/settings",
 ];
@@ -30,10 +31,20 @@ const PROTECTED = [
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // No config: refresh nothing, decide nothing, break nothing. requireUser()
+  // in the (app) layout still turns a signed-out visitor away.
+  if (!url || !key) {
+    console.error(
+      "proxy: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY are not set. " +
+        "Sessions will not refresh until they are.",
+    );
+    return response;
+  }
+
+  const supabase = createServerClient(url, key, {
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -91,6 +102,7 @@ export const config = {
     "/auth",
     "/daily/:path*",
     "/notes/:path*",
+    "/journal/:path*",
     "/profile/:path*",
     "/settings/:path*",
   ],

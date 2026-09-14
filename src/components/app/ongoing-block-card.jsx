@@ -15,8 +15,8 @@ export function OngoingBlockCard() {
 
   if (!ongoing) {
     return (
-      <div className="flex h-12 w-[300px] items-center rounded-md border border-dashed border-black/15 px-3">
-        <p className="text-sm text-black/40">Nothing running. Start a block.</p>
+      <div className="flex h-12 w-[300px] items-center rounded-md border border-dashed border-foreground/15 px-3">
+        <p className="text-sm text-foreground/40">Nothing running. Start a block.</p>
       </div>
     );
   }

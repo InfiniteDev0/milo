@@ -46,7 +46,6 @@ import {
 } from "@/components/ui/dialog";
 import { restrictToFirstScrollableAncestor } from "@dnd-kit/modifiers";
 import { spent, useNow } from "@/lib/time";
-import { shade } from "@/lib/shade";
 import { DAYS, onDay } from "@/lib/days";
 import { IconInput } from "@/components/ui/icon-input";
 import { BlockChip, COLUMNS, Tick, isQuick } from "./task-bits";
@@ -54,6 +53,7 @@ import { TaskSheet } from "./task-sheet";
 import { useBlocks } from "./blocks-provider";
 import { PausedPanel } from "./paused-panel";
 import { DayComplete } from "./day-complete";
+import { DailyReflection } from "./daily-reflection";
 import { TaskRings } from "./task-rings";
 
 // Module scope, so the array identity never changes between renders.
@@ -99,13 +99,13 @@ const ART = [
 function QuickRow({ task, onToggle, onOpen }) {
   const done = task.status === "done";
   return (
-    <div className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-black/[0.03]">
+    <div className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-foreground/[0.03]">
       <Tick done={done} onToggle={onToggle} />
       <button
         type="button"
         onClick={() => onOpen(task)}
         className={`min-w-0 flex-1 cursor-pointer truncate text-left text-sm ${
-          done ? "text-black/35 line-through" : ""
+          done ? "text-foreground/35 line-through" : ""
         }`}
       >
         {task.name}
@@ -147,8 +147,8 @@ function TaskCard({ task, asHandle, isOverlay, onOpen, onToggle, isRunning, elap
        naming the block. Three times is not reinforcement, it is noise. It
        earned its place back when the board pooled cards from every block. */
     <Card
-      className="milo-lift cursor-pointer border border-black/10 bg-white"
-      style={{ "--lift": shade("#ffffff", 0.14) }}
+      className="milo-lift cursor-pointer border border-foreground/10 bg-card"
+      style={{ "--lift": "var(--card-lift)" }}
     >
       <CardContent
         onClick={() => onOpen?.(task)}
@@ -157,7 +157,7 @@ function TaskCard({ task, asHandle, isOverlay, onOpen, onToggle, isRunning, elap
         <div className="flex items-start gap-2">
           {onToggle && <Tick done={done} onToggle={onToggle} className="mt-0.5 size-5" />}
           <span
-            className={`min-w-0 flex-1 line-clamp-2 break-words text-sm ${done ? "text-black/40 line-through" : ""}`}
+            className={`min-w-0 flex-1 line-clamp-2 break-words text-sm ${done ? "text-foreground/40 line-through" : ""}`}
           >
             {task.name}
           </span>
@@ -208,7 +208,7 @@ function TaskCard({ task, asHandle, isOverlay, onOpen, onToggle, isRunning, elap
             reminder of what this is, not the thing itself. The whole note is
             in the dialog, and the card is a card. */}
         {task.note && (
-          <p className="line-clamp-2 break-words pl-7 text-xs leading-relaxed text-black/45">
+          <p className="line-clamp-2 break-words pl-7 text-xs leading-relaxed text-foreground/45">
             {task.note}
           </p>
         )}
@@ -220,7 +220,7 @@ function TaskCard({ task, asHandle, isOverlay, onOpen, onToggle, isRunning, elap
               a rule, so the delta would show a shortfall on most tasks on
               most days. */}
           {task.minutes != null && (
-            <span className="pointer-events-none flex items-center gap-1 text-[11px] text-black/35">
+            <span className="pointer-events-none flex items-center gap-1 text-[11px] text-foreground/35">
               <Clock className="size-3" />
               {task.minutes}m
             </span>
@@ -236,13 +236,13 @@ function TaskCard({ task, asHandle, isOverlay, onOpen, onToggle, isRunning, elap
               Running gets the dark pill and the pulse. Not running keeps the
               number, quietly. */}
           {isRunning ? (
-            <span className="ml-auto flex items-center gap-1 rounded-full bg-foreground px-2 py-0.5 text-[11px] text-white tabular-nums">
-              <span className="size-1.5 animate-pulse rounded-full bg-white" />
+            <span className="ml-auto flex items-center gap-1 rounded-full bg-foreground px-2 py-0.5 text-[11px] text-background tabular-nums">
+              <span className="size-1.5 animate-pulse rounded-full bg-card" />
               {elapsed ?? "Running"}
             </span>
           ) : (
             elapsed && (
-              <span className="ml-auto text-[11px] text-black/45 tabular-nums">
+              <span className="ml-auto text-[11px] text-foreground/45 tabular-nums">
                 {elapsed}
               </span>
             )
@@ -270,12 +270,12 @@ function TaskCard({ task, asHandle, isOverlay, onOpen, onToggle, isRunning, elap
    quiet rounded field the size of the region. */
 function BoardSkeleton() {
   return (
-    <div className="h-full min-h-48 animate-pulse rounded-2xl bg-black/[0.03]" />
+    <div className="h-full min-h-48 animate-pulse rounded-2xl bg-foreground/[0.03]" />
   );
 }
 
 export function TaskBoard() {
-  const { tasks, blocks, blockById, countsFor, setTaskStatus, ongoing, startAndLead, hydrated, runningTaskId, spentOnTask, spentOnBlock, setTaskNote, setTaskMinutes, addStep, toggleStep, removeStep, setTaskDays, setTaskKind , paused, loadFailed, retry } =
+  const { tasks, blocks, blockById, countsFor, setTaskStatus, ongoing, startAndLead, hydrated, runningTaskId, spentOnTask, spentOnBlock, setTaskNote, setTaskMinutes, addStep, toggleStep, removeStep, setTaskDays, setTaskKind , paused, loadFailed, retry, day } =
     useBlocks();
   const [dropping, setDropping] = useState(false);
   /* Ticks whenever anything is running, not only when a TASK is — otherwise
@@ -372,16 +372,16 @@ export function TaskBoard() {
      load reads as a day that never happened. */
   if (loadFailed) {
     return (
-      <div className="flex h-full min-h-48 flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-black/10 px-6 text-center">
-        <p className="text-sm text-black/60">Couldn&rsquo;t reach today.</p>
-        <p className="max-w-xs text-xs text-black/40">
+      <div className="flex h-full min-h-48 flex-col items-center justify-center gap-4 rounded-2xl px-6 text-center">
+        <p className="text-sm text-foreground/60">Couldn&rsquo;t reach today.</p>
+        <p className="max-w-xs text-xs text-foreground/40">
           Your blocks, tasks and the time you&rsquo;ve put in are all still
           saved. This screen just couldn&rsquo;t read them.
         </p>
         <button
           type="button"
           onClick={retry}
-          className="cursor-pointer rounded-xl bg-foreground px-4 py-2 text-xs text-white"
+          className="cursor-pointer rounded-xl bg-foreground px-4 py-2 text-xs text-background"
         >
           Try again
         </button>
@@ -392,7 +392,8 @@ export function TaskBoard() {
   /* Before the nothing-running check, because a paused day has nothing
      running either — whichever comes first is the screen you get, and while
      the day is paused the only thing worth saying is where you were. */
-  if (paused) return <PausedPanel />;
+  // a closed day shows its reflection even if it was paused — the pause note stays stored
+  if (paused && !day.endedAt) return <PausedPanel />;
 
   if (!ongoing) {
     /* Nothing running. Once the day has anything in it, this space stops
@@ -409,40 +410,48 @@ export function TaskBoard() {
        count against this — setting one aside was the decision that it isn't
        today's, so a day of three out of five you chose is a whole day. */
     const complete = n > 0 && n === blocks.length;
+    // a day you closed shows its reflection until rollover, finished or not
+    const reflecting = complete || day.endedAt != null;
 
     return (
       <div
         {...drop}
-        className={`flex h-full min-h-48 flex-col rounded-2xl border-2 border-dashed transition-colors duration-200 ${
-          dropping ? "border-black/40 bg-black/[0.03]" : "border-black/10"
+        className={`flex h-full min-h-48 flex-col rounded-2xl transition-colors duration-200 ${
+          dropping ? "bg-foreground/[0.04]" : ""
         }`}
       >
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-          {!complete && (
+        <div
+          className={`flex min-h-0 flex-1 flex-col gap-3 px-6 ${
+            reflecting
+              ? "w-full max-w-lg"
+              : "items-center justify-center text-center"
+          }`}
+        >
+          {!reflecting && (
             <img
               src={ART[Math.min(n, ART.length - 1)]}
               alt=""
-              className="size-44"
+              className="dark:rounded-2xl dark:bg-chip dark:p-1 size-44"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
               }}
             />
           )}
 
-          {complete ? (
-            <DayComplete finished={finished} />
+          {reflecting ? (
+            <DailyReflection />
           ) : n > 0 ? (
             <>
-              <p className="text-sm text-black/70">
+              <h2 className="max-w-lg text-3xl">
                 {NUMBER[n] ?? n} {n === 1 ? "block" : "blocks"} done today.{" "}
-                <span className="text-black/45">
+                <span className="text-foreground/45">
                   {CHEER[Math.min(n, CHEER.length - 1)]}
                 </span>
-              </p>
+              </h2>
 
               {/* An invitation, never a shortfall. There is no number of
                   blocks that would have made this day the right one. */}
-              <p className="max-w-xs text-xs text-black/30">
+              <p className="max-w-sm text-sm text-foreground/45">
                 {dropping
                   ? "Let go to pick it up."
                   : "Room for another if you want one. Drag it down here."}
@@ -450,8 +459,12 @@ export function TaskBoard() {
             </>
           ) : (
             <>
-              <p className="text-sm text-black/45">Nothing running.</p>
-              <p className="max-w-xs text-xs text-black/30">
+              {/* Not "Nothing running". A day that hasn't started is not a
+                  day with something missing from it, and Milo does not open by
+                  telling you what you have yet to do. Same rule as the branch
+                  above: an invitation, never a shortfall. */}
+              <h2 className="text-3xl">Ready when you are.</h2>
+              <p className="max-w-sm text-sm text-foreground/45">
                 {dropping
                   ? "Let go to start your day."
                   : "Drag a block down here to start it. One at a time."}
@@ -466,13 +479,26 @@ export function TaskBoard() {
 
             Not buttons and not draggable: a finished block is a fact, and
             there is nothing left to do with it. */}
+        {/* pr-20 clears the notes button in the corner — without it the last
+            finished block sits under it and its rings are unreadable. */}
         {n > 0 && (
-          <div className="flex w-full shrink-0 gap-3 overflow-x-auto p-4 pt-0">
+          <div className="flex w-full shrink-0 gap-3 overflow-x-auto p-4 pr-20 pt-0">
             {finished.map((b) => (
-              <div
+              <button
                 key={b.id}
+                type="button"
                 title={b.name}
-                className="flex h-16 min-w-56 flex-1 items-center justify-between gap-3 rounded-xl px-4 text-left"
+                /* A finished block is a fact, but finishing one by accident is
+                   also a fact. Without this the block leaves the lineup, its
+                   tasks leave the board with it, and the tick that ended it is
+                   unreachable — no way back at all. Opening it is not editing
+                   the record; the sheet just shows what is in it. */
+                onClick={() =>
+                  window.dispatchEvent(
+                    new CustomEvent("milo:open-block", { detail: b.id }),
+                  )
+                }
+                className="flex h-16 min-w-56 flex-1 cursor-pointer items-center justify-between gap-3 rounded-xl px-4 text-left"
                 style={{ background: b.bg, color: b.ink }}
               >
                 <div className="flex min-w-0 flex-col">
@@ -488,7 +514,7 @@ export function TaskBoard() {
                   </span>
                 </div>
                 <TaskRings {...countsFor(b.id)} className="size-9 shrink-0" />
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -499,7 +525,7 @@ export function TaskBoard() {
   return (
     <div
       {...drop}
-      className={`h-full rounded-2xl transition-shadow ${dropping ? "ring-2 ring-black/20" : ""}`}
+      className={`h-full rounded-2xl transition-shadow ${dropping ? "ring-2 ring-foreground/20" : ""}`}
     >
       <Kanban
         id="milo-task-board"
@@ -568,7 +594,7 @@ export function TaskBoard() {
                          blank. Never phrased as something missing — an empty
                          Done column is a fact about the day, not a failing. */}
                       {quick.length === 0 && sessions.length === 0 && (
-                        <div className="pointer-events-none flex h-24 items-center justify-center rounded-lg border-2 border-dashed border-black/10 text-xs text-black/30">
+                        <div className="pointer-events-none flex h-24 items-center justify-center rounded-lg border-2 border-dashed border-foreground/10 text-xs text-foreground/30">
                           Drop a task here
                         </div>
                       )}
@@ -579,7 +605,7 @@ export function TaskBoard() {
             );
           })}
         </KanbanBoard>
-        <KanbanOverlay className="rounded-md border-2 border-dashed bg-black/5" />
+        <KanbanOverlay className="rounded-md border-2 border-dashed bg-foreground/5" />
       </Kanban>
 
       <TaskSheet taskId={open?.id} onClose={() => setOpen(null)} />

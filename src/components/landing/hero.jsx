@@ -1,26 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { Dot } from "lucide-react";
 import { Tooltip } from "../ui/tooltip-card";
+import { BlockDemo } from "./block-demo";
 
 export default function Hero() {
-  const BLOCKS = [
-    {
-      title: "Morning block",
-      tasks: "12 tasks",
-      bg: "bg-black text-white",
-      status: "Start",
-    },
-    {
-      title: "Afternoon block",
-      tasks: "8 tasks",
-      bg: "bg-[#5e17eb] text-white",
-      status: "Pending",
-    },
-  ];
   return (
     <section
       className="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 bg-cover bg-center w-full md:p-10 lg:h-[75vh] lg:gap-0 lg:py-0"
@@ -60,44 +45,20 @@ export default function Hero() {
         </Link>
       </div>
 
-      {/* Right content */}
-      <div className="flex flex-col items-center justify-center h-full w gap-1 relative">
-        {BLOCKS.map(({ title, tasks, bg, status }, idx) => (
-          <div
-            key={title}
-            className={`h-15 ${bg} flex items-center justify-between p-2 rounded-sm w-[90%] md:w-[62%]`}
-          >
-            <h1 className="text-xl ">{title}</h1>
-            <div className="flex flex-col items-end">
-              <p className="text-xs mr-1">{tasks}</p>
-              <Button
-                className={`${
-                  status === "Start"
-                    ? "bg-white text-black"
-                    : "bg-gray-200 text-gray-700 cursor-not-allowed"
-                }`}
-              >
-                {status}
-              </Button>
-            </div>
-          </div>
-        ))}
-        {/* blocks */}
+      {/* Right content — the demo owns the cards now, so the landing shows
+          the app's own Tick, TaskRings and Sheet rather than a lookalike. */}
+      <div className="relative flex h-full w-full items-center justify-center">
+        <BlockDemo />
+        {/* Hides itself if the file isn't there, so a missing asset is a
+            missing picture rather than a broken-image icon. */}
         <img
-          src="/blocks.png"
-          className="size-30 md:size-40 absolute left-0"
+          src="/Productive-Multi-Tasks--Streamline-Sketchvalley.svg"
           alt=""
+          className="pointer-events-none absolute right-0 top-1/2 z-0 size-32 -translate-y-1/2 md:size-44"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
         />
-        {/* Add tasks block */}
-        <Link
-          href="/auth"
-          className="h-10 w-[90%] md:w-[62%] border border-dotted hover:bg-white hover:border transition-all duration-500 border-gray-400 flex items-center justify-center rounded-sm cursor-pointer"
-        >
-          <span className="text-gray-600">Add a block</span>
-        </Link>
-        <h1 className="text-sm md:text-md  my-6 md:mt-2">
-          Divide your tasks in blocks and handle seperately
-        </h1>
       </div>
     </section>
   );

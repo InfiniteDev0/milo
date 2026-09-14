@@ -185,6 +185,11 @@ From POSITIONING.md, enforced on every page:
   grid of misses, no "best streak". *If habits can't be built this way, Milo ships without
   habits.*
 - **Start times are optional.** "Morning" is a complete answer.
+- **Closing the day ends it; it never resets it** (14 Sep). End day stops the
+  clock, saves the Night entry and sets `ended_at`, and the board shows the day's
+  reflection until rollover. Resetting onto the same date upserted an empty row
+  over the real one — one row per user per date means a closed day and a fresh
+  day cannot share a stamp. Only the rollover calls `newDay()`.
 - **Reflection reports actuals** — "You showed up for 6 things", never "6 of 8".
 - Landing `Process` section is the **Plan → Live → Pause → Reflect → Adapt** loop. Its
   three images are still hotlinked from `framerusercontent.com` — replace with real
@@ -211,12 +216,15 @@ From POSITIONING.md, enforced on every page:
 3. ✅ App shell, kanban, block lineup, month calendar, notes editor
 4. ✅ Time tracking — the interval log (`TIME.md`)
 5. ✅ Database schema + RLS
-6. 🔄 **Here:** moving each feature off local state onto Supabase.
-   Notes done. Blocks + tasks next, then days + sessions.
-7. ⬜ Offline via PowerSync
-8. ⬜ The flows in `BACKLOG.md` — partial-day close, month-end swap, block CRUD
-9. ⬜ Habits *(or shipping without them — PRODUCT.md allows it)*
-10. ⬜ Polish + beta
+6. ✅ Every feature on Supabase — blocks, tasks, days, sessions, profile, notes.
+   The `notes` table and `db/notes.js` are wired; the `/notes` page itself is
+   blank, being rebuilt (original: 458 lines in commit `2923dab`).
+7. 🔄 **Here:** writing — the journal (Morning / Pause / Night on the day),
+   `/journal` as a reader over past days, `/notes`, the tray.
+8. ⬜ Offline via PowerSync
+9. ⬜ The flows in `BACKLOG.md` — partial-day close, month-end swap, block CRUD
+10. ⬜ Habits *(or shipping without them — PRODUCT.md allows it)*
+11. ⬜ Polish + beta
 
 **Platform order:** web → desktop (built on the web app) → mobile last.
 

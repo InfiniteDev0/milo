@@ -61,8 +61,8 @@ export function DayControl() {
       title={paused ? "Resume" : "Pause your day"}
       className={`flex w-9 cursor-pointer items-center justify-center rounded-[11px] py-2.5 transition-colors duration-200 ${
         paused
-          ? "bg-[#00d078] text-black"
-          : "bg-[#141414] text-white/60 hover:text-white"
+          ? "bg-[#00d078] text-foreground"
+          : "bg-chrome text-chrome-ink/60 hover:text-chrome-ink"
       }`}
     >
       {paused ? <PlayIcon /> : <PauseIcon />}

@@ -22,15 +22,15 @@ import { spent } from "@/lib/time";
 
 function Stat({ value, label }) {
   return (
-    <div className="flex min-w-28 flex-col items-center gap-0.5 rounded-xl bg-black/[0.03] px-5 py-3">
+    <div className="flex min-w-28 flex-col items-center gap-0.5 rounded-xl bg-foreground/[0.03] px-5 py-3">
       <span className="text-2xl font-medium tabular-nums">{value}</span>
-      <span className="text-xs text-black/40">{label}</span>
+      <span className="text-xs text-foreground/40">{label}</span>
     </div>
   );
 }
 
 export function DayComplete({ finished }) {
-  const { summary, newDay, spentToday } = useBlocks();
+  const { summary, spentToday } = useBlocks();
 
   /* Real elapsed time, not the sum of the estimates. The old figure added up
      each done task's `minutes` and called it 'in them', which was the
@@ -52,15 +52,15 @@ export function DayComplete({ finished }) {
       <img
         src="/motiv.svg"
         alt=""
-        className="size-44"
+        className="dark:rounded-2xl dark:bg-chip dark:p-1 size-44"
         onError={(e) => {
           e.currentTarget.style.display = "none";
         }}
       />
 
-      <p className="text-sm text-black/70">
+      <p className="text-sm text-foreground/70">
         That&rsquo;s the day.{" "}
-        <span className="text-black/45">Every block you kept, done.</span>
+        <span className="text-foreground/45">Every block you kept, done.</span>
       </p>
 
       <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
@@ -74,13 +74,20 @@ export function DayComplete({ finished }) {
 
       {/* Says out loud what the reset does, so closing the day never feels
           like it might cost something. */}
-      <p className="max-w-xs pt-1 text-xs text-black/30">
+      <p className="max-w-xs pt-1 text-xs text-foreground/30">
         Nothing carries over. Your blocks come back untouched in the morning.
       </p>
 
-      <Button variant="outline" onClick={newDay} className="mt-1 cursor-pointer">
-        Start a fresh day
-      </Button>
+      {/* no fresh-day button: a new day starts at rollover, never on the same date */}
+      <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+        <Button
+          onClick={() => window.dispatchEvent(new Event("milo:close-day"))}
+          style={{ "--lift": "var(--chrome-lift)" }}
+          className="milo-lift cursor-pointer rounded-xl bg-chrome px-5 text-chrome-ink hover:bg-chrome-hover"
+        >
+          Look back on today
+        </Button>
+      </div>
     </>
   );
 }

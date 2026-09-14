@@ -54,7 +54,7 @@ export function CloseDay({ onClose }) {
     spentOnBlock,
     journal,
     setJournal,
-    newDay,
+    endDay,
   } = useBlocks();
 
   const [entry, setEntry] = useState(journal?.night ?? "");
@@ -83,9 +83,10 @@ export function CloseDay({ onClose }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ends the day, never resets it — a reset here overwrote today's row with an empty one
   const close = () => {
     setJournal({ ...journal, night: entry });
-    newDay();
+    endDay();
     onClose?.();
   };
 
@@ -99,7 +100,7 @@ export function CloseDay({ onClose }) {
           instant
           gaze={false}
           reactToScroll={false}
-          className="size-20"
+          className="dark:rounded-[30%] dark:bg-chip size-20"
         />
         <h2 className="text-lg">
           {happened ? "That’s the day." : "Day closed."}
@@ -108,7 +109,7 @@ export function CloseDay({ onClose }) {
 
       {/* ---- 1. what happened. Actuals, in the order they happened. ---- */}
       <section className="flex flex-col gap-2">
-        <h3 className="text-xs tracking-wide text-black/35 uppercase">
+        <h3 className="text-xs tracking-wide text-foreground/35 uppercase">
           What happened
         </h3>
 
@@ -136,11 +137,11 @@ export function CloseDay({ onClose }) {
              and no consolation prize. 'That counts too' was the app insisting
              on a silver lining nobody asked for — which is its own kind of not
              listening. Nothing happened. Milo says so and stops talking. */
-          <p className="text-sm text-black/40">Nothing finished today.</p>
+          <p className="text-sm text-foreground/40">Nothing finished today.</p>
         )}
 
         {/* Counts up. Never "of", never a percentage, never a gap. */}
-        <p className="pt-1 text-xs text-black/35 tabular-nums">
+        <p className="pt-1 text-xs text-foreground/35 tabular-nums">
           {summary.done} {summary.done === 1 ? "thing" : "things"}
           {elapsed && ` · ${elapsed} spent`}
         </p>
@@ -149,10 +150,10 @@ export function CloseDay({ onClose }) {
       {/* ---- 2. this morning, shown back. No comment, ever. ---- */}
       {journal?.morning?.trim() && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-xs tracking-wide text-black/35 uppercase">
+          <h3 className="text-xs tracking-wide text-foreground/35 uppercase">
             This morning you said
           </h3>
-          <p className="rounded-xl bg-black/[0.03] px-4 py-3 text-sm whitespace-pre-line text-black/70">
+          <p className="rounded-xl bg-foreground/[0.03] px-4 py-3 text-sm whitespace-pre-line text-foreground/70">
             {journal.morning}
           </p>
         </section>
@@ -160,7 +161,7 @@ export function CloseDay({ onClose }) {
 
       {/* ---- 3. tonight. Offered, never required. ---- */}
       <section className="flex flex-col gap-2">
-        <h3 className="text-xs tracking-wide text-black/35 uppercase">
+        <h3 className="text-xs tracking-wide text-foreground/35 uppercase">
           Tonight
         </h3>
         <textarea
@@ -169,21 +170,21 @@ export function CloseDay({ onClose }) {
           rows={4}
           placeholder="What you did, what you noticed. Or nothing."
           aria-label="Night entry"
-          className="w-full resize-none rounded-xl border border-black/10 px-4 py-3 text-sm leading-relaxed outline-none placeholder:text-black/25 focus:border-black/30"
+          className="w-full resize-none rounded-xl border border-foreground/10 px-4 py-3 text-sm leading-relaxed outline-none placeholder:text-foreground/25 focus:border-foreground/30"
         />
       </section>
 
       <Button
         type="button"
         onClick={close}
-        className="milo-lift h-11 w-full rounded-xl border-0 bg-[#262626] font-normal text-white hover:bg-[#303030]"
-        style={{ "--lift": shade("#262626", 0.72) }}
+        className="milo-lift h-11 w-full rounded-xl border-0 bg-solid font-normal text-solid-ink hover:bg-solid-hover"
+        style={{ "--lift": "var(--solid-lift)" }}
       >
         Close the day
       </Button>
 
       {/* Says what closing costs, which is nothing. */}
-      <p className="-mt-3 text-center text-xs text-black/30">
+      <p className="-mt-3 text-center text-xs text-foreground/30">
         Your blocks come back untouched in the morning.
       </p>
     </div>

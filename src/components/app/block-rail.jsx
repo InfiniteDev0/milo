@@ -22,7 +22,7 @@ export function BlockRail() {
   return (
     <div className="group/rail absolute right-0 top-0 z-20">
       <div
-        className="flex w-9 flex-col gap-2 rounded-[11px] bg-[#141414] py-2 pl-1.5 pr-2 transition-[width,padding] duration-300 ease-out group-hover/rail:w-44 group-hover/rail:px-2 group-hover/rail:py-2 motion-reduce:transition-none"
+        className="flex w-9 flex-col gap-2 rounded-[11px] bg-chrome py-2 pl-1.5 pr-2 transition-[width,padding] duration-300 ease-out group-hover/rail:w-44 group-hover/rail:px-2 group-hover/rail:py-2 motion-reduce:transition-none"
       >
         {blocks.map((b) => {
           const ongoing = b.status === "ongoing";
@@ -34,7 +34,7 @@ export function BlockRail() {
               type="button"
               onClick={() => start(b.id)}
               title={b.name}
-              className="relative flex h-3.5 cursor-pointer items-center justify-end rounded transition-colors duration-200 group-hover/rail:h-6 group-hover/rail:justify-start group-hover/rail:px-2 group-hover/rail:hover:bg-white/10 motion-reduce:transition-none"
+              className="relative flex h-3.5 cursor-pointer items-center justify-end rounded transition-colors duration-200 group-hover/rail:h-6 group-hover/rail:justify-start group-hover/rail:px-2 group-hover/rail:hover:bg-chrome-ink/10 motion-reduce:transition-none"
             >
               {/* collapsed: a mark */}
               <span
@@ -45,7 +45,7 @@ export function BlockRail() {
                   background: ongoing
                     ? ACTIVE
                     : done
-                      ? "#ffffff"
+                      ? "var(--chrome-ink)"
                       : "#3a3a3a",
                 }}
               />
@@ -57,7 +57,7 @@ export function BlockRail() {
                   color: ongoing
                     ? ACTIVE
                     : done
-                      ? "#ffffff"
+                      ? "var(--chrome-ink)"
                       : "#6f6f6f",
                 }}
               >

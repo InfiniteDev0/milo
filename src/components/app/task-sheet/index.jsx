@@ -64,7 +64,7 @@ export function TaskSheet({ taskId, onClose, onDismiss, beside = false }) {
 
           {/* the reason is the field that separates Milo from a task list */}
           {task.reason && (
-            <p className="shrink-0 border-b border-black/8 px-5 py-3 text-xs text-black/50">
+            <p className="shrink-0 border-b border-foreground/8 px-5 py-3 text-xs text-foreground/50">
               {task.reason}
             </p>
           )}
@@ -78,7 +78,7 @@ export function TaskSheet({ taskId, onClose, onDismiss, beside = false }) {
           </div>
 
           {/* Outside the scroll region: status is what you came to change. */}
-          <div className="shrink-0 border-t border-black/8 p-3">
+          <div className="shrink-0 border-t border-foreground/8 p-3">
             <StatusRow task={task} />
           </div>
         </>

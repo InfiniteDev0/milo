@@ -64,14 +64,14 @@ function MonthSkeleton() {
   return (
     <div className="flex animate-pulse flex-col gap-4">
       <div className="flex items-center gap-3">
-        <div className="h-7 w-48 rounded-lg bg-black/[0.06]" />
-        <div className="size-7 rounded-lg bg-black/[0.04]" />
-        <div className="size-7 rounded-lg bg-black/[0.04]" />
+        <div className="h-7 w-48 rounded-lg bg-foreground/[0.06]" />
+        <div className="size-7 rounded-lg bg-foreground/[0.04]" />
+        <div className="size-7 rounded-lg bg-foreground/[0.04]" />
       </div>
 
       <div className="grid grid-cols-7 gap-2">
         {WEEKDAYS.map((d) => (
-          <span key={d} className="pb-1 text-sm text-black/20">
+          <span key={d} className="pb-1 text-sm text-foreground/20">
             {d}
           </span>
         ))}
@@ -79,7 +79,7 @@ function MonthSkeleton() {
         {Array.from({ length: 35 }, (_, i) => (
           <div
             key={i}
-            className="min-h-24 rounded-xl bg-black/[0.02] ring-1 ring-black/[0.06]"
+            className="min-h-24 rounded-xl bg-foreground/[0.02] ring-1 ring-foreground/[0.06]"
           />
         ))}
       </div>
@@ -95,10 +95,10 @@ function DayCell({ date, entry, isToday, muted, onOpen }) {
       <span
         className={`text-sm tabular-nums ${
           muted
-            ? "text-black/20"
+            ? "text-foreground/20"
             : isToday
-              ? "font-semibold text-black"
-              : "text-black/45"
+              ? "font-semibold text-foreground"
+              : "text-foreground/45"
         }`}
       >
         {date}
@@ -115,7 +115,7 @@ function DayCell({ date, entry, isToday, muted, onOpen }) {
             />
           ))}
           {entry.blocks.length > bands.length && (
-            <span className="text-[10px] leading-none text-black/35">
+            <span className="text-[10px] leading-none text-foreground/35">
               +{entry.blocks.length - bands.length}
             </span>
           )}
@@ -125,7 +125,7 @@ function DayCell({ date, entry, isToday, muted, onOpen }) {
   );
 
   const shell = `flex min-h-24 flex-col rounded-xl p-2.5 text-left ring-1 ${
-    isToday ? "ring-2 ring-black/60" : "ring-black/[0.08]"
+    isToday ? "ring-2 ring-foreground/60" : "ring-foreground/[0.08]"
   }`;
 
   /* Only a day with something in it is a button. A blank day is not a thing to
@@ -144,7 +144,7 @@ function DayCell({ date, entry, isToday, muted, onOpen }) {
       type="button"
       onClick={() => onOpen(entry)}
       title={entry.label}
-      className={`${shell} cursor-pointer transition-colors hover:bg-black/[0.03]`}
+      className={`${shell} cursor-pointer transition-colors hover:bg-foreground/[0.03]`}
     >
       {inner}
     </button>
@@ -254,7 +254,7 @@ export function MonthHistory() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex items-center gap-3">
-          <h2 className="text-sm tracking-wide text-black/45 uppercase">
+          <h2 className="text-sm tracking-wide text-foreground/45 uppercase">
             {monthName(y, m)}
           </h2>
 
@@ -263,7 +263,7 @@ export function MonthHistory() {
               variant="outline"
               onClick={() => step(-1)}
               aria-label="Previous month"
-              className="flex size-7 cursor-pointer items-center justify-center rounded-lg text-black/40 transition-colors hover:bg-black/5 hover:text-black/70"
+              className="flex size-7 cursor-pointer items-center justify-center rounded-lg text-foreground/40 transition-colors hover:bg-foreground/5 hover:text-foreground/70"
             >
               <ChevronLeft className="size-4" />
             </Button>
@@ -272,7 +272,7 @@ export function MonthHistory() {
               onClick={() => step(1)}
               disabled={atLatest}
               aria-label="Next month"
-              className="flex size-7 cursor-pointer items-center justify-center rounded-lg text-black/40 transition-colors hover:bg-black/5 hover:text-black/70"
+              className="flex size-7 cursor-pointer items-center justify-center rounded-lg text-foreground/40 transition-colors hover:bg-foreground/5 hover:text-foreground/70"
             >
               <ChevronRight className="size-4" />
             </Button>
@@ -282,7 +282,7 @@ export function MonthHistory() {
         {/* Counts up, always. Never "out of" anything — nobody set a number
             for this month to fall short of. */}
         {lived.length > 0 && (
-          <p className="text-xs text-black/40 tabular-nums">
+          <p className="text-xs text-foreground/40 tabular-nums">
             {lived.length} {lived.length === 1 ? "day" : "days"} · {blocksDone}{" "}
             {blocksDone === 1 ? "block" : "blocks"} · {tasksDone}{" "}
             {tasksDone === 1 ? "thing" : "things"}
@@ -293,7 +293,7 @@ export function MonthHistory() {
 
       <div className="grid grid-cols-7 gap-2">
         {WEEKDAYS.map((d) => (
-          <span key={d} className="pb-1 text-sm text-black/45">
+          <span key={d} className="pb-1 text-sm text-foreground/45">
             {d}
           </span>
         ))}
@@ -324,7 +324,7 @@ export function MonthHistory() {
       </div>
 
       {lived.length === 0 && (
-        <p className="text-sm text-black/40">
+        <p className="text-sm text-foreground/40">
           Days fill in here as you finish them.
         </p>
       )}
@@ -349,7 +349,7 @@ export function MonthHistory() {
                 ))}
               </div>
 
-              <p className="text-xs text-black/40 tabular-nums">
+              <p className="text-xs text-foreground/40 tabular-nums">
                 {open.tasks} {open.tasks === 1 ? "thing" : "things"}
                 {open.minutes > 0 && ` · ${spent(open.minutes)} in them`}
               </p>

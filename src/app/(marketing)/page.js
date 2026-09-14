@@ -12,12 +12,12 @@ export default function Home() {
   return (
     <div className="px-3">
       <Hero />
-      <Philosophy />
-      <LifeBlocksSection />
+      {/* <Philosophy />
+      <LifeBlocksSection /> */}
       <Process/>
-      <Features/>
-      <BehindTheScenes />
-      <CTA />
+      {/* <Features/>
+      <BehindTheScenes /> */}
+      {/* <CTA /> */}
     </div>
   );
 }

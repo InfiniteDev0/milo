@@ -21,7 +21,7 @@ export function ScopeSwitcher() {
   const pathname = usePathname();
 
   return (
-    <div className="flex items-center gap-1 rounded-full bg-black/[0.05] p-1">
+    <div className="flex items-center gap-1 rounded-full bg-foreground/[0.05] p-1">
       {SCOPES.map(({ href, label }) => {
         const active = pathname === href;
         return (
@@ -31,8 +31,8 @@ export function ScopeSwitcher() {
             aria-current={active ? "page" : undefined}
             className={`rounded-full px-3.5 py-1.5 text-sm transition-colors duration-200 ${
               active
-                ? "bg-white text-black shadow-sm"
-                : "text-black/45 hover:text-black/70"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-foreground/45 hover:text-foreground/70"
             }`}
           >
             {label}

@@ -65,9 +65,9 @@ export function CheckIn() {
   const next = here >= 0 ? order[here + 1] : null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center">
-      <div className="flex items-center gap-3 rounded-2xl bg-[#141414] py-2 pr-2 pl-2 shadow-[0_10px_40px_rgba(0,0,0,0.3)]">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white">
+    <div className="fixed inset-x-0 bottom-6 z-40 flex justify-center px-4 pr-24 pointer-events-none items-center [&>*]:pointer-events-auto">
+      <div className="flex items-center gap-3 rounded-2xl bg-chrome py-2 pr-2 pl-2 shadow-[0_10px_40px_rgba(0,0,0,0.3)]">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-chip">
           {/* content, not concerned. It is telling you the time, not worrying
               about you — a worried face here would be a judgement with no
               words in it. */}
@@ -75,11 +75,11 @@ export function CheckIn() {
         </span>
 
         <div className="flex flex-col">
-          <span className="text-sm text-white">
+          <span className="text-sm text-chrome-ink">
             {spent(elapsed)} in {ongoing.name.replace(" Block", "")}.
           </span>
           {next && (
-            <span className="text-xs text-white/45">
+            <span className="text-xs text-chrome-ink/45">
               {next.name.replace(" Block", "")} is next, whenever you want it.
             </span>
           )}
@@ -93,7 +93,7 @@ export function CheckIn() {
               setSeen(due);
               start(next.id);
             }}
-            className="h-8 cursor-pointer rounded-lg bg-white px-3 text-xs text-black hover:bg-white/85"
+            className="h-8 cursor-pointer rounded-lg bg-chip px-3 text-xs text-chip-ink hover:bg-chip/85"
           >
             Switch
           </Button>
@@ -105,7 +105,7 @@ export function CheckIn() {
           type="button"
           onClick={() => setSeen(due)}
           aria-label="Keep going"
-          className="flex size-8 cursor-pointer items-center justify-center rounded-lg text-white/40 transition-colors hover:bg-white/10 hover:text-white"
+          className="flex size-8 cursor-pointer items-center justify-center rounded-lg text-chrome-ink/40 transition-colors hover:bg-chrome-ink/10 hover:text-chrome-ink"
         >
           <X className="size-4" />
         </button>

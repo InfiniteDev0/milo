@@ -18,7 +18,7 @@ export function DeleteBlock({ block, onDone }) {
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2 text-xs text-black/30 transition-colors hover:text-[#B4231F]"
+        className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2 text-xs text-foreground/30 transition-colors hover:text-[#B4231F]"
       >
         <Trash2 className="size-3.5" />
         Delete permanently
@@ -29,7 +29,7 @@ export function DeleteBlock({ block, onDone }) {
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-[#B4231F]/20 bg-[#B4231F]/[0.03] p-3">
       {/* Says exactly what goes and exactly what stays. */}
-      <p className="text-xs text-black/60">
+      <p className="text-xs text-foreground/60">
         Delete <span className="font-medium">{block.name.replace(" Block", "")}</span>
         {tasks > 0 && <> and its {tasks} {tasks === 1 ? "task" : "tasks"}</>}? Days
         you already lived keep what happened in them. This cannot be undone.
@@ -39,7 +39,7 @@ export function DeleteBlock({ block, onDone }) {
         <button
           type="button"
           onClick={() => setConfirming(false)}
-          className="flex-1 cursor-pointer rounded-lg border border-black/10 bg-white py-2 text-xs hover:bg-black/[0.03]"
+          className="flex-1 cursor-pointer rounded-lg border border-foreground/10 bg-card py-2 text-xs hover:bg-foreground/[0.03]"
         >
           Keep it
         </button>

@@ -61,7 +61,7 @@ export default function MonthlyPage() {
             type="button"
             onClick={() => setPickingIcon((v) => !v)}
             aria-label="Change the icon"
-            className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-2xl transition-colors hover:bg-black/5"
+            className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-2xl transition-colors hover:bg-foreground/5"
           >
             {profile?.month?.icon ?? "🌙"}
           </button>
@@ -80,7 +80,7 @@ export default function MonthlyPage() {
                only you can supply. */
             placeholder="Name this month"
             aria-label="Name this month"
-            className="min-w-0 flex-1 bg-transparent text-2xl uppercase outline-none placeholder:text-black/25"
+            className="min-w-0 flex-1 bg-transparent text-2xl uppercase outline-none placeholder:text-foreground/25"
           />
         </div>
 
@@ -105,8 +105,8 @@ export default function MonthlyPage() {
               aria-label={`Pick ${e}`}
               className={`flex size-9 cursor-pointer items-center justify-center rounded-lg text-lg transition-colors ${
                 profile?.month?.icon === e
-                  ? "bg-black/10"
-                  : "hover:bg-black/5"
+                  ? "bg-foreground/10"
+                  : "hover:bg-foreground/5"
               }`}
             >
               {e}
@@ -129,13 +129,13 @@ export default function MonthlyPage() {
               read. Showing them and then correcting them is worse than a
               blank line for a beat. */}
           {hydrated ? (
-            <p className="text-sm text-black/45">
+            <p className="text-sm text-foreground/45">
               {blocks.length} {blocks.length === 1 ? "block" : "blocks"} ·{" "}
               {tasks.length} {tasks.length === 1 ? "task" : "tasks"} · open a
               block to add to it
             </p>
           ) : (
-            <div className="h-5 w-56 animate-pulse rounded bg-black/[0.06]" />
+            <div className="h-5 w-56 animate-pulse rounded bg-foreground/[0.06]" />
           )}
 
           <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4">
@@ -147,7 +147,7 @@ export default function MonthlyPage() {
               Array.from({ length: 4 }, (_, i) => (
                 <div
                   key={`skeleton-${i}`}
-                  className="h-[92px] animate-pulse rounded-2xl bg-black/[0.04]"
+                  className="h-[92px] animate-pulse rounded-2xl bg-foreground/[0.04]"
                 />
               ))}
 
@@ -233,17 +233,17 @@ export default function MonthlyPage() {
 
               <ul className="flex max-h-64 list-none flex-col gap-1.5 overflow-y-auto p-0">
                 {blockTasks.length === 0 && (
-                  <li className="rounded-lg border border-dashed border-black/12 px-3 py-6 text-center text-sm text-black/35">
+                  <li className="rounded-lg border border-dashed border-foreground/12 px-3 py-6 text-center text-sm text-foreground/35">
                     Nothing in this block yet.
                   </li>
                 )}
                 {blockTasks.map((t) => (
                   <li
                     key={t.id}
-                    className="flex items-center justify-between gap-2 rounded-lg bg-black/[0.04] px-3 py-2 text-sm"
+                    className="flex items-center justify-between gap-2 rounded-lg bg-foreground/[0.04] px-3 py-2 text-sm"
                   >
                     <span
-                      className={t.status === "done" ? "text-black/40 line-through" : ""}
+                      className={t.status === "done" ? "text-foreground/40 line-through" : ""}
                     >
                       {t.name}
                     </span>
@@ -251,7 +251,7 @@ export default function MonthlyPage() {
                       type="button"
                       onClick={() => removeTask(t.id)}
                       aria-label={`Remove ${t.name}`}
-                      className="cursor-pointer text-black/25 transition-colors hover:text-black/60"
+                      className="cursor-pointer text-foreground/25 transition-colors hover:text-foreground/60"
                     >
                       <X className="size-3.5" />
                     </button>
@@ -286,7 +286,7 @@ export default function MonthlyPage() {
                   archiveBlock(block.id);
                   setOpenId(null);
                 }}
-                className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2 text-xs text-black/40 transition-colors hover:bg-black/[0.03] hover:text-black/70"
+                className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2 text-xs text-foreground/40 transition-colors hover:bg-foreground/[0.03] hover:text-foreground/70"
               >
                 <Archive className="size-3.5" />
                 Tuck into the archive

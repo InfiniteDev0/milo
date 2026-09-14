@@ -8,13 +8,14 @@
  * by a plan you made in advance. Tapping works too.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { shade } from "@/lib/shade";
 import { spent, useNow } from "@/lib/time";
 import MiloFace from "@/components/MiloFace";
 import { useBlocks } from "./blocks-provider";
 import { DropZone } from "./drop-zone";
 import { TaskRings } from "./task-rings";
+import { RestPill } from "./rest-pill";
 import { Button } from "../ui/button";
 
 /* "Not today" is off for now. The gesture, the drop zone and the set-aside
@@ -32,7 +33,7 @@ function LineupSkeleton() {
       {Array.from({ length: 4 }, (_, i) => (
         <div
           key={i}
-          className="h-16 min-w-56 flex-1 rounded-xl bg-black/[0.04]"
+          className="h-16 min-w-56 flex-1 rounded-xl bg-foreground/[0.04]"
         />
       ))}
     </div>
@@ -40,11 +41,9 @@ function LineupSkeleton() {
 }
 
 export function BlockLineup() {
-  const { blocks, countsFor, start, reorderBlocks, focusLocked, droppedToday, undropBlock, hydrated, spentOnBlock, paused, pause, loadFailed, retry } =
+  const { blocks, countsFor, start, reorderBlocks, focusLocked, hydrated, spentOnBlock, paused, pause, loadFailed, retry, rest } =
     useBlocks();
   const [draggingId, setDraggingId] = useState(null);
-  const [showDropped, setShowDropped] = useState(false);
-  const asideRef = useRef(null);
   const [over, setOver] = useState(null);
 
   /* Above the early returns, and it has to stay there: the skeleton path
@@ -52,16 +51,6 @@ export function BlockLineup() {
      render uses four hooks and the next uses five. React counts them by
      position, so that is a crash, not a warning. */
   const now = useNow(blocks.some((b) => b.status === "ongoing"));
-
-  // pointerdown, not click: it fires before a button underneath swallows the event
-  useEffect(() => {
-    if (!showDropped) return;
-    const away = (e) => {
-      if (!asideRef.current?.contains(e.target)) setShowDropped(false);
-    };
-    document.addEventListener("pointerdown", away);
-    return () => document.removeEventListener("pointerdown", away);
-  }, [showDropped]);
 
   // seed blocks would flash before the real ones arrive
   if (!hydrated) return <LineupSkeleton />;
@@ -78,15 +67,15 @@ export function BlockLineup() {
      again. */
   if (loadFailed) {
     return (
-      <div className="flex h-16 w-full items-center gap-3 rounded-xl border border-dashed border-black/15 px-4 text-sm">
-        <span className="text-black/50">
+      <div className="flex h-16 w-full items-center gap-3 rounded-xl border border-dashed border-foreground/15 px-4 text-sm">
+        <span className="text-foreground/50">
           Couldn&rsquo;t reach your blocks.
-          <span className="text-black/35"> Nothing is lost — they&rsquo;re still saved.</span>
+          <span className="text-foreground/35"> Nothing is lost — they&rsquo;re still saved.</span>
         </span>
         <button
           type="button"
           onClick={retry}
-          className="ml-auto shrink-0 cursor-pointer rounded-lg bg-foreground px-3 py-1.5 text-xs text-white"
+          className="ml-auto shrink-0 cursor-pointer rounded-lg bg-foreground px-3 py-1.5 text-xs text-background"
         >
           Try again
         </button>
@@ -94,9 +83,13 @@ export function BlockLineup() {
     );
   }
 
+  /* Rest takes the whole row until you skip it. Nothing here can be started
+     while it runs, so a lineup of blocks would only be asking. */
+  if (rest) return <RestPill />;
+
   if (blocks.length === 0) {
     return (
-      <div className="flex h-16 w-full items-center rounded-xl border border-dashed border-black/10 px-4 text-sm text-black/35">
+      <div className="flex h-16 w-full items-center rounded-xl border border-dashed border-foreground/10 px-4 text-sm text-foreground/35">
         No blocks yet. Add them from the Month view.
       </div>
     );
@@ -108,10 +101,17 @@ export function BlockLineup() {
   /* Finished blocks leave the line entirely. The lineup is what's still
      in front of you; what you already did lives in the centre, where it
      gets a whole panel to itself instead of a crossed-out card. */
-  const ordered =
-    focusLocked && running.length > 0
+  // the running block always leads the line; sort is stable, so the rest keep their order
+  const ordered = [
+    ...(focusLocked && running.length > 0
       ? running
-      : blocks.filter((b) => b.status !== "done");
+      : blocks.filter((b) => b.status !== "done")),
+  ].sort((a, b) => (b.status === "ongoing") - (a.status === "ongoing"));
+
+  /* Nothing left in the line — at the end of a day every block has moved to
+     the done row, so this renders nothing and the board takes the space.
+     Paused still shows: its overlay lives in the wrapper below. */
+  if (ordered.length === 0 && !paused) return null;
 
   return (
     /* The wrapper exists for the badge. It has to sit OUTSIDE the scroller —
@@ -127,14 +127,14 @@ export function BlockLineup() {
            it is the panel below, which can also say where you were. Two
            buttons doing one thing is how you end up reading both. */
         <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center pb-2">
-          <span className="flex items-center gap-2.5 rounded-full bg-[#141414] py-1.5 pl-1.5 pr-5 shadow-[0_6px_24px_rgba(0,0,0,0.25)]">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
+          <span className="flex items-center gap-2.5 rounded-full bg-chrome py-1.5 pl-1.5 pr-5 shadow-[0_6px_24px_rgba(0,0,0,0.25)]">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-chip">
               <MiloFace mood="sleepy" instant gaze={false} reactToScroll={false} className="size-8" />
             </span>
-            <span className="text-sm text-white">
+            <span className="text-sm text-chrome-ink">
               Day paused
               {pause?.pausedAt && (
-                <span className="text-white/45">
+                <span className="text-chrome-ink/45">
                   {" · "}
                   {new Date(pause.pausedAt).toLocaleTimeString([], {
                     hour: "numeric",
@@ -212,7 +212,7 @@ export function BlockLineup() {
                two authorities on the same property meant the press either
                animated over 300ms or not at all. */
             className={`milo-lift flex h-16 min-w-56 flex-1 cursor-grab items-center justify-between gap-3 rounded-xl px-4 text-left active:cursor-grabbing ${opacity} ${
-              over === b.id ? "scale-[0.97] ring-2 ring-black/40" : ""
+              over === b.id ? "scale-[0.97] ring-2 ring-foreground/40" : ""
             }`}
             style={{
               background: b.bg,
@@ -245,49 +245,6 @@ export function BlockLineup() {
         <DropZone draggingId={draggingId} onDone={() => setDraggingId(null)} />
       )}
     </div>
-
-    {/* Outside the scroller on purpose: its dropdown is absolutely positioned,
-        and overflow-y-hidden in there clipped it clean off. */}
-    {DROP_ENABLED && droppedToday.length > 0 && !focusLocked && (
-      <div ref={asideRef} className="relative flex shrink-0 items-center">
-        <button
-          type="button"
-          onClick={() => setShowDropped((v) => !v)}
-          className={`h-16 cursor-pointer rounded-xl border border-dashed px-4 text-sm transition-colors ${
-            showDropped
-              ? "border-black/40 bg-black/[0.03] text-black"
-              : "border-black/25 text-black/60 hover:border-black/40 hover:text-black"
-          }`}
-        >
-          {droppedToday.length} set aside
-        </button>
-
-        {showDropped && (
-          <div className="absolute right-0 top-[72px] z-40 flex w-60 flex-col gap-1.5 rounded-xl bg-white p-2 shadow-[0_10px_40px_rgba(0,0,0,0.15)] ring-1 ring-black/5">
-            {droppedToday.map((b) => (
-              <div
-                key={b.id}
-                className="flex items-center justify-between gap-2 rounded-lg py-1.5 pl-3 pr-1.5"
-                style={{ background: b.bg, color: b.ink }}
-              >
-                <span className="truncate text-xs">{b.name.replace(" Block", "")}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    undropBlock(b.id);
-                    setShowDropped(false);
-                  }}
-                  className="shrink-0 cursor-pointer bg-white text-black hover:bg-white/90"
-                >
-                  Bring back
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    )}
     </div>
   );
 }

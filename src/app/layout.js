@@ -1,6 +1,7 @@
 import { Outfit, Albert_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const outfit = Outfit({
   variable: "--font-Albert-sans",
@@ -24,11 +25,16 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
+      // next-themes writes the class on <html> before paint; without this React
+      // reports the server markup and the client markup as a mismatch
+      suppressHydrationWarning
       className={`${albert.variable} ${outfit.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        {children}
-        <Toaster position="top-center" />
+        <ThemeProvider>
+          {children}
+          <Toaster position="top-center" />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,39 +1,5 @@
-const GRADIENT = ["#ffd600", "#ff007a"];
-
-// Streamline (streamlinehq.com). Each carries its own gradient, so each needs a
-// unique id — SVG ids are global and a generated one collides on the second paste.
-
-export function StickyIcon({ className = "size-5" }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 14 14"
-      className={className}
-      aria-hidden="true"
-    >
-      <path
-        fill="url(#milo-sticky-gradient)"
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M3.65722.475271C4.731.354654 5.85134.25 7 .25c1.14874 0 2.26826.105692 3.3418.224162l.0025.000281c.8156.09423 1.5752.462154 2.1549 1.043777.5798.58163.9456 1.34265 1.0376 2.15897l.0004.00282c.1145 1.0696.2128 2.18353.2128 3.32448 0 .18139-.0025.36201-.0071.54179h-3.5567c-.86524 0-1.5233.66263-1.66304 1.43665-.33782 1.87117-1.285 3.64437-2.11795 4.76707-.94072-.0278-1.85958-.1166-2.74794-.2163l-.00162-.0002c-.81554-.0942-1.57512-.4621-2.15489-1.0437-.579765-.5817-.945514-1.3427-1.037604-2.159l-.000313-.0028C.348315 9.25939.25 8.14645.25 7.00449c0-1.14195.09832-2.25587.212856-3.32357l.000292-.00273c.09209-.81632.457847-1.57734 1.037612-2.15896C2.08053.937597 2.84011.569674 3.65565.47545l.00157-.000179ZM7.96172 13.683c2.20298-.4073 4.89528-2.0128 5.63538-4.88672h-3.4109c-.1835 0-.38633.15063-.43292.40873-.3051 1.68989-1.03976 3.27819-1.79156 4.47799Z"
-      />
-      <defs>
-        <linearGradient
-          id="milo-sticky-gradient"
-          x1="14.92"
-          x2="-3.29"
-          y1="16.609"
-          y2="3.674"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor={GRADIENT[0]} />
-          <stop offset="1" stopColor={GRADIENT[1]} />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
+// Streamline (streamlinehq.com). Ids stripped — an SVG id is global and collides
+// on a second paste.
 
 export function NoteSettingsIcon({ className = "size-5" }) {
   return (

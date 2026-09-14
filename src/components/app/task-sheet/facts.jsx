@@ -11,7 +11,7 @@ export function Facts({ task }) {
   return (
     <dl className="flex flex-col gap-3 text-sm">
       <div className="flex items-center justify-between gap-4">
-        <dt className="text-black/45">Takes</dt>
+        <dt className="text-foreground/45">Takes</dt>
         <dd>
           {/* Blank until you fill it in — Milo never guesses a duration. */}
           <input
@@ -27,14 +27,14 @@ export function Facts({ task }) {
             }
             placeholder="—"
             aria-label="How long it takes, in minutes"
-            className="w-16 rounded-lg border border-black/10 px-2 py-1 text-right text-sm outline-none placeholder:text-black/25 focus:border-black/30"
+            className="w-16 rounded-lg border border-foreground/10 px-2 py-1 text-right text-sm outline-none placeholder:text-foreground/25 focus:border-foreground/30"
           />
-          <span className="pl-2 text-black/45">min</span>
+          <span className="pl-2 text-foreground/45">min</span>
         </dd>
       </div>
 
       <div className="flex items-center justify-between gap-4">
-        <dt className="text-black/45">Status</dt>
+        <dt className="text-foreground/45">Status</dt>
         <dd>
           <StatusPill status={task.status} />
         </dd>

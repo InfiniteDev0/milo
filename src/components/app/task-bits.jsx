@@ -4,24 +4,30 @@
 
 import { Check, CircleCheckIcon, CircleDot, CircleIcon } from "lucide-react";
 import { DONE, DONE_INK, PAUSE, PAUSE_INK } from "@/lib/palette";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Yellow is in motion, green is finished — the same meanings they carry everywhere else.
 export const COLUMNS = {
   todo: {
     title: "To Do",
-    icon: <CircleIcon className="size-4 text-black/40" />,
-    bg: "#ECECEC",
-    ink: "#2b2b2b",
+    icon: <CircleIcon className="size-4 text-foreground/40" />,
+    bg: "var(--slot)",
+    ink: "var(--slot-ink)",
   },
   doing: {
     title: "In Progress",
-    icon: <CircleDot className="size-4 text-black/40" />,
+    icon: <CircleDot className="size-4 text-foreground/40" />,
     bg: PAUSE,
     ink: PAUSE_INK,
   },
   done: {
     title: "Done",
-    icon: <CircleCheckIcon className="size-4 text-black/40" />,
+    icon: <CircleCheckIcon className="size-4 text-foreground/40" />,
     bg: DONE,
     ink: DONE_INK,
   },
@@ -33,10 +39,12 @@ export const QUICK_MINUTES = 5;
 export const isQuick = (t) =>
   typeof t.minutes === "number" && t.minutes <= QUICK_MINUTES;
 
-export function Tick({ done, onToggle, className = "size-5" }) {
+export function Tick({ done, onToggle, disabled = false, title, className = "size-5" }) {
   return (
     <button
       type="button"
+      disabled={disabled}
+      title={title}
       aria-label={done ? "Put it back" : "Done"}
       // click would open the sheet, pointerdown would arm a drag
       onPointerDown={(e) => e.stopPropagation()}
@@ -44,8 +52,12 @@ export function Tick({ done, onToggle, className = "size-5" }) {
         e.stopPropagation();
         onToggle();
       }}
-      className={`flex shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors ${
-        done ? "bg-foreground text-white" : "ring-1 ring-black/20 hover:ring-black/50"
+      className={`flex shrink-0 items-center justify-center rounded-full transition-colors ${
+        done ? "bg-foreground text-background" : "ring-1 ring-foreground/20"
+      } ${
+        disabled
+          ? "cursor-default opacity-25"
+          : `cursor-pointer ${done ? "" : "hover:ring-foreground/50"}`
       } ${className}`}
     >
       {done && <Check className="size-3" strokeWidth={3} />}
@@ -75,5 +87,23 @@ export function BlockChip({ block, className = "" }) {
       <span className="size-1.5 shrink-0 rounded-full" style={{ background: block.bg }} />
       {block.name.replace(" Block", "")}
     </span>
+  );
+}
+
+/* A tooltip for something that cannot be used. A disabled control fires no
+   pointer events, so the span around it is what the tooltip listens to —
+   without it the hint never appears on the one control that needs it. */
+export function Hint({ when, text, className = "", children }) {
+  if (!when) return children;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger render={<span className={`inline-flex ${className}`} />}>
+          {children}
+        </TooltipTrigger>
+        <TooltipContent side="top">{text}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

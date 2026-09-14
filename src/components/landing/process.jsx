@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BlocksPanel, LivePanel } from "./process-panels";
 
 const steps = [
   {
@@ -16,15 +17,14 @@ const steps = [
     title: "Build your blocks",
     description:
       "Sort your tasks into blocks — Morning, Deep Work, Wind Down — each one sitting in its own stretch of the day.",
-    uiCard:
-      "https://framerusercontent.com/images/lpUXQzvzgT4sfG94CeE4ukM15U.png",
+    panel: <BlocksPanel />,
   },
   {
     step: "03",
     title: "Live the plan",
     description:
       "Live it, pause when you need to, reflect without judgment, adapt next month. One block at a time.",
-    uiCard: "https://framerusercontent.com/images/XoXQ8sesm7JX8MLXDCX4E5uw.png",
+    panel: <LivePanel />,
   },
 ];
 
@@ -37,6 +37,7 @@ function StepCard({
   step,
   title,
   description,
+  panel,
   uiCard,
   isOpen,
   isLast,
@@ -61,18 +62,20 @@ function StepCard({
         </div>
       </div>
       <div
-        className={`relative h-44 w-full overflow-hidden rounded-xl bg-cover bg-center sm:h-40 ${
+        className={`relative h-44 w-full overflow-hidden rounded-xl bg-[#f4f2ee] bg-cover bg-center sm:h-40 ${
           isLast ? "sm:h-56 sm:w-auto sm:flex-1" : ""
         } lg:h-full lg:w-auto lg:max-w-[350px] lg:flex-1 ${
           isOpen ? "" : "lg:hidden"
         }`}
-        style={{ backgroundImage: `url(${bgImage})` }}
+        style={uiCard ? { backgroundImage: `url(${bgImage})` } : undefined}
       >
-        <img
-          src={uiCard}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
-        />
+        {panel ?? (
+          <img
+            src={uiCard}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
       </div>
     </div>
   );

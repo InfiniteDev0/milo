@@ -42,7 +42,7 @@ export function Sheet({
       }}
     >
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/10 duration-200 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
+        <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/10 dark:bg-black/50 duration-200 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
 
         <DialogPrimitive.Popup
           // Only width/height animate — you cannot interpolate `auto` to a length.
@@ -55,7 +55,7 @@ export function Sheet({
               : { width: wide ? "calc(100vw - 2rem)" : SHEET_WIDTH, ...style }
           }
           // Below lg there is no room for two, so it covers instead of sitting beside.
-          className={`fixed z-50 flex flex-col overflow-hidden rounded-2xl bg-white text-sm shadow-[0_24px_60px_rgba(0,0,0,0.14)] outline-none transition-[width,height] duration-300 ease-out data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 ${SIDES[side]} ${
+          className={`fixed z-50 flex flex-col overflow-hidden rounded-2xl bg-card text-sm shadow-[0_24px_60px_rgba(0,0,0,0.14)] outline-none transition-[width,height] duration-300 ease-out data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 ${SIDES[side]} ${
             !bottom && beside ? "lg:right-[calc(27rem+1.5rem)]" : ""
           }`}
         >

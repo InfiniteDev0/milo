@@ -58,6 +58,16 @@
   --color-success-foreground: var(--success-foreground);
   --color-success: var(--success);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-chrome: var(--chrome);
+  --color-chrome-ink: var(--chrome-ink);
+  --color-chrome-hover: var(--chrome-hover);
+  --color-chip: var(--chip);
+  --color-chip-ink: var(--chip-ink);
+  --color-solid: var(--solid);
+  --color-solid-ink: var(--solid-ink);
+  --color-solid-hover: var(--solid-hover);
+  --color-slot: var(--slot);
+  --color-slot-ink: var(--slot-ink);
   @keyframes gradient {
   to {
     background-position: var(--bg-size, 300%) 0;
@@ -66,6 +76,32 @@
 }
 
 :root {
+  color-scheme: light;
+
+  /* Chrome: the floating dark pills. Already inverted against a light page. */
+  --chrome: #141414;
+  --chrome-ink: #ffffff;
+  --chrome-hover: #000000;
+  --chrome-lift: #080808;
+
+  /* A small action sitting on chrome. Chrome is dark in both themes, so this
+     pair never changes. */
+  --chip: #ffffff;
+  --chip-ink: #141414;
+
+  /* Solid: the page's strongest button. This one does invert — a dark button
+     on a dark page has no weight left. */
+  --solid: #262626;
+  --solid-ink: #ffffff;
+  --solid-hover: #303030;
+  --solid-lift: #0a0a0a;
+
+  /* The To Do column's tint, and the lift under a plain card. */
+  --slot: #ececec;
+  --slot-ink: #2b2b2b;
+  --card-lift: #dbdbdb;
+  --edge: rgb(222 222 222);
+
   --background: oklch(96.158% 0.00563 84.446);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -110,11 +146,33 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  color-scheme: dark;
+
+  /* Chrome stays dark — it is an object floating over the page, not a surface.
+     It only lightens enough to separate from the background behind it. */
+  --chrome: #2a2724;
+  --chrome-ink: #f6f4f1;
+  --chrome-hover: #363330;
+  --chrome-lift: #141211;
+
+  --chip: #f6f4f1;
+  --chip-ink: #16150f;
+
+  --solid: #f0ece6;
+  --solid-ink: #16150f;
+  --solid-hover: #ffffff;
+  --solid-lift: #b4b0a9;
+
+  --slot: #252320;
+  --slot-ink: #d8d4cd;
+  --card-lift: #121110;
+  --edge: rgb(0 0 0 / 0.5);
+
+  --background: oklch(0.168 0.004 84.4);
+  --foreground: oklch(0.965 0.004 84.4);
+  --card: oklch(0.222 0.004 84.4);
+  --card-foreground: oklch(0.965 0.004 84.4);
+  --popover: oklch(0.222 0.004 84.4);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
@@ -251,6 +309,29 @@ a{
 .notes-tinted .tiptap-toolbar {
   background: transparent;
   border-color: rgb(0 0 0 / 0.06);
+}
+
+/* ---- a pane wearing a colour the user picked ----
+
+   Note and block colours are the user's own choice, so they do not flip with
+   the theme. That leaves default-coloured text on a light pastel, which in dark
+   mode is white on cream. Re-declaring the light tokens here turns the pane
+   back into a light island, and every text-foreground/45 inside it follows. */
+
+.milo-on-tint {
+  color-scheme: light;
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --border: oklch(0.922 0 0);
+  --chip: #141414;
+  --chip-ink: #ffffff;
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --card-lift: #dbdbdb;
+  --edge: rgb(222 222 222);
+  color: var(--foreground);
 }
 
 /* ---- the press ----

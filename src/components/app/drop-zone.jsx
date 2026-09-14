@@ -52,8 +52,8 @@ export function DropZone({ draggingId, onDone }) {
     const left = blocks.filter((b) => b.id !== id).length;
     toast.custom(
       () => (
-        <div className="flex items-center gap-3 rounded-2xl bg-[#171717] py-2.5 pl-2.5 pr-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white">
+        <div className="flex items-center gap-3 rounded-2xl bg-chrome py-2.5 pl-2.5 pr-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-chip">
             <MiloFace
               mood="content"
               instant
@@ -64,12 +64,12 @@ export function DropZone({ draggingId, onDone }) {
             />
           </span>
           <div className="flex flex-col">
-            <span className="text-sm text-white">
+            <span className="text-sm text-chrome-ink">
               {left > 0
                 ? `Just ${NUMBER[left] ?? left} today, then.`
                 : "Nothing on today. That's allowed."}
             </span>
-            <span className="text-xs text-white/45">
+            <span className="text-xs text-chrome-ink/45">
               Set aside, not gone. Pick it back up any time.
             </span>
           </div>
@@ -93,10 +93,10 @@ export function DropZone({ draggingId, onDone }) {
           : "pointer-events-none translate-y-6 opacity-0"
       }`}
     >
-      <div className="flex size-16 items-center justify-center rounded-full bg-white shadow-[0_8px_30px_rgba(0,0,0,0.18)] ring-1 ring-black/5">
+      <div className="flex size-16 items-center justify-center rounded-full bg-card shadow-[0_8px_30px_rgba(0,0,0,0.18)] ring-1 ring-foreground/5">
         <EraserIcon className="size-8" />
       </div>
-      <span className="rounded-full bg-black/75 px-3 py-1 text-xs text-white">
+      <span className="rounded-full bg-foreground/75 px-3 py-1 text-xs text-background">
         Not today
       </span>
     </div>

@@ -5,7 +5,6 @@
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { shade } from "@/lib/shade";
 import { Empty } from "./empty";
 import { NoteRow } from "./note-row";
 import { Search } from "./search";
@@ -36,8 +35,8 @@ export function ListPage({ notes, onAdd, onOpen }) {
               type="button"
               onClick={onAdd}
               aria-label="New note"
-              style={{ "--lift": shade("#141414", 0.6) }}
-              className="milo-lift flex size-9 cursor-pointer items-center justify-center rounded-xl bg-[#141414] text-white"
+              style={{ "--lift": "var(--chrome-lift)" }}
+              className="milo-lift flex size-9 cursor-pointer items-center justify-center rounded-xl bg-chrome text-chrome-ink"
             >
               <Plus className="size-4" />
             </button>
@@ -45,8 +44,8 @@ export function ListPage({ notes, onAdd, onOpen }) {
 
           <DialogPrimitive.Close
             aria-label="Close"
-            style={{ "--lift": shade("#ffffff", 0.16) }}
-            className="milo-lift flex size-9 cursor-pointer items-center justify-center rounded-xl border border-black/10 bg-white text-black/50 transition-colors hover:text-black"
+            style={{ "--lift": "var(--card-lift)" }}
+            className="milo-lift flex size-9 cursor-pointer items-center justify-center rounded-xl border border-foreground/10 bg-card text-foreground/50 transition-colors hover:text-foreground"
           >
             <X className="size-4" />
           </DialogPrimitive.Close>
@@ -62,7 +61,7 @@ export function ListPage({ notes, onAdd, onOpen }) {
           {/* pb-24 clears the floating search so the last note is never under it */}
           <div className="scrollbar-pill flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-5 pb-24">
             {shown.length === 0 ? (
-              <p className="pt-8 text-center text-sm text-black/35">
+              <p className="pt-8 text-center text-sm text-foreground/35">
                 Nothing matches that.
               </p>
             ) : (

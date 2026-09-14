@@ -11,7 +11,7 @@ import { useRaisedShadow } from "@/lib/raised-shadow";
 import { Tick } from "../task-bits";
 import { useBlocks } from "../blocks-provider";
 
-const RESTING = "0px 3px 0px rgba(222, 222, 222, 1)";
+const RESTING = "0px 3px 0px var(--edge)";
 
 function Step({ step, taskId, onCommit }) {
   const { toggleStep, removeStep } = useBlocks();
@@ -26,14 +26,14 @@ function Step({ step, taskId, onCommit }) {
       dragListener={false}
       dragControls={controls}
       onDragEnd={onCommit}
-      className="group/step flex list-none items-center gap-2 rounded-lg border border-black/10 bg-white px-2.5 py-2"
+      className="group/step flex list-none items-center gap-2 rounded-lg border border-foreground/10 bg-card px-2.5 py-2"
     >
       {/* touch-none or the browser takes the gesture for scrolling on a phone */}
       <button
         type="button"
         aria-label={`Reorder ${step.name}`}
         onPointerDown={(e) => controls.start(e)}
-        className="shrink-0 cursor-grab touch-none text-black/15 transition-colors hover:text-black/40 active:cursor-grabbing"
+        className="shrink-0 cursor-grab touch-none text-foreground/15 transition-colors hover:text-foreground/40 active:cursor-grabbing"
       >
         <GripVertical className="size-3.5" />
       </button>
@@ -45,7 +45,7 @@ function Step({ step, taskId, onCommit }) {
       />
 
       <span
-        className={`min-w-0 flex-1 text-xs ${step.done ? "text-black/35 line-through" : ""}`}
+        className={`min-w-0 flex-1 text-xs ${step.done ? "text-foreground/35 line-through" : ""}`}
       >
         {step.name}
       </span>
@@ -54,7 +54,7 @@ function Step({ step, taskId, onCommit }) {
         type="button"
         onClick={() => removeStep(taskId, step.id)}
         aria-label={`Remove ${step.name}`}
-        className="cursor-pointer text-black/0 transition-colors group-hover/step:text-black/30 hover:!text-black/70"
+        className="cursor-pointer text-foreground/0 transition-colors group-hover/step:text-foreground/30 hover:!text-foreground/70"
       >
         <X className="size-3.5" />
       </button>
@@ -86,8 +86,8 @@ export function Steps({ task }) {
   const shown = order.map((id) => byId.get(id)).filter(Boolean);
 
   return (
-    <div className="flex flex-col gap-2 border-t border-black/5 pt-3">
-      <div className="flex items-center gap-1.5 text-xs text-black/45">
+    <div className="flex flex-col gap-2 border-t border-foreground/5 pt-3">
+      <div className="flex items-center gap-1.5 text-xs text-foreground/45">
         <ListChecks className="size-3.5" />
         Steps
       </div>

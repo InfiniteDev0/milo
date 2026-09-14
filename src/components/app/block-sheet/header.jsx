@@ -44,7 +44,7 @@ export function Header({ block, tasks, done, time, full, onToggleFull }) {
               if (e.key === "Escape") setEditing(false);
             }}
             aria-label="Block name"
-            className="w-full rounded-lg bg-black/10 px-2 py-0.5 text-lg font-medium outline-none"
+            className="w-full rounded-lg bg-current/10 px-2 py-0.5 text-lg font-medium outline-none"
             style={{ color: block.ink }}
           />
         ) : (
@@ -53,7 +53,7 @@ export function Header({ block, tasks, done, time, full, onToggleFull }) {
               setDraft(block.name);
               setEditing(true);
             }}
-            className="-mx-2 cursor-text truncate rounded-lg px-2 py-0.5 text-lg font-medium transition-colors hover:bg-black/10"
+            className="-mx-2 cursor-text truncate rounded-lg px-2 py-0.5 text-lg font-medium transition-colors hover:bg-current/10"
           >
             {block.name.replace(" Block", "")}
           </DialogPrimitive.Title>
@@ -93,7 +93,7 @@ export function Header({ block, tasks, done, time, full, onToggleFull }) {
       </DialogPrimitive.Close>
 
       {picking && (
-        <div className="absolute inset-x-3 top-full z-10 -mt-2 flex flex-wrap gap-2 rounded-xl bg-white p-3 shadow-[0_10px_40px_rgba(0,0,0,0.15)] ring-1 ring-black/5">
+        <div className="absolute inset-x-3 top-full z-10 -mt-2 flex flex-wrap gap-2 rounded-xl bg-card p-3 shadow-[0_10px_40px_rgba(0,0,0,0.15)] ring-1 ring-foreground/5">
           {BLOCK_COLOURS.map((c) => (
             <button
               key={c.bg}
@@ -105,7 +105,7 @@ export function Header({ block, tasks, done, time, full, onToggleFull }) {
                 setPicking(false);
               }}
               style={{ backgroundColor: c.bg }}
-              className="flex size-8 cursor-pointer items-center justify-center rounded-lg ring-1 ring-black/10 transition-transform hover:scale-110"
+              className="flex size-8 cursor-pointer items-center justify-center rounded-lg ring-1 ring-foreground/10 transition-transform hover:scale-110"
             >
               {c.bg === block.bg && (
                 <Check className="size-4" strokeWidth={3} style={{ color: c.ink }} />

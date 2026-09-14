@@ -47,19 +47,19 @@ export function PausedPanel() {
   const task = tasks.find((t) => t.id === pause.taskId);
 
   return (
-    <div className="flex h-full min-h-48 flex-col items-center justify-center gap-5 rounded-2xl border-2 border-dashed border-black/10 px-6 py-8">
-      <img src="/relax.svg" alt="" className="size-44" />
+    <div className="flex h-full min-h-48 flex-col items-center justify-center gap-5 rounded-2xl px-6 py-8">
+      <img src="/relax.svg" alt="" className="dark:rounded-2xl dark:bg-chip dark:p-1 size-44" />
 
       <div className="flex flex-col items-center gap-1 text-center">
-        <p className="text-sm text-black/70">
+        <p className="text-sm text-foreground/70">
           You paused at {clock(pause.pausedAt)}.
-          {now && <span className="text-black/45"> It&rsquo;s {clock(now)} now.</span>}
+          {now && <span className="text-foreground/45"> It&rsquo;s {clock(now)} now.</span>}
         </p>
 
         {/* Where you were. Absent rather than empty when you paused a day that
             had nothing running — there is no "no block" line to read. */}
         {block && (
-          <p className="text-sm text-black/45">
+          <p className="text-sm text-foreground/45">
             <span
               className="rounded-md px-1.5 py-0.5 text-xs font-medium"
               style={{ backgroundColor: block.bg, color: block.ink }}
@@ -78,7 +78,7 @@ export function PausedPanel() {
         rows={2}
         placeholder="What you'll pick up when you're back…"
         aria-label="A note to yourself for when you come back"
-        className="w-full max-w-sm resize-none rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none placeholder:text-black/25 focus:border-black/30"
+        className="w-full max-w-sm resize-none rounded-xl border border-foreground/10 bg-card px-3 py-2 text-sm outline-none placeholder:text-foreground/25 focus:border-foreground/30"
       />
 
       <button

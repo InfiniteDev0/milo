@@ -84,6 +84,17 @@ const lastNight = () => {
   return midnight.getTime() - 1;
 };
 
+/* Rest is for the gap between blocks. When the last one is finished there is
+   no gap — the day is the thing that just ended, and a five minute timer
+   telling you to come back to nothing is the app failing to notice. */
+const moreToCome = (list, justFinished) =>
+  list.some(
+    (b) =>
+      b.id !== justFinished &&
+      !b.dropped &&
+      !b.archived &&
+      b.status !== "done",
+  );
 const BlocksContext = createContext(null);
 
 /* NO SEED DATA.
@@ -354,7 +365,7 @@ export function BlocksProvider({ children }) {
           if (!alive) return;
 
           if (today) {
-            setDay({ startedAt: today.startedAt, endedAt: null });
+            setDay({ startedAt: today.startedAt, endedAt: today.endedAt ?? null });
             /* A pause outlives the tab but not the day. It is stored on the
                day row, so opening the app tomorrow reads a different row and
                finds no pause — nothing has to expire it. */
@@ -495,9 +506,10 @@ export function BlocksProvider({ children }) {
     if (!hydrated || !userId || loadFailed) return;
 
     const stamp = stampToday();
-    queueWrite("day", () =>
+    queueWrite(`day:${stamp}`, () =>
       saveDay(userId, stamp, {
         startedAt: day.startedAt,
+        endedAt: day.endedAt,
         blockState: Object.fromEntries(
           blocks
             .filter((b) => b.status && b.status !== "todo")
@@ -726,7 +738,7 @@ export function BlocksProvider({ children }) {
 
       setFocusLocked(false);
       setSessions((log) => closeSessions(log));
-      if (restMinutes > 0) {
+      if (restMinutes > 0 && moreToCome(blocks, running.id)) {
         setRest({
           until: Date.now() + restMinutes * 60000,
           blockName: running.name,
@@ -955,6 +967,8 @@ export function BlocksProvider({ children }) {
          something that HAPPENED — coming back happened. Nothing plays when
          you pause, which would be a noise for leaving. */
       playLock();
+      // going back in reopens a closed day, the same as starting a block
+      setDay((d) => (d.endedAt ? { ...d, endedAt: null } : d));
     }
     setPause(null);
   }, [pause]);
@@ -963,6 +977,11 @@ export function BlocksProvider({ children }) {
      you finished and a day that merely stopped — and it is what tells the next
      morning whether you have already seen what this one held. */
   const endDay = useCallback(() => {
+    // an ended day accrues nothing: close the open interval, as a pause does
+    setSessions((log) => closeSessions(log));
+    setBlocks((prev) =>
+      prev.map((b) => (b.status === "ongoing" ? { ...b, status: "paused" } : b)),
+    );
     setDay((d) => ({ ...d, endedAt: Date.now() }));
     setRest(null);
   }, []);
@@ -1002,7 +1021,7 @@ export function BlocksProvider({ children }) {
     );
     if (entry) {
       setHistory((prev) => [
-        entry,
+        { ...entry, journal },
         ...prev.filter((h) => h.date !== entry.date),
       ]);
     }
@@ -1052,7 +1071,7 @@ export function BlocksProvider({ children }) {
     setPause(null);
     setFocusLocked(false);
     },
-    [blocks, tasks, sessions, day.endedAt],
+    [blocks, tasks, sessions, day.endedAt, journal],
   );
 
   /* MIDNIGHT.
@@ -1194,7 +1213,8 @@ export function BlocksProvider({ children }) {
   );
 
   const start = useCallback((id) => {
-    setDay((d) => (d.startedAt ? d : { ...d, startedAt: Date.now() }));
+    // starting a block is starting the day — so it reopens a day you closed
+    setDay((d) => (!d.startedAt ? { ...d, startedAt: Date.now() } : d.endedAt ? { ...d, endedAt: null } : d));
     setPause(null);
     setRest(null);
 
@@ -1410,7 +1430,8 @@ export function BlocksProvider({ children }) {
   }, [blocks.map((b) => b.id).join(",")]);
 
   const startAndLead = useCallback((id) => {
-    setDay((d) => (d.startedAt ? d : { ...d, startedAt: Date.now() }));
+    // starting a block is starting the day — so it reopens a day you closed
+    setDay((d) => (!d.startedAt ? { ...d, startedAt: Date.now() } : d.endedAt ? { ...d, endedAt: null } : d));
     setPause(null);
     setRest(null);
     setSessions((log) => openSession(log, id, resuming(id)));
@@ -1434,6 +1455,18 @@ export function BlocksProvider({ children }) {
       );
       setTasks(next);
 
+      /* THE CLOCK ONLY MOVES INSIDE A BLOCK THAT IS RUNNING.
+
+         Ticking used to open an interval whatever the block was doing, so
+         marking something done in a stopped block started a clock on it —
+         which is how a block ended up marked Running with hours of nothing.
+
+         Ticking itself stays allowed. TIME.md already has done tasks with no
+         interval: a quick task is a one-line row that never enters In
+         Progress, and its time is block time. A done with no interval is
+         fine; a clock that nobody started is not. */
+      const live = blocks.find((b) => b.id === task.blockId)?.status === "ongoing";
+
       if (nextStatus !== "done") {
         run.current = 0;
         // picking something up is worth a reaction too, just a quieter one:
@@ -1444,9 +1477,9 @@ export function BlocksProvider({ children }) {
            another moves the marker and nothing else — the previous card keeps
            its place and its time. Same mechanic as blocks, one level down, so
            there is no new rule anyone can break. */
-        if (nextStatus === "doing") {
+        if (live && nextStatus === "doing") {
           setSessions((log) => openSession(log, task.blockId, taskId));
-        } else if (task.status === "doing") {
+        } else if (live && task.status === "doing") {
           // back to To Do: stay in the block, just not on this
           setSessions((log) => openSession(log, task.blockId));
         }
@@ -1459,8 +1492,8 @@ export function BlocksProvider({ children }) {
       }
 
       run.current += 1;
-      // done: the clock goes back to the block, which is still running
-      setSessions((log) => openSession(log, task.blockId));
+      // done: the clock goes back to the block, if the block has one
+      if (live) setSessions((log) => openSession(log, task.blockId));
       const blockComplete = blockFinished(next, task.blockId);
 
       /* The block's sound stands in for the task's. Two cues on top of each
@@ -1485,7 +1518,7 @@ export function BlocksProvider({ children }) {
            zero minutes would set one that expires the instant it is created,
            so turning the nudge off would make it fire immediately. That is the
            opposite of what commitment 9 promises. */
-        if (restMinutes > 0) {
+        if (restMinutes > 0 && moreToCome(blocks, task.blockId)) {
           setRest({
             until: Date.now() + restMinutes * 60000,
             blockName: blocks.find((b) => b.id === task.blockId)?.name ?? "",

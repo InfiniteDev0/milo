@@ -28,30 +28,30 @@ function YearSkeleton() {
   return (
     <div className="flex max-w-2xl animate-pulse flex-col gap-8">
       <div className="flex flex-col gap-2">
-        <div className="h-4 w-40 rounded bg-black/[0.06]" />
-        <div className="h-6 w-full rounded bg-black/[0.04]" />
-        <div className="h-6 w-3/4 rounded bg-black/[0.04]" />
+        <div className="h-4 w-40 rounded bg-foreground/[0.06]" />
+        <div className="h-6 w-full rounded bg-foreground/[0.04]" />
+        <div className="h-6 w-3/4 rounded bg-foreground/[0.04]" />
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="h-4 w-28 rounded bg-black/[0.06]" />
+        <div className="h-4 w-28 rounded bg-foreground/[0.06]" />
         <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4">
           {Array.from({ length: 4 }, (_, i) => (
             <div
               key={i}
-              className="aspect-4/3 rounded-2xl bg-black/[0.04]"
+              className="aspect-4/3 rounded-2xl bg-foreground/[0.04]"
             />
           ))}
         </div>
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="h-4 w-28 rounded bg-black/[0.06]" />
+        <div className="h-4 w-28 rounded bg-foreground/[0.06]" />
         <div className="flex flex-wrap gap-2">
           {Array.from({ length: 5 }, (_, i) => (
             <div
               key={i}
-              className="h-9 w-28 rounded-full bg-black/[0.04]"
+              className="h-9 w-28 rounded-full bg-foreground/[0.04]"
             />
           ))}
         </div>
@@ -72,7 +72,7 @@ export default function YearlyPage() {
           {hydrated ? (
             <h1 className="truncate text-2xl">{year?.name || "This year"}</h1>
           ) : (
-            <div className="h-7 w-44 animate-pulse rounded-lg bg-black/[0.06]" />
+            <div className="h-7 w-44 animate-pulse rounded-lg bg-foreground/[0.06]" />
           )}
         </div>
         <ScopeSwitcher />
@@ -84,7 +84,7 @@ export default function YearlyPage() {
         <div className="flex max-w-2xl flex-col gap-8">
           {hydrated && year?.goals && (
             <section className="flex flex-col gap-2">
-              <h2 className="text-sm text-black/45">
+              <h2 className="text-sm text-foreground/45">
                 What this year is about
               </h2>
               <p className="whitespace-pre-line text-lg leading-relaxed">
@@ -95,7 +95,7 @@ export default function YearlyPage() {
 
           {hydrated && year?.vision?.length > 0 && (
             <section className="flex flex-col gap-3">
-              <h2 className="text-sm text-black/45">Vision board</h2>
+              <h2 className="text-sm text-foreground/45">Vision board</h2>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4">
                 {year.vision.map((v, i) => (
                   <div
@@ -115,7 +115,7 @@ export default function YearlyPage() {
 
           {hydrated && (
           <section className="flex flex-col gap-3">
-            <h2 className="text-sm text-black/45">Blocks in play</h2>
+            <h2 className="text-sm text-foreground/45">Blocks in play</h2>
             <div className="flex flex-wrap gap-2">
               {blocks.map((b) => (
                 <span
@@ -131,7 +131,7 @@ export default function YearlyPage() {
           )}
 
           {hydrated && !year && (
-            <p className="text-sm text-black/40">
+            <p className="text-sm text-foreground/40">
               Your year gets its name and vision during setup.
             </p>
           )}

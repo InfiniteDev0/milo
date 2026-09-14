@@ -141,11 +141,11 @@ export function MonthReview() {
     <Dialog open onOpenChange={(o) => !o && later()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="items-center gap-2 text-center">
-          <MiloFace mood="content" instant gaze={false} reactToScroll={false} className="size-16" />
+          <MiloFace mood="content" instant gaze={false} reactToScroll={false} className="dark:rounded-[30%] dark:bg-chip size-16" />
           <DialogTitle className="text-xl">
             {monthName(now)} is here.
           </DialogTitle>
-          <p className="text-sm text-black/45">
+          <p className="text-sm text-foreground/45">
             Keep what worked, set aside what didn&rsquo;t.
           </p>
         </DialogHeader>
@@ -222,8 +222,8 @@ export function MonthReview() {
           />
         </form>
 
-        <div className="flex flex-col gap-2 border-t border-black/5 pt-3">
-          <span className="text-xs text-black/45">Name the month</span>
+        <div className="flex flex-col gap-2 border-t border-foreground/5 pt-3">
+          <span className="text-xs text-foreground/45">Name the month</span>
           <IconInput
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -239,7 +239,7 @@ export function MonthReview() {
                 onClick={() => setIcon(e)}
                 aria-label={`Pick ${e}`}
                 className={`flex size-8 cursor-pointer items-center justify-center rounded-lg text-base transition-colors ${
-                  icon === e ? "bg-black/10" : "hover:bg-black/5"
+                  icon === e ? "bg-foreground/10" : "hover:bg-foreground/5"
                 }`}
               >
                 {e}
@@ -252,21 +252,21 @@ export function MonthReview() {
           <button
             type="button"
             onClick={later}
-            className="cursor-pointer px-2 text-sm text-black/40 transition-colors hover:text-black"
+            className="cursor-pointer px-2 text-sm text-foreground/40 transition-colors hover:text-foreground"
           >
             Not now
           </button>
           <Button
             type="button"
             onClick={start}
-            className="milo-lift h-11 flex-1 rounded-xl border-0 bg-[#262626] font-normal text-white hover:bg-[#303030]"
-            style={{ "--lift": shade("#262626", 0.72) }}
+            className="milo-lift h-11 flex-1 rounded-xl border-0 bg-solid font-normal text-solid-ink hover:bg-solid-hover"
+            style={{ "--lift": "var(--solid-lift)" }}
           >
             Start {name.trim() || monthName(now)}
           </Button>
         </div>
 
-        <p className="-mt-2 text-center text-xs text-black/30">
+        <p className="-mt-2 text-center text-xs text-foreground/30">
           Nothing is deleted. Set aside blocks wait in the archive.
         </p>
       </DialogContent>

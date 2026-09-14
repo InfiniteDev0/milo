@@ -13,7 +13,6 @@
  */
 
 import { useEffect, useState } from "react";
-import { shade } from "@/lib/shade";
 import { ArrowLeft, Check, Plus, X } from "lucide-react";
 import MiloFace from "@/components/MiloFace";
 import { playLock } from "@/lib/sound";
@@ -134,10 +133,10 @@ export function SetupWizard() {
       /* 1 — the greeting. No question, just Milo. */
       body: (
         <div className="flex flex-col items-center gap-6 text-center">
-          <MiloFace className="size-28 touch-none select-none" />
+          <MiloFace className="dark:rounded-[30%] dark:bg-chip size-28 touch-none select-none" />
           <div className="flex flex-col gap-2">
             <h2 className="text-3xl">Hi, I&apos;m Milo.</h2>
-            <p className="max-w-sm text-black/50">
+            <p className="max-w-sm text-foreground/50">
               Let&apos;s shape your year, your month, and what your days are made
               of. Two minutes, and you can change any of it later.
             </p>
@@ -171,7 +170,7 @@ export function SetupWizard() {
           onChange={(e) => setGoals(e.target.value)}
           rows={4}
           placeholder="Fewer, better things…"
-          className="w-full max-w-sm resize-none rounded-[10px] border-[1.5px] border-black/20 p-3 text-sm outline-none transition-colors focus:border-[#5e17eb]"
+          className="w-full max-w-sm resize-none rounded-[10px] border-[1.5px] border-foreground/20 p-3 text-sm outline-none transition-colors focus:border-[#5e17eb]"
         />
       ),
       can: true,
@@ -194,8 +193,8 @@ export function SetupWizard() {
             <Button
               type="button"
               onClick={addVision}
-              className="milo-lift h-[40px] shrink-0 border-0 bg-[#262626] text-white hover:bg-[#303030]"
-              style={{ "--lift": shade("#262626", 0.72) }}
+              className="milo-lift h-[40px] shrink-0 border-0 bg-solid text-solid-ink hover:bg-solid-hover"
+              style={{ "--lift": "var(--solid-lift)" }}
             >
               Add
             </Button>
@@ -204,13 +203,13 @@ export function SetupWizard() {
             {vision.map((v, i) => (
               <li
                 key={`${v}-${i}`}
-                className="flex items-center justify-between gap-2 rounded-lg bg-black/[0.04] px-3 py-2 text-sm"
+                className="flex items-center justify-between gap-2 rounded-lg bg-foreground/[0.04] px-3 py-2 text-sm"
               >
                 {v}
                 <button
                   type="button"
                   onClick={() => setVision((l) => l.filter((_, k) => k !== i))}
-                  className="cursor-pointer text-black/30 hover:text-black/60"
+                  className="cursor-pointer text-foreground/30 hover:text-foreground/60"
                   aria-label={`Remove ${v}`}
                 >
                   <X className="size-3.5" />
@@ -306,8 +305,8 @@ export function SetupWizard() {
             <Button
               type="button"
               onClick={addCustom}
-              className="milo-lift h-[40px] shrink-0 border-0 bg-[#262626] text-white hover:bg-[#303030]"
-              style={{ "--lift": shade("#262626", 0.72) }}
+              className="milo-lift h-[40px] shrink-0 border-0 bg-solid text-solid-ink hover:bg-solid-hover"
+              style={{ "--lift": "var(--solid-lift)" }}
             >
               Add
             </Button>
@@ -335,7 +334,7 @@ export function SetupWizard() {
                   {(tasksByBlock[b.id] ?? []).map((t, i) => (
                     <li
                       key={`${t}-${i}`}
-                      className="flex items-center gap-1.5 rounded-lg bg-black/[0.04] px-2.5 py-1 text-xs"
+                      className="flex items-center gap-1.5 rounded-lg bg-foreground/[0.04] px-2.5 py-1 text-xs"
                     >
                       {t}
                       <button
@@ -347,7 +346,7 @@ export function SetupWizard() {
                             [b.id]: all[b.id].filter((_, k) => k !== i),
                           }))
                         }
-                        className="cursor-pointer text-black/30 hover:text-black/60"
+                        className="cursor-pointer text-foreground/30 hover:text-foreground/60"
                       >
                         <X className="size-3" />
                       </button>
@@ -425,16 +424,16 @@ export function SetupWizard() {
   const progress = ((step + 1) / STEPS.length) * 100;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/25 p-4 backdrop-blur-sm">
       {/* Six blocks is a normal answer, and at 560px the last one sat under
           the button with an inner scrollbar over it. */}
-      <div className="flex h-[min(660px,92vh)] w-full max-w-2xl flex-col rounded-3xl bg-white shadow-2xl">
+      <div className="flex h-[min(660px,92vh)] w-full max-w-2xl flex-col rounded-3xl bg-card shadow-2xl">
         <div className="flex shrink-0 items-center justify-between p-4">
           {step > 0 ? (
             <button
               type="button"
               onClick={() => setStep((s) => s - 1)}
-              className="cursor-pointer rounded-full p-2 text-black/40 transition-colors hover:bg-black/5 hover:text-black"
+              className="cursor-pointer rounded-full p-2 text-foreground/40 transition-colors hover:bg-foreground/5 hover:text-foreground"
               aria-label="Back"
             >
               <ArrowLeft className="size-4" />
@@ -442,7 +441,7 @@ export function SetupWizard() {
           ) : (
             <span className="size-8" />
           )}
-          <span className="text-xs text-black/35">
+          <span className="text-xs text-foreground/35">
             {step + 1} of {STEPS.length}
           </span>
         </div>
@@ -465,7 +464,7 @@ export function SetupWizard() {
               mood={MOODS[step] ?? "cheer"}
               gaze={false}
               reactToScroll={false}
-              className="size-20 shrink-0"
+              className="dark:rounded-[30%] dark:bg-chip size-20 shrink-0"
             />
           )}
 
@@ -473,7 +472,7 @@ export function SetupWizard() {
             <div className="flex flex-col gap-1.5">
               <h2 className="text-2xl">{current.title}</h2>
               {current.hint && (
-                <p className="text-sm text-black/45">{current.hint}</p>
+                <p className="text-sm text-foreground/45">{current.hint}</p>
               )}
             </div>
           )}
@@ -486,7 +485,7 @@ export function SetupWizard() {
               <button
                 type="button"
                 onClick={() => setStep((s) => s + 1)}
-                className="cursor-pointer px-3 text-sm text-black/40 transition-colors hover:text-black"
+                className="cursor-pointer px-3 text-sm text-foreground/40 transition-colors hover:text-foreground"
               >
                 Skip
               </button>
@@ -499,16 +498,16 @@ export function SetupWizard() {
                  read as a surface, a side dark enough to look like a side.
                  disabled:shadow-none because a button that can't be pressed
                  shouldn't look like it's waiting to be. */
-              className="milo-lift h-11 w-full max-w-xs rounded-full border-0 bg-[#262626] text-md font-normal text-white hover:bg-[#303030] disabled:shadow-none"
-              style={{ "--lift": shade("#262626", 0.72) }}
+              className="milo-lift h-11 w-full max-w-xs rounded-full border-0 bg-solid text-md font-normal text-solid-ink hover:bg-solid-hover disabled:shadow-none"
+              style={{ "--lift": "var(--solid-lift)" }}
             >
               {current.last ? "Start my day" : "Continue"}
             </Button>
           </div>
 
-          <div className="h-1 w-full overflow-hidden rounded-full bg-black/8">
+          <div className="h-1 w-full overflow-hidden rounded-full bg-foreground/8">
             <div
-              className="h-full rounded-full bg-black transition-[width] duration-300 ease-out motion-reduce:transition-none"
+              className="h-full rounded-full bg-foreground transition-[width] duration-300 ease-out motion-reduce:transition-none"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -527,7 +526,7 @@ function IconPicker({ value, onChange }) {
           type="button"
           onClick={() => onChange(icon)}
           className={`flex size-9 cursor-pointer items-center justify-center rounded-lg text-lg transition-colors ${
-            value === icon ? "bg-black/10" : "hover:bg-black/5"
+            value === icon ? "bg-foreground/10" : "hover:bg-foreground/5"
           }`}
           aria-label={`Pick ${icon}`}
           aria-pressed={value === icon}

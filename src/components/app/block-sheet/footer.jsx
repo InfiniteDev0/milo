@@ -10,6 +10,9 @@ import { useBlocks } from "../blocks-provider";
 export function Footer({ block, running, onClose }) {
   const { start, paused } = useBlocks();
 
+  // A finished block offering to Start reads like it never happened.
+  const done = block.status === "done";
+
   return (
     <button
       type="button"
@@ -34,7 +37,11 @@ export function Footer({ block, running, onClose }) {
       ) : (
         <>
           <Play className="size-4" />
-          {paused ? "Pick the day up here" : "Start this block"}
+          {done
+            ? "Start it again"
+            : paused
+              ? "Pick the day up here"
+              : "Start this block"}
         </>
       )}
     </button>

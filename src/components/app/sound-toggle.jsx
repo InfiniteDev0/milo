@@ -19,7 +19,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { playTask, setSoundOn, soundOn } from "@/lib/sound";
-import { Button } from "../ui/button";
 
 export function SoundToggle() {
   const [on, setOn] = useState(true);
@@ -43,19 +42,20 @@ export function SoundToggle() {
       <Tooltip>
         <TooltipTrigger
           render={
-            <Button
+            <button
               type="button"
               onClick={toggle}
               aria-pressed={on}
               aria-label={on ? "Turn sound off" : "Turn sound on"}
-              className="flex size-9 cursor-pointer items-center justify-center rounded-xl  transition-colors hover:bg-black/5 hover:text-black/70"
+              style={{ "--lift": "var(--card-lift)" }}
+              className="milo-lift flex size-12 cursor-pointer items-center justify-center rounded-xl border border-foreground/10 bg-card text-foreground/60 transition-colors hover:text-foreground"
             >
               {ready && !on ? (
-                <VolumeX className="size-4" />
+                <VolumeX className="size-5" />
               ) : (
-                <Volume2 className="size-4" />
+                <Volume2 className="size-5" />
               )}
-            </Button>
+            </button>
           }
         />
         <TooltipContent side="right">

@@ -22,14 +22,14 @@ export function NotePage({ note, onChange, onBack }) {
 
   return (
     // the note wears its colour, so choosing one is visible immediately
-    <div className="flex h-full flex-col" style={{ backgroundColor: noteColour(note.colour).bg }}>
+    <div className="milo-on-tint flex h-full flex-col" style={{ backgroundColor: noteColour(note.colour).bg }}>
       <div className="flex shrink-0 items-center gap-3 px-5 pt-4 pb-3">
         <Button
           type="button"
           onClick={onBack}
-          className="flex h-8 w-8 cursor-pointer items-center gap-1 rounded-full text-sm text-black/45 transition-colors hover:text-black"
+          className="flex h-8 w-8 cursor-pointer items-center gap-1 rounded-full text-sm text-foreground/45 transition-colors hover:text-foreground"
         >
-          <ChevronLeft className="size-4 text-white" />
+          <ChevronLeft className="size-4 text-primary-foreground" />
         </Button>
 
         <input
@@ -37,7 +37,7 @@ export function NotePage({ note, onChange, onBack }) {
           onChange={(e) => onChange({ title: e.target.value })}
           aria-label="Note title"
           placeholder="Title"
-          className="min-w-0 flex-1 bg-transparent text-2xl outline-none placeholder:text-gray-300"
+          className="min-w-0 flex-1 bg-transparent text-2xl outline-none placeholder:text-foreground/25"
         />
 
         <NoteSettings note={note} onChange={onChange} />

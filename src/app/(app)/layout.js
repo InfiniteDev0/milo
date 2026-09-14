@@ -7,7 +7,6 @@ import { FocusLock } from "@/components/app/focus-lock";
 import { SoundToggle } from "@/components/app/sound-toggle";
 import { ArchivePanel } from "@/components/app/archive-panel";
 import { BlockSheet } from "@/components/app/block-sheet";
-import { Tray } from "@/components/app/tray";
 import { CheckIn } from "@/components/app/check-in";
 import { MorningRecap } from "@/components/app/morning-recap";
 import { UserAvatar } from "@/components/app/user-avatar";
@@ -42,7 +41,7 @@ export default async function AppLayout({ children }) {
           <Link
             href="/daily"
             aria-label="Milo"
-            className="flex shrink-0 items-center rounded-lg bg-white shadow"
+            className="flex shrink-0 items-center rounded-lg bg-chip shadow"
           >
             <ShellFace className="size-12 touch-none select-none" />
           </Link>
@@ -64,7 +63,7 @@ export default async function AppLayout({ children }) {
           </div>
         </aside>
 
-        <main className="min-h-0 min-w-0 flex-1 overflow-hidden rounded-2xl bg-white">
+        <main className="min-h-0 min-w-0 flex-1 overflow-hidden rounded-2xl bg-card">
           {children}
         </main>
       </div>
@@ -72,8 +71,6 @@ export default async function AppLayout({ children }) {
       <ArchivePanel />
       {/* one block, looked at without starting it */}
       <BlockSheet />
-      {/* loose tasks. the handle is a placeholder trigger, not the design */}
-      <Tray />
       {/* speaks while a block runs — see check-in.jsx for why this one
           interruption is allowed */}
       <CheckIn />

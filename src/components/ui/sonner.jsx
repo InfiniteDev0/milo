@@ -11,7 +11,7 @@ const Toaster = ({
 
   return (
     <Sonner
-      theme="light"
+      theme={theme}
       className="toaster group"
       icons={{
         success: (

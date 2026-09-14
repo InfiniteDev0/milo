@@ -33,16 +33,16 @@ export function MorningRecap() {
   const time = spent((unseen.minutes ?? 0) * 60000);
 
   return (
-    <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2">
-      <div className="flex items-center gap-3 rounded-2xl bg-[#141414] py-2 pl-2 pr-2 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white">
+    <div className="fixed inset-x-0 bottom-6 z-40 flex justify-center px-4 pr-24 pointer-events-none [&>*]:pointer-events-auto">
+      <div className="flex items-center gap-3 rounded-2xl bg-chrome py-2 pl-2 pr-2 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-chip">
           {/* content, not proud. Milo is reporting, not congratulating — the
               same face it wears for a day with one block and a day with six. */}
           <MiloFace mood="content" instant gaze={false} reactToScroll={false} className="size-10" />
         </span>
 
         <div className="flex flex-col pr-1">
-          <span className="text-sm text-white">
+          <span className="text-sm text-chrome-ink">
             {unseen.label ?? "Yesterday"} —{" "}
             {blocks.length > 0 ? (
               <>
@@ -55,13 +55,13 @@ export function MorningRecap() {
             )}
             {/* Only if there is one. A day under a minute reads as a day with
                 no time recorded, exactly as TIME.md asks. */}
-            {time && <span className="text-white/45"> · {time}</span>}
+            {time && <span className="text-chrome-ink/45"> · {time}</span>}
           </span>
 
           {/* The blocks by name, in the order they finished. Actuals only —
               never "3 of 6", never a percentage, never a gap. */}
           {blocks.length > 0 && (
-            <span className="truncate text-xs text-white/45">
+            <span className="truncate text-xs text-chrome-ink/45">
               {blocks.map((b) => b.name?.replace(" Block", "") ?? "A block").join(" · ")}
             </span>
           )}
@@ -70,7 +70,7 @@ export function MorningRecap() {
         <button
           type="button"
           onClick={() => markSeen(unseen.date)}
-          className="ml-1 h-8 shrink-0 cursor-pointer rounded-lg bg-white/10 px-3 text-xs text-white/80 transition-colors hover:bg-white/20"
+          className="ml-1 h-8 shrink-0 cursor-pointer rounded-lg bg-chrome-ink/10 px-3 text-xs text-chrome-ink/80 transition-colors hover:bg-chrome-ink/20"
         >
           ok
         </button>

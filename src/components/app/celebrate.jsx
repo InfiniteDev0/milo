@@ -83,8 +83,8 @@ export function celebrateTask({ task, block, doneToday, blockComplete, run }) {
 
   toast.custom(
     () => (
-      <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl bg-[#171717] py-2.5 pl-2.5 pr-5">
-        <span className="relative flex size-11 shrink-0 items-center justify-center rounded-xl bg-white">
+      <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl bg-chrome py-2.5 pl-2.5 pr-5">
+        <span className="relative flex size-11 shrink-0 items-center justify-center rounded-xl bg-chip">
           <MiloFace
             mood={mood}
             instant
@@ -95,9 +95,9 @@ export function celebrateTask({ task, block, doneToday, blockComplete, run }) {
           />
         </span>
         <div className="relative flex flex-col">
-          <span className="text-sm text-white">{headline}</span>
+          <span className="text-sm text-chrome-ink">{headline}</span>
           {/* the promise, verbatim, and a number that only counts up */}
-          <span className="text-xs text-white/45">
+          <span className="text-xs text-chrome-ink/45">
             You showed up for {doneToday} {doneToday === 1 ? "thing" : "things"} today.
           </span>
         </div>

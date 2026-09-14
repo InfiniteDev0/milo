@@ -11,7 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { StickyIcon } from "./icons";
+import { maskStyle } from "@/lib/mask";
 
 // Module scope, and that is the whole point: an inline subscribe is a new
 // function every render, so React resubscribes and re-reads the snapshot each
@@ -34,9 +34,15 @@ export function TrayHandle({ open, onToggle }) {
               type="button"
               onClick={onToggle}
               aria-label="Today's note"
-              className="fixed bottom-6 right-6 z-40 flex size-12 cursor-pointer items-center justify-center rounded-full bg-[#141414] shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-colors hover:bg-black"
+              className="group/handle fixed bottom-6 right-6 z-40 flex size-14 cursor-pointer items-center justify-center rounded-xl bg-chrome shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-colors hover:bg-chrome-hover"
             >
-              <StickyIcon className="size-5" />
+              {/* Same rule as the nav rail: grey at rest, the notes gradient on
+                  hover. No active state — the button is gone while the sheet is open. */}
+              <span
+                aria-hidden
+                style={maskStyle("/pencil.svg")}
+                className="size-6 bg-chrome-ink/40 transition-all duration-200 group-hover/handle:bg-[linear-gradient(135deg,#ffd600,#ff007a)]"
+              />
             </button>
           }
         />

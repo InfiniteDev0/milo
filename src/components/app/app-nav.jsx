@@ -11,6 +11,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
+import { maskStyle } from "@/lib/mask";
 import {
   Tooltip,
   TooltipContent,
@@ -20,7 +21,8 @@ import {
 
 const ITEMS = [
   { href: "/daily", label: "Today", icon: "/calendar.svg" },
-  { href: "/notes", label: "Notes", icon: "/notes.svg" },
+  { href: "/notes", label: "Notes", icon: "/pencil.svg" },
+  { href: "/journal", label: "Journal", icon: "/notes.svg" },
 ];
 
 const PINNED = [{ href: "/settings", label: "Settings", icon: "/seetings.svg" }];
@@ -43,20 +45,11 @@ function NavItem({ href, label, icon, active }) {
             the notes orange→pink on hover, plain grey at rest. */}
         <span
           aria-hidden
-          style={{
-            WebkitMaskImage: `url(${icon})`,
-            maskImage: `url(${icon})`,
-            WebkitMaskSize: "contain",
-            maskSize: "contain",
-            WebkitMaskRepeat: "no-repeat",
-            maskRepeat: "no-repeat",
-            WebkitMaskPosition: "center",
-            maskPosition: "center",
-          }}
+          style={maskStyle(icon)}
           className={`relative size-[22px] transition-all duration-200 ${
             active
               ? "bg-[linear-gradient(135deg,#ffd600,#00d078)]"
-              : "bg-white/40 group-hover/item:bg-[linear-gradient(135deg,#ffd600,#ff007a)]"
+              : "bg-chrome-ink/40 group-hover/item:bg-[linear-gradient(135deg,#ffd600,#ff007a)]"
           }`}
         />
       </TooltipTrigger>
@@ -74,12 +67,12 @@ export function AppNav() {
 
   return (
     <TooltipProvider delay={200}>
-      <nav className="absolute left-0 top-0 z-20 flex w-12 flex-col items-center gap-4 rounded-[14px] bg-[#0d0d0d] py-3.5">
+      <nav className="absolute left-0 top-0 z-20 flex w-12 flex-col items-center gap-4 rounded-[14px] bg-chrome dark:bg-card py-3.5">
         {ITEMS.map((item) => (
           <NavItem key={item.href} {...item} active={isActive(item.href)} />
         ))}
 
-        <Separator className="data-horizontal:w-5 bg-white/10" />
+        <Separator className="data-horizontal:w-5 bg-chrome-ink/10" />
 
         {PINNED.map((item) => (
           <NavItem key={item.href} {...item} active={isActive(item.href)} />

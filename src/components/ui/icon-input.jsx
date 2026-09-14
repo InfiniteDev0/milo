@@ -6,13 +6,13 @@ import { cn } from "@/lib/utils";
  */
 export function IconInput({ icon, className, ...props }) {
   return (
-    <div className="flex h-[40px] items-center rounded-[10px] border-[1.5px] border-black/20 pl-[10px] transition-colors duration-200 ease-in-out focus-within:border-[#5e17eb]">
-      <span className="flex size-5 shrink-0 items-center justify-center text-black/35">
+    <div className="flex h-[40px] items-center rounded-[10px] border-[1.5px] border-foreground/20 pl-[10px] transition-colors duration-200 ease-in-out focus-within:border-[#5e17eb]">
+      <span className="flex size-5 shrink-0 items-center justify-center text-foreground/35">
         {icon}
       </span>
       <input
         className={cn(
-          "ml-[10px] h-full flex-1 rounded-[10px] border-none bg-transparent pr-3 text-sm text-black outline-none placeholder:text-black/35",
+          "ml-[10px] h-full flex-1 rounded-[10px] border-none bg-transparent pr-3 text-sm text-foreground outline-none placeholder:text-foreground/35",
           className,
         )}
         {...props}

@@ -5,6 +5,7 @@ import { DayBar } from "@/components/app/day-bar";
 import { ScopeSwitcher } from "@/components/app/scope-switcher";
 import { ArchiveButton } from "@/components/app/archive-panel";
 import { DayLabel } from "@/components/app/day-label";
+import { Tray } from "@/components/app/tray";
 
 export const metadata = {
   title: "Today — Milo",
@@ -36,13 +37,12 @@ export default function DailyPage() {
             <DatePicker />
           </div>
         </div>
-        {/* ongoing block card */}
-        <div className="flex items-center justify-between w-full">
+        {/* The lineup and the board share one box: when every block is done
+            the lineup renders nothing, this row collapses, and the board below
+            takes the whole space instead of leaving an empty band. */}
+        <div className="flex w-full items-center justify-between empty:hidden">
           <BlockLineup />
           <DayBar />
-          <div>
-            
-          </div>
         </div>
       </div>
 
@@ -50,6 +50,10 @@ export default function DailyPage() {
       <div className="min-h-0 w-full flex-1 overflow-y-auto overflow-x-hidden overscroll-contain pb-4">
         <TaskBoard />
       </div>
+
+      {/* today's notes. Belongs to the day, so it lives on the day page and not
+          in the shell — the button was following you onto every other screen. */}
+      <Tray />
     </div>
   );
 }
