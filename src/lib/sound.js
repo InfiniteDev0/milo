@@ -151,6 +151,14 @@ const play = (name, fn) => {
   } catch {}
 };
 
+// a cue with no clip behind it, only the synth
+const synth = (fn) => {
+  if (!soundOn()) return;
+  try {
+    fn();
+  } catch {}
+};
+
 /* Fetch all three now, while nothing is happening. Loading a clip is just a
    network request — no user gesture required, unlike PLAYING one — so by the
    time the first task lands the file is decoded and ready. Without this the
@@ -194,4 +202,10 @@ export const playBlock = () =>
         gain: 0.1,
       }),
     );
+  });
+
+// Notes put away: one soft note sliding down, like a drawer closing — quieter than the rest.
+export const playTuck = () =>
+  synth(() => {
+    note({ freq: 587.33, to: 392, dur: 0.16, type: "sine", gain: 0.08 });
   });

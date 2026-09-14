@@ -194,9 +194,20 @@ From POSITIONING.md, enforced on every page:
   day, linked to one block or just to the day (`notes.block_id`, nullable).
   Every note autosaves the moment it is created — there is no Save button and
   nothing is deleted at midnight. The notes sheet shows today's notes; `/notes`
-  shows all of them, as cards or grouped by block, with a Day notes card for the
-  rest. Saves go through `db/note-queue.js`, not `sync.js`: one request per note
-  at a time, and every save sends the newest version.
+  opens grouped by block (with a Day notes card for the rest) and switches to
+  every note as cards. A block's name opens `/notes/[blockId]` (`/notes/day` for
+  day notes). Cards: a click opens, the checkbox selects; selected notes can be
+  moved or deleted. **Delete is Undo-first**: the note leaves the screen at once
+  and the real delete runs only when the ~6s Undo toast closes — so closing the
+  tab inside that window keeps the note, never loses it. Saves *and* deletes go
+  through `db/note-queue.js`, not `sync.js`: one request per note at a time,
+  every save sends the newest version, and a deleted id refuses later saves so
+  an in-flight upsert can't bring it back.
+  **For now a note lives in a block or in the day.** MVP 2 adds other homes
+  outside blocks (a to-do list, something just for fun — categories that are not
+  Life Blocks). Keep "where a note lives" decided in the provider and views, not
+  baked deeper into what `block_id` means. The unused `notes.category` column
+  (default `ideas`) predates all of this.
 - **Reflection reports actuals** — "You showed up for 6 things", never "6 of 8".
 - Landing `Process` section is the **Plan → Live → Pause → Reflect → Adapt** loop. Its
   three images are still hotlinked from `framerusercontent.com` — replace with real

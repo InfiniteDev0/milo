@@ -17,6 +17,20 @@ import { DropZone } from "./drop-zone";
 import { TaskRings } from "./task-rings";
 import { RestPill } from "./rest-pill";
 import { Button } from "../ui/button";
+import { DragFollower, dragStart, hideDragImage } from "./drag-follower";
+
+// a block's name, what it holds, and its rings — the same in the line and under the pointer
+function BlockInside({ name, sub, counts }) {
+  return (
+    <>
+      <div className="flex min-w-0 flex-col">
+        <span className="truncate text-sm font-medium">{name.replace(" Block", "")}</span>
+        <span className="text-xs opacity-60">{sub}</span>
+      </div>
+      <TaskRings {...counts} className="size-9 shrink-0" />
+    </>
+  );
+}
 
 /* "Not today" is off for now. The gesture, the drop zone and the set-aside
    chip are all still here and still wired to the provider — flip this back
@@ -45,6 +59,14 @@ export function BlockLineup() {
     useBlocks();
   const [draggingId, setDraggingId] = useState(null);
   const [over, setOver] = useState(null);
+  // the block being carried, and where the pointer caught it
+  const [drag, setDrag] = useState(null);
+
+  const endDrag = () => {
+    setOver(null);
+    setDraggingId(null);
+    setDrag(null);
+  };
 
   /* Above the early returns, and it has to stay there: the skeleton path
      below returns before this line, so calling the hook after it means one
@@ -170,6 +192,15 @@ export function BlockLineup() {
            the day without it asking anything of you. */
         const opacity =
           ongoing || running.length === 0 ? "opacity-100" : "opacity-45";
+        /* Counting up, and only while it runs. `spent` returns null under a
+           minute, so a block that just started says Running rather than 0m. */
+        const sub = ongoing
+          ? (spent(spentOnBlock(b.id, now)) ?? "Running")
+          : total === 0
+            ? "Nothing in it"
+            : `${total} ${total === 1 ? "task" : "tasks"}`;
+        // while it is carried, its place in the line is a dotted outline
+        const lifted = drag?.block.id === b.id;
 
         return (
           <Button 
@@ -201,8 +232,11 @@ export function BlockLineup() {
               setOver(null);
               if (id) reorderBlocks(id, b.id);
             }}
-            onDragEnd={() => { setOver(null); setDraggingId(null); }}
+            onDragEnd={endDrag}
             onDragStart={(e) => {
+              // a solid copy follows the pointer instead of the browser's faded picture
+              hideDragImage(e);
+              setDrag({ ...dragStart(e), block: b, sub, counts });
               setDraggingId(b.id);
               e.dataTransfer.setData("application/milo-block", b.id);
               e.dataTransfer.effectAllowed = "move";
@@ -211,32 +245,21 @@ export function BlockLineup() {
             /* milo-lift owns the transition, so `transition-all` is gone:
                two authorities on the same property meant the press either
                animated over 300ms or not at all. */
-            className={`milo-lift flex h-16 min-w-56 flex-1 cursor-grab items-center justify-between gap-3 rounded-xl px-4 text-left active:cursor-grabbing ${opacity} ${
-              over === b.id ? "scale-[0.97] ring-2 ring-foreground/40" : ""
-            }`}
-            style={{
-              background: b.bg,
-              color: b.ink,
-              // deeper under the block that's running, so it sits proudest
-              "--lift": shade(b.bg, ongoing ? 0.3 : 0.22),
-            }}
+            className={`milo-lift flex h-16 min-w-56 flex-1 cursor-grab items-center justify-between gap-3 rounded-xl px-4 text-left active:cursor-grabbing ${
+              lifted ? "border-2 border-dashed border-foreground/25 *:invisible" : opacity
+            } ${over === b.id ? "scale-[0.97] ring-2 ring-foreground/40" : ""}`}
+            style={
+              lifted
+                ? { background: "transparent", color: b.ink, "--lift": "transparent" }
+                : {
+                    background: b.bg,
+                    color: b.ink,
+                    // deeper under the block that's running, so it sits proudest
+                    "--lift": shade(b.bg, ongoing ? 0.3 : 0.22),
+                  }
+            }
           >
-            <div className="flex min-w-0 flex-col">
-              <span className="truncate text-sm font-medium">
-                {b.name.replace(" Block", "")}
-              </span>
-              <span className="text-xs opacity-60">
-                {ongoing
-                  ? /* Counting up, and only while it runs. `spent` returns
-                       null under a minute, so a block that just started
-                       says Running rather than 0m. */
-                    (spent(spentOnBlock(b.id, now)) ?? "Running")
-                  : total === 0
-                    ? "Nothing in it"
-                    : `${total} ${total === 1 ? "task" : "tasks"}`}
-              </span>
-            </div>
-            <TaskRings {...counts} className="size-9 shrink-0" />
+            <BlockInside name={b.name} sub={sub} counts={counts} />
           </Button>
         );
       })}
@@ -245,6 +268,17 @@ export function BlockLineup() {
         <DropZone draggingId={draggingId} onDone={() => setDraggingId(null)} />
       )}
     </div>
+
+    <DragFollower start={drag} onEnd={endDrag}>
+      {drag && (
+        <div
+          className="flex h-16 items-center justify-between gap-3 rounded-xl px-4 shadow-[0_18px_40px_rgba(0,0,0,0.28)]"
+          style={{ background: drag.block.bg, color: drag.block.ink }}
+        >
+          <BlockInside name={drag.block.name} sub={drag.sub} counts={drag.counts} />
+        </div>
+      )}
+    </DragFollower>
     </div>
   );
 }

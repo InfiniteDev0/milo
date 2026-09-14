@@ -119,7 +119,7 @@ const BlocksContext = createContext(null);
 
 const openSession = (list, blockId, taskId = null, at = Date.now()) => [
   ...closeSessions(list, at),
-  { id: `s${at}`, day: stampToday(), blockId, taskId, startedAt: at, endedAt: null },
+  { id: crypto.randomUUID(), day: stampToday(), blockId, taskId, startedAt: at, endedAt: null },
 ];
 
 const closeSessions = (list, at = Date.now()) =>

@@ -4,11 +4,20 @@
 // A failed read writes nothing and never shows as "no notes" — the same rule the blocks provider keeps.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { listNotes, toPlain } from "@/lib/db/notes";
-import { saveNoteSoon } from "@/lib/db/note-queue";
+import { deleteNoteForGood, saveNoteSoon } from "@/lib/db/note-queue";
+import { playTask, playTuck } from "@/lib/sound";
+import { DeletedToast } from "./notes/deleted-toast";
+import { MovedToast } from "./notes/moved-toast";
 
 const NotesContext = createContext(null);
+
+// how long Undo stays on screen before a delete is real
+const UNDO_MS = 6000;
+
+const newestFirst = (a, b) => b.createdAt - a.createdAt;
 
 export function NotesProvider({ children }) {
   const [notes, setNotes] = useState([]);
@@ -81,9 +90,70 @@ export function NotesProvider({ children }) {
     [canWrite, userId, notes],
   );
 
+  // `block` null makes them day notes; notes already there are left alone
+  const moveNotes = useCallback(
+    (ids, block) => {
+      if (!canWrite) return;
+      const blockId = block?.id ?? null;
+      const moving = new Set(ids);
+      const at = Date.now();
+      const moved = notes
+        .filter((n) => moving.has(n.id) && (n.blockId ?? null) !== blockId)
+        .map((n) => ({ ...n, blockId, updatedAt: at }));
+      if (moved.length === 0) return;
+      const byId = new Map(moved.map((n) => [n.id, n]));
+      setNotes((prev) => prev.map((n) => byId.get(n.id) ?? n));
+      moved.forEach((n) => saveNoteSoon(userId, n, 0));
+      playTask();
+      toast.custom(() => <MovedToast count={moved.length} to={block} />, {
+        unstyled: true,
+        id: "milo-notes-moved",
+        duration: 3000,
+      });
+    },
+    [canWrite, userId, notes],
+  );
+
+  // gone from the screen now, gone from the database only once Undo has had its few seconds
+  const removeNotes = useCallback(
+    (ids) => {
+      if (!canWrite) return;
+      const going = new Set(ids);
+      const removed = notes.filter((n) => going.has(n.id));
+      if (removed.length === 0) return;
+      setNotes((prev) => prev.filter((n) => !going.has(n.id)));
+      playTuck();
+
+      const toastId = crypto.randomUUID();
+      let settled = false;
+      // sonner can report both a dismiss and an auto-close, so this runs once
+      const commit = () => {
+        if (settled) return;
+        settled = true;
+        removed.forEach((n) => deleteNoteForGood(n.id));
+      };
+      const undo = () => {
+        if (settled) return;
+        settled = true;
+        toast.dismiss(toastId);
+        playTask();
+        setNotes((prev) => [...removed, ...prev.filter((n) => !going.has(n.id))].sort(newestFirst));
+      };
+
+      toast.custom(() => <DeletedToast count={removed.length} onUndo={undo} />, {
+        unstyled: true,
+        id: toastId,
+        duration: UNDO_MS,
+        onAutoClose: commit,
+        onDismiss: commit,
+      });
+    },
+    [canWrite, notes],
+  );
+
   const value = useMemo(
-    () => ({ notes, hydrated, loadFailed, canWrite, addNote, editNote }),
-    [notes, hydrated, loadFailed, canWrite, addNote, editNote],
+    () => ({ notes, hydrated, loadFailed, canWrite, addNote, editNote, moveNotes, removeNotes }),
+    [notes, hydrated, loadFailed, canWrite, addNote, editNote, moveNotes, removeNotes],
   );
 
   return <NotesContext.Provider value={value}>{children}</NotesContext.Provider>;
