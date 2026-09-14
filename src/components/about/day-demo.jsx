@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Pause, Play, RotateCcw } from "lucide-react";
 import MiloFace from "@/components/MiloFace";
+import { Strike } from "@/components/app/strike";
 
 const TICK = 900;
 
@@ -154,8 +155,8 @@ export default function DayDemo() {
                         >
                           {c && <Check className="size-2" />}
                         </span>
-                        <span className={c ? "text-black/30 line-through" : "text-black/60"}>
-                          {t}
+                        <span className={c ? "text-black/30" : "text-black/60"}>
+                          <Strike done={c}>{t}</Strike>
                         </span>
                       </li>
                     );

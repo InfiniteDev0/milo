@@ -69,11 +69,10 @@ function AppleIcon(props) {
   );
 }
 
-/* Google and Apple are built but not enabled: neither provider is configured
-   in Supabase yet, and a button that does nothing is worse than no button on
-   the one screen where trust matters. Flip this to true once the provider is
-   set up in the dashboard — the handlers already exist in lib/auth.ts. */
-const SOCIAL_ENABLED = false;
+// Google is configured in Google Cloud and Supabase, so it shows
+const GOOGLE_ENABLED = true;
+// Apple needs a paid developer account first — a button that always errors is worse than none
+const APPLE_ENABLED = false;
 
 const COPY = {
   login: {
@@ -195,10 +194,11 @@ export function AuthForm({ mode = "login", error, className, ...props }) {
             </Button>
           </Field>
 
-          {SOCIAL_ENABLED && (
+          {(GOOGLE_ENABLED || APPLE_ENABLED) && (
             <>
               <FieldSeparator>Or</FieldSeparator>
               <Field className="flex-row items-center gap-2.5">
+                {GOOGLE_ENABLED && (
                 <button
                   type="button"
                   onClick={() => signInWithGoogle().catch(() => toast.error("Google sign-in failed."))}
@@ -207,6 +207,8 @@ export function AuthForm({ mode = "login", error, className, ...props }) {
                   <GoogleIcon />
                   Google
                 </button>
+                )}
+                {APPLE_ENABLED && (
                 <button
                   type="button"
                   onClick={() => signInWithApple().catch(() => toast.error("Apple sign-in failed."))}
@@ -215,6 +217,7 @@ export function AuthForm({ mode = "login", error, className, ...props }) {
                   <AppleIcon />
                   Apple
                 </button>
+                )}
               </Field>
             </>
           )}

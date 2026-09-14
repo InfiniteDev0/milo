@@ -10,6 +10,7 @@ import { Reorder, useDragControls, useMotionValue } from "motion/react";
 import Link from "next/link";
 import { useRaisedShadow } from "@/lib/raised-shadow";
 import { Tick } from "@/components/app/task-bits";
+import { Strike } from "@/components/app/strike";
 
 const RESTING = "0px 4px 0px rgba(219, 219, 219, 1)";
 
@@ -43,10 +44,10 @@ function Task({ task, onToggle }) {
 
         <span
           className={`min-w-0 flex-1 break-words text-sm ${
-            task.done ? "text-black/40 line-through" : ""
+            task.done ? "text-black/40" : ""
           }`}
         >
-          {task.name}
+          <Strike done={task.done}>{task.name}</Strike>
         </span>
       </div>
     </Reorder.Item>

@@ -190,6 +190,13 @@ From POSITIONING.md, enforced on every page:
   reflection until rollover. Resetting onto the same date upserted an empty row
   over the real one — one row per user per date means a closed day and a fresh
   day cannot share a stamp. Only the rollover calls `newDay()`.
+- **Notes are not the journal** (14 Sep). A note is something written during the
+  day, linked to one block or just to the day (`notes.block_id`, nullable).
+  Every note autosaves the moment it is created — there is no Save button and
+  nothing is deleted at midnight. The notes sheet shows today's notes; `/notes`
+  shows all of them, as cards or grouped by block, with a Day notes card for the
+  rest. Saves go through `db/note-queue.js`, not `sync.js`: one request per note
+  at a time, and every save sends the newest version.
 - **Reflection reports actuals** — "You showed up for 6 things", never "6 of 8".
 - Landing `Process` section is the **Plan → Live → Pause → Reflect → Adapt** loop. Its
   three images are still hotlinked from `framerusercontent.com` — replace with real
@@ -217,10 +224,9 @@ From POSITIONING.md, enforced on every page:
 4. ✅ Time tracking — the interval log (`TIME.md`)
 5. ✅ Database schema + RLS
 6. ✅ Every feature on Supabase — blocks, tasks, days, sessions, profile, notes.
-   The `notes` table and `db/notes.js` are wired; the `/notes` page itself is
-   blank, being rebuilt (original: 458 lines in commit `2923dab`).
-7. 🔄 **Here:** writing — the journal (Morning / Pause / Night on the day),
-   `/journal` as a reader over past days, `/notes`, the tray.
+7. 🔄 **Here:** writing. Notes are built (migration `0008` must be applied):
+   the notes sheet and `/notes` share `NotesProvider`. Next: the journal
+   (Morning / Pause / Night on the day) and `/journal` as a reader over past days.
 8. ⬜ Offline via PowerSync
 9. ⬜ The flows in `BACKLOG.md` — partial-day close, month-end swap, block CRUD
 10. ⬜ Habits *(or shipping without them — PRODUCT.md allows it)*

@@ -55,6 +55,7 @@ import { PausedPanel } from "./paused-panel";
 import { DayComplete } from "./day-complete";
 import { DailyReflection } from "./daily-reflection";
 import { TaskRings } from "./task-rings";
+import { Strike } from "./strike";
 
 // Module scope, so the array identity never changes between renders.
 const DRAG_BOUNDS = [restrictToFirstScrollableAncestor];
@@ -105,10 +106,10 @@ function QuickRow({ task, onToggle, onOpen }) {
         type="button"
         onClick={() => onOpen(task)}
         className={`min-w-0 flex-1 cursor-pointer truncate text-left text-sm ${
-          done ? "text-foreground/35 line-through" : ""
+          done ? "text-foreground/35" : ""
         }`}
       >
-        {task.name}
+        <Strike id={task.id} done={done} className="max-w-full truncate align-top">{task.name}</Strike>
       </button>
     </div>
   );
@@ -156,11 +157,11 @@ function TaskCard({ task, asHandle, isOverlay, onOpen, onToggle, isRunning, elap
       >
         <div className="flex items-start gap-2">
           {onToggle && <Tick done={done} onToggle={onToggle} className="mt-0.5 size-5" />}
-          <span
-            className={`min-w-0 flex-1 line-clamp-2 break-words text-sm ${done ? "text-foreground/40 line-through" : ""}`}
+          <h1
+            className={`min-w-0 flex-1 line-clamp-2 break-words text-[16px] ${done ? "text-foreground/40" : ""}`}
           >
-            {task.name}
-          </span>
+            <Strike id={task.id} done={done} className="max-h-[2lh] overflow-hidden align-top">{task.name}</Strike>
+          </h1>
 
           {/* `2/5`, in the corner — a position in a list you wrote, not a score.
 

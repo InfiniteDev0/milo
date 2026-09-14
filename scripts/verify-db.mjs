@@ -116,6 +116,8 @@ const COLUMNS = [
   ["0006", "days", "pause"],
   ["0007", "tasks", "archived"],
   ["0007", "days", "ended_at"],
+  ["0008", "notes", "block_id"],
+  ["0008", "notes", "colour"],
 ];
 
 /* 0005 is not in that list and cannot be: it does not ADD a column, it drops

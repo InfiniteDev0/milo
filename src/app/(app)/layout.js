@@ -11,6 +11,7 @@ import { CheckIn } from "@/components/app/check-in";
 import { MorningRecap } from "@/components/app/morning-recap";
 import { UserAvatar } from "@/components/app/user-avatar";
 import { BlocksProvider } from "@/components/app/blocks-provider";
+import { NotesProvider } from "@/components/app/notes-provider";
 import { SetupWizard } from "@/components/app/setup-wizard";
 import { MonthReview } from "@/components/app/month-review";
 import { requireUser } from "@/lib/session";
@@ -35,6 +36,8 @@ export default async function AppLayout({ children }) {
 
   return (
     <BlocksProvider>
+      {/* notes sit inside blocks: a note can belong to a block */}
+      <NotesProvider>
       <div className="fixed inset-0 flex gap-4 overflow-hidden p-3 sm:gap-6 sm:p-4">
         {/* Left — brand, then nav */}
         <aside className="flex w-12 shrink-0 flex-col items-center gap-3">
@@ -79,6 +82,7 @@ export default async function AppLayout({ children }) {
       <SetupWizard />
       {/* the other door: opens when the calendar month turns over */}
       <MonthReview />
+      </NotesProvider>
     </BlocksProvider>
   );
 }

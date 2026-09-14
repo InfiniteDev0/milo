@@ -1,17 +1,20 @@
 "use client";
 
-// What this note is, and what becomes of it.
+// What this note is: its colour, the block it belongs to, and whether it's pinned.
 
-import { Check } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Check, Pin } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { NOTE_COLOURS } from "@/lib/note-colours";
+import { useBlocks } from "../blocks-provider";
 import { NoteSettingsIcon } from "./icons";
 
 export function NoteSettings({ note, onChange }) {
+  const { blocks, archived } = useBlocks();
+
+  // a set-aside block still shows if this note already belongs to it
+  const setAside = archived.find((b) => b.id === note.blockId);
+  const choices = setAside ? [...blocks, setAside] : blocks;
+
   return (
     <Popover>
       <PopoverTrigger
@@ -48,15 +51,49 @@ export function NoteSettings({ note, onChange }) {
             </div>
           </div>
 
-          {/* Keeping is the whole question the day note turns on: it either
-              becomes a real note or it goes at midnight. Not wired — the store
-              is not decided. */}
-          <div className="flex flex-col gap-1 border-t border-foreground/5 pt-3">
-            <span className="text-xs text-foreground/45">At midnight</span>
-            <p className="text-xs text-foreground/35">
-              Not decided yet — this is where keep-or-let-go goes.
-            </p>
+          <div className="flex flex-col gap-2 border-t border-foreground/5 pt-3">
+            <span className="text-xs text-foreground/45">Belongs to</span>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => onChange({ blockId: null })}
+                aria-pressed={note.blockId == null}
+                className={`cursor-pointer rounded-lg px-2.5 py-1 text-xs transition-colors ${
+                  note.blockId == null
+                    ? "bg-foreground text-background"
+                    : "text-foreground/55 ring-1 ring-foreground/10 hover:text-foreground"
+                }`}
+              >
+                Day note
+              </button>
+              {choices.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => onChange({ blockId: b.id })}
+                  aria-pressed={note.blockId === b.id}
+                  style={{ backgroundColor: b.bg, color: b.ink }}
+                  className={`cursor-pointer rounded-lg px-2.5 py-1 text-xs transition-shadow ${
+                    note.blockId === b.id
+                      ? "ring-2 ring-foreground/70 ring-offset-1 ring-offset-popover"
+                      : ""
+                  }`}
+                >
+                  {b.name.replace(" Block", "")}
+                </button>
+              ))}
+            </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => onChange({ pinned: !note.pinned })}
+            aria-pressed={!!note.pinned}
+            className="flex cursor-pointer items-center gap-2 border-t border-foreground/5 pt-3 text-xs text-foreground/60 transition-colors hover:text-foreground"
+          >
+            <Pin className="size-3.5" fill={note.pinned ? "currentColor" : "none"} />
+            {note.pinned ? "Pinned to the top" : "Pin to the top"}
+          </button>
         </div>
       </PopoverContent>
     </Popover>

@@ -17,6 +17,7 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { IconInput } from "@/components/ui/icon-input";
 import { TaskRings } from "@/components/app/task-rings";
 import { Tick } from "@/components/app/task-bits";
+import { Strike } from "@/components/app/strike";
 import { shade } from "@/lib/shade";
 
 const noop = () => {};
@@ -139,10 +140,10 @@ export function LivePanel() {
             <Tick done={t.done} onToggle={noop} className="size-4" />
             <span
               className={`min-w-0 flex-1 truncate text-xs ${
-                t.done ? "text-black/40 line-through" : ""
+                t.done ? "text-black/40" : ""
               }`}
             >
-              {t.name}
+              <Strike done={t.done} className="max-w-full truncate align-top">{t.name}</Strike>
             </span>
           </div>
         ))}

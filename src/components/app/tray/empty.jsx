@@ -10,7 +10,7 @@ export function Empty({ onAdd }) {
       <img src="/taking-note.svg" alt="" className="dark:rounded-2xl dark:bg-chip dark:p-1 size-44" />
 
       <p className="max-w-xs text-sm text-foreground/45">
-        Anything you think of today. Keep it, or let it go at midnight.
+        Anything you think of today. Every note is kept on your Notes page.
       </p>
 
       <button

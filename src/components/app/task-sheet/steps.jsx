@@ -9,6 +9,7 @@ import { Reorder, useDragControls, useMotionValue } from "motion/react";
 import { IconInput } from "@/components/ui/icon-input";
 import { useRaisedShadow } from "@/lib/raised-shadow";
 import { Tick } from "../task-bits";
+import { Strike } from "../strike";
 import { useBlocks } from "../blocks-provider";
 
 const RESTING = "0px 3px 0px var(--edge)";
@@ -45,9 +46,9 @@ function Step({ step, taskId, onCommit }) {
       />
 
       <span
-        className={`min-w-0 flex-1 text-xs ${step.done ? "text-foreground/35 line-through" : ""}`}
+        className={`min-w-0 flex-1 text-xs ${step.done ? "text-foreground/35" : ""}`}
       >
-        {step.name}
+        <Strike id={step.id} done={step.done}>{step.name}</Strike>
       </span>
 
       <button

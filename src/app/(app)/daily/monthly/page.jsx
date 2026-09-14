@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { Strike } from "@/components/app/strike";
 
 const ICONS = ["🌙", "🌱", "🔥", "📖", "🧭", "🛠️", "🌊", "☀️", "🏔️", "✍️"];
 
@@ -243,9 +244,9 @@ export default function MonthlyPage() {
                     className="flex items-center justify-between gap-2 rounded-lg bg-foreground/[0.04] px-3 py-2 text-sm"
                   >
                     <span
-                      className={t.status === "done" ? "text-foreground/40 line-through" : ""}
+                      className={t.status === "done" ? "text-foreground/40" : ""}
                     >
-                      {t.name}
+                      <Strike id={t.id} done={t.status === "done"}>{t.name}</Strike>
                     </span>
                     <button
                       type="button"

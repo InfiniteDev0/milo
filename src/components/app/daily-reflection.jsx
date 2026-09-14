@@ -13,6 +13,7 @@
 import { Check } from "lucide-react";
 import { onDay } from "@/lib/days";
 import { useBlocks } from "./blocks-provider";
+import { Strike } from "./strike";
 
 const stamp = (d = new Date()) =>
   d.toLocaleDateString(undefined, {
@@ -54,8 +55,8 @@ export function DailyReflection() {
                 <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
                   <Check className="size-3" strokeWidth={3.5} />
                 </span>
-                <span className="min-w-0 flex-1 break-words text-base text-foreground/55 line-through">
-                  {t.name}
+                <span className="min-w-0 flex-1 break-words text-base text-foreground/55">
+                  <Strike done>{t.name}</Strike>
                 </span>
               </li>
             ))}

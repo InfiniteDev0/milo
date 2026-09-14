@@ -34,7 +34,7 @@ export function TrayHandle({ open, onToggle }) {
               type="button"
               onClick={onToggle}
               aria-label="Today's note"
-              className="group/handle fixed bottom-6 right-6 z-40 flex size-14 cursor-pointer items-center justify-center rounded-xl bg-chrome shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-colors hover:bg-chrome-hover"
+              className="group/handle fixed bottom-6 right-6 z-40 flex size-14 cursor-pointer items-center justify-center rounded-3xl bg-chrome shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-colors hover:bg-chrome-hover"
             >
               {/* Same rule as the nav rail: grey at rest, the notes gradient on
                   hover. No active state — the button is gone while the sheet is open. */}
@@ -47,7 +47,7 @@ export function TrayHandle({ open, onToggle }) {
           }
         />
         {/* left, not top — it sits in the corner and would run off the edge */}
-        <TooltipContent side="left">Today&rsquo;s note</TooltipContent>
+        <TooltipContent side="top">Today&rsquo;s note</TooltipContent>
       </Tooltip>
     </TooltipProvider>,
     document.body,

@@ -8,6 +8,7 @@ import { useRaisedShadow } from "@/lib/raised-shadow";
 import { ACCENT } from "@/lib/palette";
 import { shade } from "@/lib/shade";
 import { Hint, Tick } from "../task-bits";
+import { Strike } from "../strike";
 
 const RESTING = "0px 4px 0px rgba(219, 219, 219, 1)";
 // The one whose sheet is open, so you can see which card you are editing.
@@ -68,10 +69,10 @@ export function TaskRow({ task, running, active, onToggle, onCommit, onOpen }) {
 
         <span
           className={`min-w-0 flex-1 break-words text-sm ${
-            done ? "text-foreground/40 line-through" : ""
+            done ? "text-foreground/40" : ""
           }`}
         >
-          {task.name}
+          <Strike id={task.id} done={done}>{task.name}</Strike>
         </span>
 
         {steps.length > 0 && (
