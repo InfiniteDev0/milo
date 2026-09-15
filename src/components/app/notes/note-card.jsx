@@ -4,7 +4,7 @@
 // While searching, the lines the words turn up in take the place of the first lines.
 
 import { CalendarDays, Pin } from "lucide-react";
-import { noteColour } from "@/lib/note-colours";
+import { noteColour, paperStyle } from "@/lib/note-colours";
 import { findInNote } from "@/lib/note-search";
 import { useBlocks } from "../blocks-provider";
 import { Highlight, MatchCount, MatchLines } from "./highlight";
@@ -33,8 +33,8 @@ export function NoteCard({ note, query = "", selected, onToggleSelect, onOpen, o
           onOpen(note);
         }
       }}
-      style={{ backgroundColor: paper.bg }}
-      className={`milo-on-tint relative flex min-h-56 cursor-pointer flex-col gap-3 overflow-hidden rounded-2xl p-5 text-left transition-shadow hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] ${
+      style={paperStyle(paper)}
+      className={`milo-paper relative flex min-h-56 cursor-pointer flex-col gap-3 overflow-hidden rounded-2xl p-5 text-left transition-shadow hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] ${
         selected ? "ring-2 ring-foreground/70" : "ring-1 ring-foreground/5"
       }`}
     >

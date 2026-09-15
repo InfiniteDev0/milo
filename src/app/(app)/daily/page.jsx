@@ -42,9 +42,11 @@ export default function DailyPage() {
             takes the whole space instead of leaving an empty band. */}
         <div className="flex w-full items-center justify-between empty:hidden">
           <BlockLineup />
-          <DayBar />
         </div>
       </div>
+
+      {/* only dialogs, so it lives outside the row that hides itself when empty */}
+      <DayBar />
 
       {/* the board — columns are status, cards pooled from every block */}
       <div className="min-h-0 w-full flex-1 overflow-y-auto overflow-x-hidden overscroll-contain pb-4">

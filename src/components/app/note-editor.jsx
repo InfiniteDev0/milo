@@ -10,7 +10,8 @@
  *     bundled content.json
  *   - the editor is rebuilt when you switch notes
  *   - images actually upload (theirs is a stub — see lib/note-upload.js)
- *   - their theme toggle is gone; Milo has no dark mode yet
+ *   - their theme toggle is gone; the theme comes from Milo's own Settings
+ *   - selecting text brings up a menu with marks, a link and colour (editor/selection-menu.jsx)
  *
  * Their narrow-screen behaviour is kept as they wrote it: below the breakpoint
  * the highlighter and link popovers take over the whole toolbar rather than
@@ -33,6 +34,7 @@ import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { FindAndReplace } from "@tiptap/extension-find-and-replace";
+import { Color, TextStyle } from "@tiptap/extension-text-style";
 import { Placeholder, Selection } from "@tiptap/extensions";
 
 // --- UI Primitives ---
@@ -91,6 +93,9 @@ import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
 
 // --- Lib ---
 import { MAX_FILE_SIZE, uploadNoteImage } from "@/lib/note-upload";
+import { SelectionMenu } from "./editor/selection-menu";
+import { SlashCommand } from "./editor/slash/slash-command";
+import { useSpellcheck } from "@/hooks/use-spellcheck";
 
 /* Their globals. The CLI wants these in app/globals.css; that file is plain CSS
    here and cannot @import scss, so they load as side-effect imports the way
@@ -210,6 +215,9 @@ export function NoteEditor({ noteId, body, onChange }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const toolbarRef = useRef(null);
   const searchButtonRef = useRef(null);
+  // the selection menu hangs off the editor's frame, not the scrolling text, so it isn't clipped at the top
+  const rootRef = useRef(null);
+  const menuHost = useCallback(() => rootRef.current, []);
 
   // read through a ref, so a new callback from the parent never rebuilds the
   // editor mid-sentence
@@ -238,13 +246,18 @@ export function NoteEditor({ noteId, body, onChange }) {
         TaskList,
         TaskItem.configure({ nested: true }),
         Highlight.configure({ multicolor: true }),
+        // colour on words: TextStyle carries it, Color sets it
+        TextStyle,
+        Color,
         Image,
         Typography,
         Superscript,
         Subscript,
         Selection,
-        Placeholder.configure({ placeholder: "Write it down." }),
+        Placeholder.configure({ placeholder: "Write, or type / for commands" }),
         FindAndReplace.configure({ searchDebounceMs: 500, injectCSS: false }),
+        // "/" opens a menu of headings, lists, quotes and more, like Notion
+        SlashCommand,
         ImageUploadNode.configure({
           accept: "image/*",
           maxSize: MAX_FILE_SIZE,
@@ -262,6 +275,12 @@ export function NoteEditor({ noteId, body, onChange }) {
        the new editor mounts unwritable. That was the "I can't type" bug. */
     [noteId],
   );
+
+  // spelling underlines follow Settings → Writing, and change the moment it does
+  const spellcheck = useSpellcheck();
+  useEffect(() => {
+    editor?.view?.dom?.setAttribute("spellcheck", String(spellcheck));
+  }, [editor, spellcheck]);
 
   const rect = useCursorVisibility({
     editor,
@@ -290,7 +309,8 @@ export function NoteEditor({ noteId, body, onChange }) {
   if (!editor) return null;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    // relative: the search panel is placed against this, just under the toolbar
+    <div ref={rootRef} data-note-editor="" className="relative flex min-h-0 flex-1 flex-col">
       <EditorContext.Provider value={{ editor }}>
         <Toolbar
           ref={toolbarRef}
@@ -322,6 +342,8 @@ export function NoteEditor({ noteId, body, onChange }) {
           onClose={closeSearch}
           scrollIntoViewOptions={SEARCH_SCROLL_OPTIONS}
         />
+
+        <SelectionMenu editor={editor} appendTo={menuHost} />
 
         <EditorContent
           editor={editor}

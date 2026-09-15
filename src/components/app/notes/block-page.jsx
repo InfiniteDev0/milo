@@ -89,7 +89,12 @@ export function BlockNotesPage({ blockId }) {
                 Couldn&rsquo;t reach your notes. Nothing you wrote is gone.
               </p>
             ) : (
-              <CardsView notes={mine} onOpen={sheet.openNote} empty="No notes here yet." />
+              <CardsView
+                notes={mine}
+                onOpen={sheet.openNote}
+                onAdd={canWrite ? add : undefined}
+                empty="No notes here yet."
+              />
             )}
           </div>
         </>

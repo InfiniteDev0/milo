@@ -26,6 +26,8 @@ export function ListPage({
   searchLabel,
   emptyText,
   when = "time",
+  // the start of today: a note from before it shows its date, not a time
+  since = null,
   showBlock = true,
   // passing these turns on ticking notes to move or delete them
   onMove,
@@ -115,6 +117,7 @@ export function ListPage({
                   onOpen={onOpen}
                   query={query}
                   when={when}
+                  since={since}
                   showBlock={showBlock}
                   selected={selected.has(n.id)}
                   onToggleSelect={selectable ? toggle : undefined}

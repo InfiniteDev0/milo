@@ -6,6 +6,13 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 
 export const SHEET_WIDTH = "min(27rem, calc(100vw - 2rem))";
 
+// Covers the app pane, stopping at the nav rail: the rail takes 5.5rem (p-4 + w-12 + gap-6 in (app)/layout.js)
+// and the sheet keeps its 1rem on the right. Never narrower than the panel, so phones keep the normal sheet.
+export const PANE_WIDTH = `max(${SHEET_WIDTH}, calc(100vw - 6.5rem))`;
+
+// quick to start, soft to settle, so growing to full screen and back reads as one movement
+export const GROW_TRANSITION = "width 560ms cubic-bezier(0.32, 0.72, 0, 1)";
+
 const SIDES = {
   right:
     "inset-y-4 right-4 data-open:slide-in-from-right-8 data-closed:slide-out-to-right-8",

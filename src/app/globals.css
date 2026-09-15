@@ -334,6 +334,31 @@ a{
   color: var(--foreground);
 }
 
+/* ---- a note's paper ----
+
+   The colour you picked, following the theme: the pastel in light mode, a deep version of it in dark mode.
+   Text keeps the theme's own colours, so nothing is ever light on light or dark on dark. */
+
+.milo-paper {
+  background-color: var(--paper);
+  --lift: var(--paper-lift);
+  --tt-toolbar-bg-color: transparent;
+  --tt-bg-color: transparent;
+}
+
+.dark .milo-paper {
+  background-color: var(--paper-dark);
+  --lift: var(--paper-lift-dark);
+}
+
+/* the paper runs under the toolbar too; on phones the toolbar floats over text and keeps its own background */
+@media (min-width: 768px) {
+  .milo-paper .tiptap-toolbar {
+    background: transparent;
+    border-color: color-mix(in oklab, currentColor 10%, transparent);
+  }
+}
+
 /* ---- the press ----
 
    A solid drop shadow in the element's own darker shade, which collapses as

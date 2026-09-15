@@ -6,7 +6,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 
-const COLUMNS = "id, title, body, plain, colour, starred, block_id, created_at, updated_at";
+const COLUMNS = "id, title, body, plain, colour, starred, block_id, show_on, created_at, updated_at";
 
 const fromRow = (r) => ({
   id: r.id,
@@ -18,6 +18,8 @@ const fromRow = (r) => ({
   // `starred` in the database, a pin in the app
   pinned: r.starred,
   blockId: r.block_id ?? null,
+  // the day it waits for, when it was left for one
+  showOn: r.show_on ?? null,
   createdAt: Date.parse(r.created_at),
   updatedAt: Date.parse(r.updated_at),
 });
@@ -56,6 +58,7 @@ export function saveNote(userId, note) {
     colour: note.colour ?? "plain",
     starred: note.pinned ?? false,
     block_id: note.blockId ?? null,
+    show_on: note.showOn ?? null,
   });
 }
 

@@ -20,6 +20,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useShortcut } from "@/hooks/use-shortcut";
+import { SET_ASIDE_KEY } from "@/lib/shortcuts";
 import { useBlocks } from "./blocks-provider";
 
 function Row({ block, onBack, counts }) {
@@ -83,29 +85,8 @@ export function ArchivePanel() {
     return () => window.removeEventListener("milo:archive", open);
   }, []);
 
-  useEffect(() => {
-    const onKey = (e) => {
-      /* Ctrl+Shift+A, not Ctrl+A. Plain Ctrl+A is select-all and the note
-         editor needs it — a shortcut that only works when you're not writing
-         is a shortcut that fails exactly when you reach for it. */
-      if (!(e.ctrlKey || e.metaKey) || !e.shiftKey) return;
-      if (e.key.toLowerCase() !== "a") return;
-
-      const el = document.activeElement;
-      const typing =
-        el &&
-        (el.tagName === "INPUT" ||
-          el.tagName === "TEXTAREA" ||
-          el.isContentEditable);
-      if (typing) return;
-
-      e.preventDefault();
-      setOpen((v) => !v);
-    };
-
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  // Ctrl/⌘+Shift+A, not Ctrl+A: plain Ctrl+A is select-all, and the note editor needs it
+  useShortcut(SET_ASIDE_KEY, () => setOpen((v) => !v));
 
   const nothing = archived.length === 0 && droppedToday.length === 0;
 

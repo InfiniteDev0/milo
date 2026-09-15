@@ -7,6 +7,7 @@ import { FocusLock } from "@/components/app/focus-lock";
 import { SoundToggle } from "@/components/app/sound-toggle";
 import { ArchivePanel } from "@/components/app/archive-panel";
 import { BlockSheet } from "@/components/app/block-sheet";
+import { DayAhead } from "@/components/app/day-ahead";
 import { CheckIn } from "@/components/app/check-in";
 import { MorningRecap } from "@/components/app/morning-recap";
 import { UserAvatar } from "@/components/app/user-avatar";
@@ -74,6 +75,8 @@ export default async function AppLayout({ children }) {
       <ArchivePanel />
       {/* one block, looked at without starting it */}
       <BlockSheet />
+      {/* today or tomorrow, one block at a time */}
+      <DayAhead />
       {/* speaks while a block runs — see check-in.jsx for why this one
           interruption is allowed */}
       <CheckIn />

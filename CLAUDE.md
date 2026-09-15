@@ -208,6 +208,18 @@ From POSITIONING.md, enforced on every page:
   Life Blocks). Keep "where a note lives" decided in the provider and views, not
   baked deeper into what `block_id` means. The unused `notes.category` column
   (default `ideas`) predates all of this.
+- **The Day ahead shows one block at a time** (15 Sep). Today or tomorrow: the
+  lineup as names only, then a single block's tasks — never the whole day in one
+  list, so commitment 7 stands as written. Weekdays still decide what a day
+  holds (no dates). "Not today / Not tomorrow" skips a task for that one date,
+  and a block can be set aside ahead of time. Plans live in `day_plans`
+  (migration `0009`), **never on `days`**: the day row is upserted whole and the
+  midnight roll creates the next one, and either would erase a plan stored
+  there. Today's plan is applied at load and at the midnight roll; picking a
+  set-aside block back up also removes it from the plan, or the next load puts
+  it down again. Every "is this task today" check goes through `isToday` from
+  the provider. Saves go through `db/plan-queue.js` (newest wins). Notes can
+  wait for a day (`notes.show_on`) and then appear in that day's notes.
 - **Reflection reports actuals** — "You showed up for 6 things", never "6 of 8".
 - Landing `Process` section is the **Plan → Live → Pause → Reflect → Adapt** loop. Its
   three images are still hotlinked from `framerusercontent.com` — replace with real
@@ -252,5 +264,14 @@ From POSITIONING.md, enforced on every page:
 - **Show, don't describe.** Every design question in this project has been settled faster
   by building a throwaway route under `/demo/` than by arguing in prose.
 - Run `npx next build` after changes — it's fast and catches JSX mistakes immediately.
+- **The blocks provider is split** (15 Sep). `blocks-provider.jsx` only wires
+  hooks together: state in `components/app/blocks/use-day-state.js`, then one
+  hook per behaviour beside it (load, save, midnight, plans, reconcile, task /
+  step / block / day actions, setup, filing a day, the value). Pure rules live
+  in `src/lib/day/` (work, intervals, history, snapshot). Add a behaviour as its
+  own hook; never grow the provider file again. Components still import
+  `useBlocks` from `blocks-provider`.
+- Keyboard shortcuts are listed once in `src/lib/shortcuts.js` (Settings →
+  Shortcuts reads it) and bound with `hooks/use-shortcut.js`.
 - A pre-existing lint warning on `MiloFace.jsx:271` ("Cannot access refs during render")
   is a false positive on a ref-callback factory. Leave it.

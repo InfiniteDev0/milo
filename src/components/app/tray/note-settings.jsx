@@ -2,9 +2,11 @@
 
 // What this note is: its colour, the block it belongs to, and whether it's pinned.
 
-import { Check, Pin } from "lucide-react";
+import { CalendarClock, Check, Pin } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { NOTE_COLOURS } from "@/lib/note-colours";
+import { NOTE_COLOURS, paperStyle } from "@/lib/note-colours";
+import { nextStamp, stampOf } from "@/lib/stamp";
+import { useNow } from "@/lib/time";
 import { useBlocks } from "../blocks-provider";
 import { NoteSettingsIcon } from "./icons";
 
@@ -14,6 +16,11 @@ export function NoteSettings({ note, onChange }) {
   // a set-aside block still shows if this note already belongs to it
   const setAside = archived.find((b) => b.id === note.blockId);
   const choices = setAside ? [...blocks, setAside] : blocks;
+
+  // a minute's tick keeps "tomorrow" right across midnight
+  const now = useNow(true, 60000);
+  const tomorrow = now == null ? null : nextStamp(stampOf(new Date(now)));
+  const waiting = tomorrow != null && note.showOn === tomorrow;
 
   return (
     <Popover>
@@ -40,11 +47,11 @@ export function NoteSettings({ note, onChange }) {
                   type="button"
                   aria-label={c.label}
                   onClick={() => onChange({ colour: c.id })}
-                  style={{ backgroundColor: c.bg }}
-                  className="flex size-8 cursor-pointer items-center justify-center rounded-lg ring-1 ring-foreground/10 transition-transform hover:scale-110"
+                  style={paperStyle(c)}
+                  className="milo-paper flex size-8 cursor-pointer items-center justify-center rounded-lg ring-1 ring-foreground/10 transition-transform hover:scale-110"
                 >
                   {(note.colour ?? "plain") === c.id && (
-                    <Check className="size-4" strokeWidth={3} style={{ color: c.ink }} />
+                    <Check className="size-4 text-foreground" strokeWidth={3} />
                   )}
                 </button>
               ))}
@@ -84,6 +91,19 @@ export function NoteSettings({ note, onChange }) {
               ))}
             </div>
           </div>
+
+          {/* waits for tomorrow's notes; pressing it again keeps it an ordinary note */}
+          <button
+            type="button"
+            onClick={() => tomorrow && onChange({ showOn: waiting ? null : tomorrow })}
+            aria-pressed={waiting}
+            className={`flex cursor-pointer items-center gap-2 border-t border-foreground/5 pt-3 text-xs transition-colors hover:text-foreground ${
+              waiting ? "text-foreground" : "text-foreground/60"
+            }`}
+          >
+            <CalendarClock className="size-3.5" />
+            {waiting ? "Coming back tomorrow" : "Bring back tomorrow"}
+          </button>
 
           <button
             type="button"

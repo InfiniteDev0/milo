@@ -65,6 +65,7 @@ export function NotesProvider({ children }) {
         colour: "plain",
         pinned: false,
         blockId: null,
+        showOn: null,
         createdAt: now,
         updatedAt: now,
         ...fields,

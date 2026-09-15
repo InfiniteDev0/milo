@@ -46,7 +46,7 @@ import {
 } from "@/components/ui/dialog";
 import { restrictToFirstScrollableAncestor } from "@dnd-kit/modifiers";
 import { spent, useNow } from "@/lib/time";
-import { DAYS, onDay } from "@/lib/days";
+import { DAYS } from "@/lib/days";
 import { IconInput } from "@/components/ui/icon-input";
 import { BlockChip, COLUMNS, Tick, isQuick } from "./task-bits";
 import { TaskSheet } from "./task-sheet";
@@ -276,7 +276,7 @@ function BoardSkeleton() {
 }
 
 export function TaskBoard() {
-  const { tasks, blocks, blockById, countsFor, setTaskStatus, ongoing, startAndLead, hydrated, runningTaskId, spentOnTask, spentOnBlock, setTaskNote, setTaskMinutes, addStep, toggleStep, removeStep, setTaskDays, setTaskKind , paused, loadFailed, retry, day } =
+  const { tasks, blocks, blockById, countsFor, setTaskStatus, ongoing, startAndLead, hydrated, runningTaskId, spentOnTask, spentOnBlock, setTaskNote, setTaskMinutes, addStep, toggleStep, removeStep, setTaskDays, setTaskKind , paused, loadFailed, retry, day, isToday } =
     useBlocks();
   const [dropping, setDropping] = useState(false);
   /* Ticks whenever anything is running, not only when a TASK is — otherwise
@@ -307,7 +307,7 @@ export function TaskBoard() {
      greyed out — a dimmed row is still a row telling you what you are not
      doing today, and it isn't yours to do today. */
   const mine = ongoing
-    ? tasks.filter((t) => t.blockId === ongoing.id && onDay(t))
+    ? tasks.filter((t) => t.blockId === ongoing.id && isToday(t))
     : [];
 
   // everything in the column, for the count on the header

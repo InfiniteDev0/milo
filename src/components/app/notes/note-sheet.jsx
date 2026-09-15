@@ -4,7 +4,7 @@
 // Back from a note lands on the list of the block you opened it from.
 
 import { useEffect, useRef, useState } from "react";
-import { Sheet } from "@/components/ui/sheet";
+import { GROW_TRANSITION, PANE_WIDTH, Sheet } from "@/components/ui/sheet";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { useBlocks } from "../blocks-provider";
 import { useNotes } from "../notes-provider";
@@ -13,15 +13,31 @@ import { NotePage } from "../tray/note-page";
 
 export function NoteSheet({ sheet }) {
   const { state, showNote, back, close } = sheet;
+  const { notes } = useNotes();
+  // remembered while the page is open, and only ever widens around an open note
+  const [full, setFull] = useState(false);
+  const onNote = state.page === "note" && notes.some((n) => n.id === state.noteId);
 
   return (
-    <Sheet side="right" open={state.open} onOpenChange={(o) => !o && close()}>
-      <Slides state={state} onShow={showNote} onBack={back} />
+    <Sheet
+      side="right"
+      open={state.open}
+      onOpenChange={(o) => !o && close()}
+      // the transition stays on both ways, so shrinking back glides like growing does
+      style={{ transition: GROW_TRANSITION, ...(full && onNote ? { width: PANE_WIDTH } : {}) }}
+    >
+      <Slides
+        state={state}
+        onShow={showNote}
+        onBack={back}
+        full={full}
+        onToggleFull={() => setFull((v) => !v)}
+      />
     </Sheet>
   );
 }
 
-function Slides({ state, onShow, onBack }) {
+function Slides({ state, onShow, onBack, full, onToggleFull }) {
   const { blocks, droppedToday, archived, hydrated: blocksReady } = useBlocks();
   const { notes, hydrated, loadFailed, canWrite, addNote, editNote, moveNotes, removeNotes } = useNotes();
   const [api, setApi] = useState(null);
@@ -92,6 +108,8 @@ function Slides({ state, onShow, onBack }) {
             note={note}
             onChange={(patch) => editNote(state.noteId, patch)}
             onBack={onBack}
+            full={full}
+            onToggleFull={onToggleFull}
           />
         </CarouselItem>
       </CarouselContent>

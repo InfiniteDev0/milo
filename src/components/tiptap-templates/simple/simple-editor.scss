@@ -32,12 +32,17 @@ body {
   background: transparent;
 }
 
+/* Absolute, not fixed: a note sits inside a sliding carousel, and its transform
+   makes a fixed panel measure from the carousel instead of the window. It
+   opened on the hidden list slide, off-screen, so search looked dead. The
+   editor wrapper in note-editor.jsx is the anchor. */
 .simple-editor-search-and-replace {
-  position: fixed;
-  top: calc(var(--tt-toolbar-height) + 0.5rem);
-  right: 0.5rem;
+  position: absolute;
+  top: calc(var(--tt-toolbar-height) + 0.75rem);
+  right: 0.75rem;
   z-index: 51;
-  max-height: calc(100dvh - var(--tt-toolbar-height) - 1rem);
+  max-height: calc(100% - var(--tt-toolbar-height) - 1.5rem);
+  overflow-y: auto;
 }
 
 /* Their template centres a 648px column on a blank page. In the note pane
@@ -62,4 +67,9 @@ body {
   .simple-editor-content .tiptap.ProseMirror.simple-editor {
     padding: 1rem 0 30vh;
   }
+}
+
+/* Highlights are pale, so the words sitting on one stay dark even on a dark note. */
+.dark .simple-editor-content mark {
+  color: #141414;
 }

@@ -117,6 +117,9 @@ export async function loadSessions(stamp) {
     taskId: r.task_id,
     startedAt: Date.parse(r.started_at),
     endedAt: r.ended_at ? Date.parse(r.ended_at) : null,
+    // already in the database: the sync starts from what it holds and never inserts this row again
+    stored: true,
+    storedEndedAt: r.ended_at ? Date.parse(r.ended_at) : null,
   }));
 }
 

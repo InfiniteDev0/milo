@@ -7,7 +7,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Reorder } from "motion/react";
 import { Sheet } from "@/components/ui/sheet";
-import { onDay } from "@/lib/days";
 import { spent, useNow } from "@/lib/time";
 import { shade } from "@/lib/shade";
 import { useBlocks } from "../blocks-provider";
@@ -17,7 +16,7 @@ import { TaskRow } from "./task-row";
 import { Footer } from "./footer";
 
 export function BlockSheet() {
-  const { blocks, tasks, setTaskStatus, reorderTasks, spentOnBlock } = useBlocks();
+  const { blocks, tasks, setTaskStatus, reorderTasks, spentOnBlock, isToday } = useBlocks();
 
   const [openId, setOpenId] = useState(null);
   const [full, setFull] = useState(false);
@@ -41,8 +40,8 @@ export function BlockSheet() {
   // Ticks only while this block runs; a frozen clock reads as a broken one.
   const now = useNow(running);
 
-  // Today's tasks only — a Friday task is absent here, not greyed out.
-  const mine = block ? tasks.filter((t) => t.blockId === block.id && onDay(t)) : [];
+  // Today's tasks only — a Friday task, or one sitting today out, is absent here, not greyed out.
+  const mine = block ? tasks.filter((t) => t.blockId === block.id && isToday(t)) : [];
 
   // Summed from the interval log, so it can only ever be time that elapsed.
   const time = block ? spent(spentOnBlock(block.id, now ?? undefined)) : null;

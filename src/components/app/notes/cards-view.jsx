@@ -14,7 +14,7 @@ import { NotesGrid } from "./notes-grid";
 import { SelectionBar } from "./selection-bar";
 import { useSelection } from "./use-selection";
 
-export function CardsView({ notes, onOpen, empty }) {
+export function CardsView({ notes, onOpen, empty, onAdd }) {
   const { editNote, moveNotes, removeNotes } = useNotes();
   const [query, setQuery] = useState("");
   const [range, setRange] = useState("all");
@@ -61,6 +61,8 @@ export function CardsView({ notes, onOpen, empty }) {
         onOpen={onOpen}
         onTogglePin={(n) => editNote(n.id, { pinned: !n.pinned })}
         empty={filtering ? "No notes match that." : empty}
+        // a new note doesn't answer a search, so the nudge waits until the filters are off
+        onAdd={filtering ? undefined : onAdd}
       />
     </div>
   );

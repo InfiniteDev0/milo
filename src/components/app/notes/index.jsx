@@ -76,6 +76,7 @@ export function NotesView() {
           <CardsView
             notes={notes}
             onOpen={sheet.openNote}
+            onAdd={canWrite ? () => add() : undefined}
             empty="No notes yet. Anything you write lands here."
           />
         )}

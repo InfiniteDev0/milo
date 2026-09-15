@@ -11,7 +11,6 @@
  */
 
 import { Check } from "lucide-react";
-import { onDay } from "@/lib/days";
 import { useBlocks } from "./blocks-provider";
 import { Strike } from "./strike";
 
@@ -24,9 +23,9 @@ const stamp = (d = new Date()) =>
   });
 
 export function DailyReflection() {
-  const { tasks, journal } = useBlocks();
+  const { tasks, journal, isToday } = useBlocks();
 
-  const did = tasks.filter((t) => onDay(t) && t.status === "done");
+  const did = tasks.filter((t) => isToday(t) && t.status === "done");
   const written = journal?.night?.trim();
 
   return (
@@ -63,6 +62,16 @@ export function DailyReflection() {
           </ul>
         </div>
       )}
+
+      {/* the day is over, so this is the moment tomorrow can be looked at without it being a demand */}
+      <button
+        type="button"
+        onClick={() => window.dispatchEvent(new CustomEvent("milo:day-ahead", { detail: "tomorrow" }))}
+        style={{ "--lift": "var(--chrome-lift)" }}
+        className="milo-lift mt-auto flex w-fit cursor-pointer items-center gap-2 rounded-xl bg-chrome px-4 py-2.5 text-sm text-chrome-ink"
+      >
+        See what&rsquo;s waiting tomorrow
+      </button>
     </div>
   );
 }

@@ -3,8 +3,7 @@
 // One note in a sheet's stack: its title, when it was written, its block, and its first lines.
 // While searching, the lines the words turn up in take the place of the first lines.
 
-import { shade } from "@/lib/shade";
-import { noteColour } from "@/lib/note-colours";
+import { noteColour, paperStyle } from "@/lib/note-colours";
 import { findInNote } from "@/lib/note-search";
 import { useBlocks } from "../blocks-provider";
 import { Highlight, MatchCount, MatchLines } from "../notes/highlight";
@@ -13,7 +12,9 @@ import { SelectBox } from "../notes/select-box";
 const clock = (ms) => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 const date = (ms) => new Date(ms).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 
-export function NoteRow({ note, onOpen, query = "", when = "time", showBlock = true, selected, onToggleSelect }) {
+export function NoteRow({ note, onOpen, query = "", when = "time", since = null, showBlock = true, selected, onToggleSelect }) {
+  // a note left for today from an earlier day shows when it was written, not a time that reads as today's
+  const dated = when === "date" || (since != null && note.createdAt < since);
   const { blocks, droppedToday, archived } = useBlocks();
   const block =
     showBlock && note.blockId
@@ -35,8 +36,8 @@ export function NoteRow({ note, onOpen, query = "", when = "time", showBlock = t
         }
       }}
       // each note in its own colour, darkened for the lift — never grey under a coloured card
-      style={{ backgroundColor: paper.bg, "--lift": shade(paper.bg) }}
-      className={`milo-on-tint milo-lift flex w-full cursor-pointer gap-3 rounded-xl border px-3 py-3 text-left ${
+      style={paperStyle(paper)}
+      className={`milo-paper milo-lift flex w-full cursor-pointer gap-3 rounded-xl border px-3 py-3 text-left ${
         selected ? "border-foreground/60" : "border-foreground/10"
       }`}
     >
@@ -53,7 +54,7 @@ export function NoteRow({ note, onOpen, query = "", when = "time", showBlock = t
             <MatchCount count={found.count} />
           ) : (
             <span className="shrink-0 text-[11px] text-foreground/30 tabular-nums">
-              {when === "date" ? date(note.createdAt) : clock(note.createdAt)}
+              {dated ? date(note.createdAt) : clock(note.createdAt)}
             </span>
           )}
         </div>

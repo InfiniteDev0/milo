@@ -8,11 +8,15 @@ import { Appearance } from "@/components/app/settings/appearance";
 import { Interruptions } from "@/components/app/settings/interruptions";
 import { BlocksSection } from "@/components/app/settings/blocks";
 import { Account } from "@/components/app/settings/account";
+import { Shortcuts } from "@/components/app/settings/shortcuts";
+import { Writing } from "@/components/app/settings/writing";
 
 const TABS = [
   { id: "appearance", label: "Appearance", render: () => <Appearance /> },
   { id: "interruptions", label: "Interruptions", render: () => <Interruptions /> },
+  { id: "writing", label: "Writing", render: () => <Writing /> },
   { id: "blocks", label: "Blocks", render: () => <BlocksSection /> },
+  { id: "shortcuts", label: "Shortcuts", render: () => <Shortcuts /> },
   { id: "account", label: "Account", render: () => <Account /> },
 ];
 
