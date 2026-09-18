@@ -24,8 +24,24 @@ export function dragStart(e) {
   return { x: e.clientX, y: e.clientY, dx: e.clientX - r.left, dy: e.clientY - r.top, width: r.width };
 }
 
+// anything marked data-drag-magnet pulls the copy in as the pointer nears it, shrinking it on the way (Vercel's hide-the-toolbar X)
+const PULL_FROM = 180;
+const PULL_FULL = 80;
+
 const place = (el, x, y, start) => {
-  el.style.transform = `translate3d(${x - start.dx}px, ${y - start.dy}px, 0) rotate(2deg) scale(1.02)`;
+  let px = x;
+  let py = y;
+  let t = 0;
+  const magnet = document.querySelector("[data-drag-magnet]");
+  if (magnet) {
+    const m = magnet.getBoundingClientRect();
+    const cx = m.left + m.width / 2;
+    const cy = m.top + m.height / 2;
+    t = Math.min(1, Math.max(0, (PULL_FROM - Math.hypot(cx - x, cy - y)) / (PULL_FROM - PULL_FULL)));
+    px += (cx - x) * t * 0.8;
+    py += (cy - y) * t * 0.8;
+  }
+  el.style.transform = `translate3d(${px - start.dx}px, ${py - start.dy}px, 0) rotate(${2 * (1 - t)}deg) scale(${1.02 - 0.7 * t})`;
 };
 
 export function DragFollower({ start, onEnd, children }) {
@@ -67,7 +83,8 @@ export function DragFollower({ start, onEnd, children }) {
       ref={node}
       aria-hidden
       className="pointer-events-none fixed left-0 top-0 z-100 text-foreground"
-      style={{ width: start.width }}
+      // shrinks around where the pointer holds it, so it stays under the pointer as it's pulled in
+      style={{ width: start.width, transformOrigin: `${start.dx}px ${start.dy}px` }}
     >
       {children}
     </div>,
