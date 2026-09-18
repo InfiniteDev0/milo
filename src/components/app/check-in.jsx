@@ -36,7 +36,7 @@ import { spent, useNow } from "@/lib/time";
 import { useBlocks } from "./blocks-provider";
 
 export function CheckIn() {
-  const { blocks, ongoing, checkInMinutes, spentOnBlock, start } = useBlocks();
+  const { dayBlocks, ongoing, checkInMinutes, spentOnBlock, start } = useBlocks();
 
   // how many intervals the user has already waved away for this block
   const [seen, setSeen] = useState(0);
@@ -60,7 +60,8 @@ export function CheckIn() {
 
   /* The next block in the line, if there is one. Not a suggestion — the order
      is the one you put them in. */
-  const order = blocks.filter((b) => b.status !== "done");
+  // an empty block is never "next"
+  const order = dayBlocks.filter((b) => b.status !== "done");
   const here = order.findIndex((b) => b.id === ongoing.id);
   const next = here >= 0 ? order[here + 1] : null;
 

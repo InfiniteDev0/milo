@@ -33,6 +33,8 @@ export function useDayState() {
   const [plans, setPlans] = useState({});
   // a plan read that failed writes nothing, the same rule the day itself keeps
   const [plansReady, setPlansReady] = useState(false);
+  // a theme per weekday, saved with your profile: { tue: { name, emoji } }
+  const [dayThemes, setDayThemes] = useState({});
 
   return {
     blocks, setBlocks,
@@ -50,5 +52,6 @@ export function useDayState() {
     todayStamp, setTodayStamp,
     plans, setPlans,
     plansReady, setPlansReady,
+    dayThemes, setDayThemes,
   };
 }

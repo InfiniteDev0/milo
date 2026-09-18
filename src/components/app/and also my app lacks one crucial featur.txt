@@ -1,0 +1,2 @@
+and also my app lacks one crucial feature swift switch between blocks and tasks i can pause a block and start a new one while not losing the time i spend on a previous task on a different block , clean swift switch and how does the switch happen 
+

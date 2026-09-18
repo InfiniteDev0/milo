@@ -14,8 +14,17 @@ export const blockFinished = (list, blockId, skipped) => {
   return mine.length > 0 && mine.every((t) => t.status === "done");
 };
 
-// rest is for the gap between blocks; after the last one there is no gap to rest in
-export const moreToCome = (list, justFinished) =>
+// part of today: something in it today, or already under way. An empty block stays out of the day
+export const inDay = (block, tasks, skipped) =>
+  block.status !== "todo" || workToday(tasks, block.id, skipped).length > 0;
+
+// rest is for the gap between blocks; after the last one there is no gap to rest in, and an empty block isn't one
+export const moreToCome = (list, justFinished, tasks, skipped) =>
   list.some(
-    (b) => b.id !== justFinished && !b.dropped && !b.archived && b.status !== "done",
+    (b) =>
+      b.id !== justFinished &&
+      !b.dropped &&
+      !b.archived &&
+      b.status !== "done" &&
+      inDay(b, tasks, skipped),
   );

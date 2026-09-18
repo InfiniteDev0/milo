@@ -82,7 +82,8 @@ export function BlockNotesPage({ blockId }) {
             )}
           </div>
 
-          <div className="scrollbar-pill min-h-0 flex-1 overflow-y-auto pb-8">
+          {/* the block's name and Add note stay put; only its notes scroll */}
+          <div className="flex min-h-0 flex-1 flex-col">
             {loadFailed ? (
               // a failed read knows nothing about your notes, so it never says there are none
               <p className="pt-16 text-center text-sm text-foreground/45">

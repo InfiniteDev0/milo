@@ -1,7 +1,7 @@
 "use client";
 
 // Notes as cards with their tools: search every word, narrow by date, tick to move or delete.
-// The All notes view and a block's own page both use it.
+// The All notes view and a block's own page both use it. The tools stay put; only the notes scroll.
 
 import { useState } from "react";
 import { filterNotes } from "@/lib/note-filters";
@@ -26,8 +26,8 @@ export function CardsView({ notes, onOpen, empty, onAdd }) {
   const filtering = query.trim() !== "" || range !== "all";
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
+      <div className="flex shrink-0 flex-col gap-2">
         <Filters query={query} onQuery={setQuery} range={range} onRange={setRange} />
         {summary && summary.hits > 0 && (
           <p className="text-xs text-foreground/45">
@@ -37,7 +37,7 @@ export function CardsView({ notes, onOpen, empty, onAdd }) {
       </div>
 
       {selected.size > 0 && (
-        <div className="sticky top-0 z-10">
+        <div className="shrink-0">
           <SelectionBar
             count={selected.size}
             onMove={(block) => {
@@ -53,17 +53,20 @@ export function CardsView({ notes, onOpen, empty, onAdd }) {
         </div>
       )}
 
-      <NotesGrid
-        notes={shown}
-        query={query}
-        selected={selected}
-        onToggleSelect={toggle}
-        onOpen={onOpen}
-        onTogglePin={(n) => editNote(n.id, { pinned: !n.pinned })}
-        empty={filtering ? "No notes match that." : empty}
-        // a new note doesn't answer a search, so the nudge waits until the filters are off
-        onAdd={filtering ? undefined : onAdd}
-      />
+      {/* -mx-2 lets the grid's own padding show a selected card's ring without shifting the cards */}
+      <div className="scrollbar-pill -mx-2 min-h-0 flex-1 overflow-y-auto pb-8">
+        <NotesGrid
+          notes={shown}
+          query={query}
+          selected={selected}
+          onToggleSelect={toggle}
+          onOpen={onOpen}
+          onTogglePin={(n) => editNote(n.id, { pinned: !n.pinned })}
+          empty={filtering ? "No notes match that." : empty}
+          // a new note doesn't answer a search, so the nudge waits until the filters are off
+          onAdd={filtering ? undefined : onAdd}
+        />
+      </div>
     </div>
   );
 }

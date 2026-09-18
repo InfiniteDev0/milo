@@ -5,7 +5,8 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { stampLabel } from "@/lib/day-ahead";
+import { stampLabel, weekdayOf } from "@/lib/day-ahead";
+import { DayTheme } from "../day-theme";
 import { nextStamp } from "@/lib/stamp";
 import { useBlocks } from "../blocks-provider";
 import { NoteRowsSkeleton } from "../notes/skeletons";
@@ -37,6 +38,7 @@ export function PlanView({ tab, onTab, onOpenNote }) {
           <span className="truncate text-xs text-foreground/45">
             {stampLabel(stamp)} · nothing here is fixed
           </span>
+          <DayTheme dayId={weekdayOf(stamp)} className="mt-1.5 py-0.5 text-xs" />
         </div>
 
         <DialogPrimitive.Close

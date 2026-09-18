@@ -174,6 +174,12 @@ export function saveTask(task) {
     .eq("id", task.id);
 }
 
+// a task changing blocks, placed at the end of its new block's list
+export function moveTaskRow(id, blockId, position) {
+  const db = createClient();
+  return db.from("tasks").update({ block_id: blockId, position }).eq("id", id);
+}
+
 /* Out of the day, still in the record. See the migration for why this is
    not a delete. */
 export function archiveTask(id) {

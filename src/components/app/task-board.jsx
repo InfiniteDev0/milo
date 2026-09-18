@@ -56,6 +56,9 @@ import { DayComplete } from "./day-complete";
 import { DailyReflection } from "./daily-reflection";
 import { TaskRings } from "./task-rings";
 import { Strike } from "./strike";
+import { DeleteTaskButton } from "./delete-task-button";
+import { MorningCard } from "./day-ahead/morning-card";
+import { TaskNoteCount, useTaskNoteCount } from "./task-note-count";
 
 // Module scope, so the array identity never changes between renders.
 const DRAG_BOUNDS = [restrictToFirstScrollableAncestor];
@@ -100,7 +103,7 @@ const ART = [
 function QuickRow({ task, onToggle, onOpen }) {
   const done = task.status === "done";
   return (
-    <div className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-foreground/[0.03]">
+    <div className="group flex w-full items-center gap-2 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-foreground/[0.03]">
       <Tick done={done} onToggle={onToggle} />
       <button
         type="button"
@@ -111,6 +114,7 @@ function QuickRow({ task, onToggle, onOpen }) {
       >
         <Strike id={task.id} done={done} className="max-w-full truncate align-top">{task.name}</Strike>
       </button>
+      <DeleteTaskButton task={task} />
     </div>
   );
 }
@@ -133,7 +137,8 @@ function TaskCard({ task, asHandle, isOverlay, onOpen, onToggle, isRunning, elap
      was always in it — with the chip gone, a task with no estimate, no steps
      and no recorded time has nothing to put on that line, and an empty row is
      just a gap under the title. */
-  const hasMeta = task.minutes != null || isRunning || Boolean(elapsed);
+  const noteCount = useTaskNoteCount(task.id);
+  const hasMeta = task.minutes != null || isRunning || Boolean(elapsed) || noteCount > 0;
   const content = (
     /* White, with a thin grey border all the way round and the lift under it.
 
@@ -148,7 +153,7 @@ function TaskCard({ task, asHandle, isOverlay, onOpen, onToggle, isRunning, elap
        naming the block. Three times is not reinforcement, it is noise. It
        earned its place back when the board pooled cards from every block. */
     <Card
-      className="milo-lift cursor-pointer border border-foreground/10 bg-card"
+      className="group milo-lift cursor-pointer border border-foreground/10 bg-card"
       style={{ "--lift": "var(--card-lift)" }}
     >
       <CardContent
@@ -203,6 +208,9 @@ function TaskCard({ task, asHandle, isOverlay, onOpen, onToggle, isRunning, elap
               {doneSteps}/{steps.length}
             </span>
           )}
+
+          {/* not on the copy under the pointer while it is dragged */}
+          {!isOverlay && <DeleteTaskButton task={task} className="-mr-1.5 -mt-1" />}
         </div>
 
         {/* The note, in the chip's old place. Two lines at most — it is a
@@ -226,6 +234,8 @@ function TaskCard({ task, asHandle, isOverlay, onOpen, onToggle, isRunning, elap
               {task.minutes}m
             </span>
           )}
+
+          <TaskNoteCount count={noteCount} />
 
 
 
@@ -276,7 +286,7 @@ function BoardSkeleton() {
 }
 
 export function TaskBoard() {
-  const { tasks, blocks, blockById, countsFor, setTaskStatus, ongoing, startAndLead, hydrated, runningTaskId, spentOnTask, spentOnBlock, setTaskNote, setTaskMinutes, addStep, toggleStep, removeStep, setTaskDays, setTaskKind , paused, loadFailed, retry, day, isToday } =
+  const { tasks, blocks, dayBlocks, blockById, countsFor, setTaskStatus, ongoing, startAndLead, hydrated, runningTaskId, spentOnTask, spentOnBlock, setTaskNote, setTaskMinutes, addStep, toggleStep, removeStep, setTaskDays, setTaskKind , paused, loadFailed, retry, day, isToday } =
     useBlocks();
   const [dropping, setDropping] = useState(false);
   /* Ticks whenever anything is running, not only when a TASK is — otherwise
@@ -410,7 +420,10 @@ export function TaskBoard() {
     /* Every block still in play is done. Blocks set aside earlier don't
        count against this — setting one aside was the decision that it isn't
        today's, so a day of three out of five you chose is a whole day. */
-    const complete = n > 0 && n === blocks.length;
+    // blocks with nothing in them today aren't part of it either, so they never hold a finished day open
+    const complete = n > 0 && n === dayBlocks.length;
+    // blocks exist, but none has anything in it today
+    const nothingToday = n === 0 && dayBlocks.length === 0 && blocks.length > 0;
     // a day you closed shows its reflection until rollover, finished or not
     const reflecting = complete || day.endedAt != null;
 
@@ -458,6 +471,15 @@ export function TaskBoard() {
                   : "Room for another if you want one. Drag it down here."}
               </p>
             </>
+          ) : nothingToday ? (
+            <>
+              {/* an open day, said plainly; where to fill it, not a list of what's missing */}
+              <h2 className="text-3xl">Today&rsquo;s wide open.</h2>
+              <p className="max-w-sm text-sm text-foreground/45">
+                None of your blocks has anything in it today. Add tasks from the Month view, or look ahead in the Day
+                ahead.
+              </p>
+            </>
           ) : (
             <>
               {/* Not "Nothing running". A day that hasn't started is not a
@@ -470,6 +492,12 @@ export function TaskBoard() {
                   ? "Let go to start your day."
                   : "Drag a block down here to start it. One at a time."}
               </p>
+              {/* offered before the first block, never opened for you */}
+              {!dropping && (
+                <div className="flex w-full justify-center pt-3">
+                  <MorningCard />
+                </div>
+              )}
             </>
           )}
         </div>

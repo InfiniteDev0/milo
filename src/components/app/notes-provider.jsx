@@ -4,18 +4,15 @@
 // A failed read writes nothing and never shows as "no notes" — the same rule the blocks provider keeps.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { listNotes, toPlain } from "@/lib/db/notes";
 import { deleteNoteForGood, saveNoteSoon } from "@/lib/db/note-queue";
 import { playTask, playTuck } from "@/lib/sound";
-import { DeletedToast } from "./notes/deleted-toast";
-import { MovedToast } from "./notes/moved-toast";
+import { showMovedToast } from "./moved-toast";
+import { showUndoToast } from "./undo-toast";
+import { useFollowTasks } from "./notes/use-follow-tasks";
 
 const NotesContext = createContext(null);
-
-// how long Undo stays on screen before a delete is real
-const UNDO_MS = 6000;
 
 const newestFirst = (a, b) => b.createdAt - a.createdAt;
 
@@ -52,6 +49,9 @@ export function NotesProvider({ children }) {
   // nothing is written until the real notes have loaded
   const canWrite = hydrated && !loadFailed && userId != null;
 
+  // a moved task takes its notes with it
+  useFollowTasks({ notes, setNotes, canWrite, userId });
+
   // `fields` can carry a blockId, so + on a block's card makes a note already in that block
   const addNote = useCallback(
     (fields = {}) => {
@@ -65,6 +65,7 @@ export function NotesProvider({ children }) {
         colour: "plain",
         pinned: false,
         blockId: null,
+        taskId: null,
         showOn: null,
         createdAt: now,
         updatedAt: now,
@@ -106,11 +107,7 @@ export function NotesProvider({ children }) {
       setNotes((prev) => prev.map((n) => byId.get(n.id) ?? n));
       moved.forEach((n) => saveNoteSoon(userId, n, 0));
       playTask();
-      toast.custom(() => <MovedToast count={moved.length} to={block} />, {
-        unstyled: true,
-        id: "milo-notes-moved",
-        duration: 3000,
-      });
+      showMovedToast({ count: moved.length, to: block, noun: "note" });
     },
     [canWrite, userId, notes],
   );
@@ -125,28 +122,15 @@ export function NotesProvider({ children }) {
       setNotes((prev) => prev.filter((n) => !going.has(n.id)));
       playTuck();
 
-      const toastId = crypto.randomUUID();
-      let settled = false;
-      // sonner can report both a dismiss and an auto-close, so this runs once
-      const commit = () => {
-        if (settled) return;
-        settled = true;
-        removed.forEach((n) => deleteNoteForGood(n.id));
-      };
-      const undo = () => {
-        if (settled) return;
-        settled = true;
-        toast.dismiss(toastId);
-        playTask();
-        setNotes((prev) => [...removed, ...prev.filter((n) => !going.has(n.id))].sort(newestFirst));
-      };
-
-      toast.custom(() => <DeletedToast count={removed.length} onUndo={undo} />, {
-        unstyled: true,
-        id: toastId,
-        duration: UNDO_MS,
-        onAutoClose: commit,
-        onDismiss: commit,
+      const one = removed.length === 1;
+      showUndoToast({
+        title: `${removed.length} ${one ? "note" : "notes"} deleted`,
+        hint: one ? "You can still bring it back." : "You can still bring them back.",
+        onCommit: () => removed.forEach((n) => deleteNoteForGood(n.id)),
+        onUndo: () => {
+          playTask();
+          setNotes((prev) => [...removed, ...prev.filter((n) => !going.has(n.id))].sort(newestFirst));
+        },
       });
     },
     [canWrite, notes],

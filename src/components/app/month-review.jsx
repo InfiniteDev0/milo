@@ -36,6 +36,7 @@ import {
 import { IconInput } from "@/components/ui/icon-input";
 import { shade } from "@/lib/shade";
 import { playLock } from "@/lib/sound";
+import { rememberMonth } from "@/lib/vision";
 import { useBlocks } from "./blocks-provider";
 
 const ICONS = ["🌙", "🌱", "🔥", "📖", "🧭", "🛠️", "🌊", "☀️", "🏔️", "✍️"];
@@ -105,9 +106,12 @@ export function MonthReview() {
 
     blocks.filter((b) => !kept(b.id)).forEach((b) => archiveBlock(b.id));
 
+    // the month being closed keeps its name on the year
+    const year = rememberMonth(profile?.year, profile?.month);
+
     if (added.length > 0) {
       completeSetup({
-        year: profile?.year,
+        year,
         month: { name: name.trim() || monthName(now), icon, stamp: monthStamp(now) },
         blocks: added,
         tasksByBlock: {},
@@ -116,6 +120,7 @@ export function MonthReview() {
     } else {
       setProfile({
         ...profile,
+        year,
         month: {
           name: name.trim() || monthName(now),
           icon,
@@ -132,6 +137,7 @@ export function MonthReview() {
        tomorrow. Deciding not to decide is a decision. */
     setProfile({
       ...profile,
+      year: rememberMonth(profile?.year, profile?.month),
       month: { ...(profile?.month ?? {}), stamp: monthStamp(now) },
     });
     setOpen(false);

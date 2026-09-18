@@ -9,6 +9,7 @@ import { useSpellcheck } from "@/hooks/use-spellcheck";
 import { Button } from "@/components/ui/button";
 import { NoteEditor } from "../note-editor";
 import { NoteSettings } from "./note-settings";
+import { CopyNoteButton, PinNoteButton } from "./note-actions";
 import { noteColour, paperStyle } from "@/lib/note-colours";
 
 export function NotePage({ note, onChange, onBack, full = false, onToggleFull }) {
@@ -36,6 +37,9 @@ export function NotePage({ note, onChange, onBack, full = false, onToggleFull })
           placeholder="Title"
           className="min-w-0 flex-1 bg-transparent text-2xl outline-none placeholder:text-foreground/25"
         />
+
+        <PinNoteButton note={note} onChange={onChange} />
+        <CopyNoteButton note={note} />
 
         {onToggleFull && (
           <button

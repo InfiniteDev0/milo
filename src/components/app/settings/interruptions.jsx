@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { setSoundOn, soundOn } from "@/lib/sound";
 import { useBlocks } from "@/components/app/blocks-provider";
 import { Row, Segmented } from "./row";
+import { TimerRow } from "./timer-row";
 
 export function Interruptions() {
   const { restMinutes, setRestMinutes, checkInMinutes, setCheckInMinutes } = useBlocks();
@@ -72,6 +73,8 @@ export function Interruptions() {
           onChange={setCheckInMinutes}
         />
       </Row>
+
+      <TimerRow />
     </section>
   );
 }

@@ -20,6 +20,8 @@ const SIDES = {
     "inset-x-4 bottom-4 data-open:slide-in-from-bottom-8 data-closed:slide-out-to-bottom-8",
   left:
     "inset-y-4 left-4 data-open:slide-in-from-left-8 data-closed:slide-out-to-left-8",
+  center:
+    "inset-y-4 left-1/2 -translate-x-1/2 data-open:zoom-in-95 data-closed:zoom-out-95",
 };
 
 export function Sheet({
@@ -32,6 +34,8 @@ export function Sheet({
   wide = false,
   // sits to the left of another sheet instead of on top of it
   beside = false,
+  // stays open while you use the page behind it: no backdrop, and clicking elsewhere doesn't close it
+  floating = false,
   style,
   children,
 }) {
@@ -40,6 +44,8 @@ export function Sheet({
   return (
     <DialogPrimitive.Root
       open={open}
+      modal={!floating}
+      disablePointerDismissal={floating}
       onOpenChange={(next, details) => {
         if (!next && details?.reason === "outside-press" && onDismiss) {
           onDismiss();
@@ -49,9 +55,13 @@ export function Sheet({
       }}
     >
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/10 dark:bg-black/50 duration-200 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
+        {!floating && (
+          <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/10 dark:bg-black/50 duration-200 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
+        )}
 
         <DialogPrimitive.Popup
+          // lets a grip inside find the sheet it moves
+          data-sheet=""
           // Only width/height animate — you cannot interpolate `auto` to a length.
           style={
             bottom

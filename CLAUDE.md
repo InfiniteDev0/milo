@@ -96,10 +96,8 @@ src/app/
 │   ├── pricing/page.js    /pricing   free / $9.99mo / $99.99yr / $299.99 lifetime
 │   └── features/page.js   /features  EMPTY STUB — renders <div />
 ├── login/page.jsx         /login     renders bare, by design
-└── demo/                  scratch routes, safe to delete
-    ├── hero/              interactive hero candidate vs the shipped one
-    ├── color/             accent colour candidates — decision still open
-    └── faces/             drives MiloFace with a forced mood
+└── demo/                  scratch routes when a design question needs one
+    └── vision/            hand-drawn "windows" vision board mockup (17 Sep) — parked; the Year page stays as built for now
 ```
 
 Route groups are how chrome is scoped. **Anything that shouldn't have a navbar goes
@@ -247,9 +245,21 @@ From POSITIONING.md, enforced on every page:
 4. ✅ Time tracking — the interval log (`TIME.md`)
 5. ✅ Database schema + RLS
 6. ✅ Every feature on Supabase — blocks, tasks, days, sessions, profile, notes.
-7. 🔄 **Here:** writing. Notes are built (migration `0008` must be applied):
-   the notes sheet and `/notes` share `NotesProvider`. Next: the journal
-   (Morning / Pause / Night on the day) and `/journal` as a reader over past days.
+7. 🔄 **Here:** writing. Notes are built (migrations up to `0011` must be applied):
+   the notes sheet and `/notes` share `NotesProvider`. The journal is being
+   specified by Abdiaziz step by step: `/journal` (`components/app/journal/`) is
+   **UI only, nothing saved** (17 Sep) — search, the "Your story, kept." hero with
+   Start reading, and the shelf illustration (`public/journal.png`) bottom-right.
+   Opening a book follows codrops BookPreview/BookBlock, rebuilt in React +
+   motion (no jQuery): the shelf cover swings open in 3D, then the open book
+   grows in beside an empty right column kept for later. The open book is
+   `public/bookui.png` cut out of its white background and split at the spine
+   (`public/journal-page-left.webp` / `-right.webp`), so a 3D page turn shows
+   the real photo on both faces; a turning leaf is clipped so the stacked page
+   edges stay behind. You type onto the pages in Caveat (`journal/paper.js`
+   holds the margins and sizes). A full page flows on with the cursor and turns
+   the leaf. Pages live in memory only.
+   He is guiding the rest; build only what he describes.
 8. ⬜ Offline via PowerSync
 9. ⬜ The flows in `BACKLOG.md` — partial-day close, month-end swap, block CRUD
 10. ⬜ Habits *(or shipping without them — PRODUCT.md allows it)*
@@ -273,5 +283,40 @@ From POSITIONING.md, enforced on every page:
   `useBlocks` from `blocks-provider`.
 - Keyboard shortcuts are listed once in `src/lib/shortcuts.js` (Settings →
   Shortcuts reads it) and bound with `hooks/use-shortcut.js`.
+- **Device settings** (sound-like, never data) go through `lib/preference.js`
+  (`createPreference`) and `hooks/use-preference.js`: spelling underlines, the
+  notes sheet position, the task timer mode.
+- **Built 17 Sep, from the user's own list:**
+  - An empty block (nothing today, not started) is out of the day: the provider's
+    `dayBlocks` drives the lineup, "day complete", rest and "next". Use it, not
+    `blocks`, for anything about today's line.
+  - Deleting a task is Undo-first (`components/app/undo-toast.jsx`, shared with
+    notes); the real delete runs when the toast closes.
+  - Tasks move between blocks (`moveTask`, saved with its own `task-block:` write
+    key so a pending note save isn't cancelled). The block sheet has Today · All
+    tasks; the Month page is block columns (`components/app/month/`) with drag.
+  - A task holds real notes (`notes.task_id`, migration `0010`); the old text box
+    shows until "Turn into a note".
+  - Weekday themes live on the profile (`profiles.day_themes`, migration `0011`),
+    edited in Settings → Week.
+  - The task timer is the task's minutes: one nudge when the clock has been on it
+    that long (`components/app/task-timer/`). Never a countdown.
+  - Both notes sheets (day page and Notes page) float (no backdrop, stay open)
+    and share one position: dragged to left / centre / right.
+  - A moved task takes its notes along: `moveTask` fires `milo:task-moved` and
+    `notes/use-follow-tasks.js` moves notes still filed under the old block
+    (a note filed elsewhere on purpose stays put).
+  - Before the first block, the board shows a morning card into the Day ahead
+    (`day-ahead/morning-card.jsx`); it never opens anything by itself.
+  - Images in notes are data URIs, shrunk to 1600px WebP; `Image` needs
+    `allowBase64: true` or they vanish on reopen. Storage is the eventual swap.
+  - **The Year page** (`components/app/year/`, decided from research — see
+    RESEARCH.md "The year page"): what it's about → Achieved (first) → vision
+    board → the months you lived → set down. A wish is tied to its blocks and
+    shows *days you showed up for it* (never a %); it can be achieved (confetti)
+    or set down. `profile.year.vision` may hold plain strings from setup —
+    always read it through `readVision`. The month review now keeps each closed
+    month's name in `profile.year.months`, and any month card on the Year page
+    can be named by hand (`year/month-name.jsx`).
 - A pre-existing lint warning on `MiloFace.jsx:271` ("Cannot access refs during render")
   is a false positive on a ref-callback factory. Leave it.

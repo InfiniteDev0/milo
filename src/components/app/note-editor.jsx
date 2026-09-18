@@ -249,7 +249,8 @@ export function NoteEditor({ noteId, body, onChange }) {
         // colour on words: TextStyle carries it, Color sets it
         TextStyle,
         Color,
-        Image,
+        // images live inside the note as data URIs; without this they are dropped the next time a note opens
+        Image.configure({ allowBase64: true }),
         Typography,
         Superscript,
         Subscript,

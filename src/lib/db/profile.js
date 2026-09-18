@@ -18,7 +18,7 @@ export async function loadProfile() {
   const db = createClient();
   const { data, error } = await db
     .from("profiles")
-    .select("year, month, rest_minutes, sound_on")
+    .select("year, month, rest_minutes, sound_on, day_themes")
     .maybeSingle();
 
   if (error) throw error;
@@ -29,6 +29,8 @@ export async function loadProfile() {
     month: data.month ?? null,
     restMinutes: data.rest_minutes ?? 5,
     soundOn: data.sound_on ?? true,
+    // { tue: { name, emoji } } — only weekdays you gave a theme
+    dayThemes: data.day_themes ?? {},
   };
 }
 
@@ -46,6 +48,7 @@ export function saveProfile(userId, profile) {
         ? {}
         : { rest_minutes: profile.restMinutes }),
       ...(profile.soundOn === undefined ? {} : { sound_on: profile.soundOn }),
+      ...(profile.dayThemes === undefined ? {} : { day_themes: profile.dayThemes }),
     },
     { onConflict: "id" },
   );

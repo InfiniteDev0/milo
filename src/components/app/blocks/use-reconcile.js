@@ -52,7 +52,7 @@ export function useReconcile({
 
       setFocusLocked(false);
       setSessions((log) => closeSessions(log));
-      if (restMinutes > 0 && moreToCome(blocks, running.id)) {
+      if (restMinutes > 0 && moreToCome(blocks, running.id, list, skipped)) {
         setRest({ until: Date.now() + restMinutes * 60000, blockName: running.name });
       }
     },

@@ -5,6 +5,8 @@ import { DayBar } from "@/components/app/day-bar";
 import { ScopeSwitcher } from "@/components/app/scope-switcher";
 import { ArchiveButton } from "@/components/app/archive-panel";
 import { DayLabel } from "@/components/app/day-label";
+import { DayControl } from "@/components/app/day-control";
+import { DayTheme } from "@/components/app/day-theme";
 import { Tray } from "@/components/app/tray";
 
 export const metadata = {
@@ -27,11 +29,17 @@ export default function DailyPage() {
       {/* Pinned — never scrolls */}
       <div className="flex shrink-0 flex-col items-center gap-3">
         <div className="flex  items-center justify-between w-full">
-          <DayLabel className="text-center" />
+          <div className="flex min-w-0 items-center gap-3">
+            <DayLabel className="text-center" />
+            {/* today's theme, if this weekday has one */}
+            <DayTheme />
+          </div>
           <div className="flex items-center gap-3">
             <ScopeSwitcher />
             {/* the shelf of blocks you keep but are not running today */}
             <ArchiveButton />
+            {/* pausing is the one you reach for mid-interruption, so it sits out here as well as in the date menu */}
+            <DayControl />
             {/* Pause and end live inside this now — they are the two things
                 you can do to a day, and this button is the day. */}
             <DatePicker />

@@ -2,8 +2,8 @@
 
 // Which days it appears on, and whether it comes back. See RESEARCH.md.
 
-import { DAYS } from "@/lib/days";
 import { useBlocks } from "../blocks-provider";
+import { DayPicker } from "./day-picker";
 
 const KINDS = [
   ["routine", "Comes back", "Part of the block, every day it runs"],
@@ -24,32 +24,7 @@ export function Schedule({ task }) {
         </span>
       </div>
 
-      <div className="flex gap-1">
-        {DAYS.map((d) => {
-          const on = days.includes(d.id);
-          return (
-            <button
-              key={d.id}
-              type="button"
-              aria-pressed={on}
-              aria-label={d.name}
-              onClick={() =>
-                setTaskDays(
-                  task.id,
-                  on ? days.filter((x) => x !== d.id) : [...days, d.id],
-                )
-              }
-              className={`flex size-8 flex-1 cursor-pointer items-center justify-center rounded-lg text-xs transition-colors ${
-                on
-                  ? "bg-foreground text-background"
-                  : "text-foreground/40 ring-1 ring-foreground/10 hover:ring-foreground/30"
-              }`}
-            >
-              {d.short}
-            </button>
-          );
-        })}
-      </div>
+      <DayPicker days={days} onChange={(next) => setTaskDays(task.id, next)} />
 
       <div className="flex gap-2 pt-1">
         {KINDS.map(([id, label, hint]) => (

@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { onDay } from "@/lib/days";
 import { spentOn } from "@/lib/day/intervals";
 import { daySnapshot } from "@/lib/day/snapshot";
-import { workToday } from "@/lib/day/work";
+import { inDay, workToday } from "@/lib/day/work";
 
 export function useValue(v) {
   const {
@@ -56,6 +56,7 @@ export function useValue(v) {
     toggleFocusLock,
     addTask,
     removeTask,
+    moveTask,
     setTaskDays,
     setTaskKind,
     setTaskMinutes,
@@ -68,12 +69,17 @@ export function useValue(v) {
     removeStep,
     skipTask,
     setAsideAhead,
+    dayThemes,
+    setDayTheme,
+    clearDayTheme,
     completeSetup,
   } = v;
 
   return useMemo(() => {
     const inPlay = blocks.filter((b) => !b.archived);
     const live = inPlay.filter((b) => !b.dropped);
+    // today's blocks: something in them today, or already under way — an empty block stays out of the lineup
+    const dayBlocks = live.filter((b) => inDay(b, tasks, skippedToday));
     const paused = pause !== null;
 
     // counts per block for today, derived and never stored, so the lineup always matches the board
@@ -90,6 +96,7 @@ export function useValue(v) {
 
     return {
       blocks: live,
+      dayBlocks,
       archived: blocks.filter((b) => b.archived),
       droppedToday: inPlay.filter((b) => b.dropped),
       // every block in your order, set aside or not — the Day ahead walks through these
@@ -120,6 +127,7 @@ export function useValue(v) {
       countsFor,
       addTask,
       removeTask,
+      moveTask,
       setTaskDays,
       setTaskKind,
       setTaskMinutes,
@@ -160,7 +168,7 @@ export function useValue(v) {
       checkInMinutes,
       setCheckInMinutes,
       // for widgets and lock screens: one plain payload, with nothing that counts what isn't done
-      snapshot: (now) => daySnapshot({ live, blocks, tasks, sessions }, now),
+      snapshot: (now) => daySnapshot({ live: dayBlocks, blocks, tasks, sessions }, now),
       // only ever counts up: no target, no percentage, no gap
       summary: {
         done: tasks.filter((t) => t.status === "done").length,
@@ -171,6 +179,10 @@ export function useValue(v) {
       miloMood: paused ? "sleepy" : miloMood,
       profile,
       setProfile,
+      // a theme per weekday: { tue: { name, emoji } }
+      dayThemes,
+      setDayTheme,
+      clearDayTheme,
       completeSetup,
       ongoing: ongoingBlock ? { ...ongoingBlock, ...countsFor(ongoingBlock.id) } : null,
     };
@@ -221,6 +233,7 @@ export function useValue(v) {
     toggleFocusLock,
     addTask,
     removeTask,
+    moveTask,
     setTaskDays,
     setTaskKind,
     setTaskMinutes,
@@ -233,6 +246,9 @@ export function useValue(v) {
     removeStep,
     skipTask,
     setAsideAhead,
+    dayThemes,
+    setDayTheme,
+    clearDayTheme,
     completeSetup,
   ]);
 }

@@ -26,6 +26,7 @@ export function useDayLoad({
   setTodayStamp,
   setPlans,
   setPlansReady,
+  setDayThemes,
 }) {
   // false until the first read settles; every write waits on it
   const [hydrated, setHydrated] = useState(false);
@@ -62,6 +63,7 @@ export function useDayLoad({
         if (saved) {
           setProfile({ year: saved.year, month: saved.month });
           setRestMinutes(saved.restMinutes);
+          setDayThemes(saved.dayThemes);
         }
 
         const stamp = stampToday();
@@ -149,6 +151,7 @@ export function useDayLoad({
     setTodayStamp,
     setPlans,
     setPlansReady,
+    setDayThemes,
   ]);
 
   return { hydrated, loadFailed, retry, userId };

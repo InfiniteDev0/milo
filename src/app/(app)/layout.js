@@ -9,6 +9,7 @@ import { ArchivePanel } from "@/components/app/archive-panel";
 import { BlockSheet } from "@/components/app/block-sheet";
 import { DayAhead } from "@/components/app/day-ahead";
 import { CheckIn } from "@/components/app/check-in";
+import { TaskTimer } from "@/components/app/task-timer";
 import { MorningRecap } from "@/components/app/morning-recap";
 import { UserAvatar } from "@/components/app/user-avatar";
 import { BlocksProvider } from "@/components/app/blocks-provider";
@@ -80,6 +81,8 @@ export default async function AppLayout({ children }) {
       {/* speaks while a block runs — see check-in.jsx for why this one
           interruption is allowed */}
       <CheckIn />
+      {/* says once when a task has run for the time you set on it */}
+      <TaskTimer />
       {/* what yesterday held, if midnight filed it and nobody looked */}
       <MorningRecap />
       <SetupWizard />

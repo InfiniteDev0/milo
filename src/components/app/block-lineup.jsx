@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { Pause } from "lucide-react";
 import { shade } from "@/lib/shade";
 import { spent, useNow } from "@/lib/time";
 import MiloFace from "@/components/MiloFace";
@@ -20,13 +21,15 @@ import { Button } from "../ui/button";
 import { DragFollower, dragStart, hideDragImage } from "./drag-follower";
 
 // a block's name, what it holds, and its rings — the same in the line and under the pointer
-function BlockInside({ name, sub, counts }) {
+function BlockInside({ name, sub, counts, reserve = false }) {
   return (
     <>
-      <div className="flex min-w-0 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-sm font-medium">{name.replace(" Block", "")}</span>
         <span className="text-xs opacity-60">{sub}</span>
       </div>
+      {/* room for the pause button, which sits over this spot as a sibling: a button can't hold a button */}
+      {reserve && <span aria-hidden className="size-8 shrink-0" />}
       <TaskRings {...counts} className="size-9 shrink-0" />
     </>
   );
@@ -55,7 +58,7 @@ function LineupSkeleton() {
 }
 
 export function BlockLineup() {
-  const { blocks, countsFor, start, reorderBlocks, focusLocked, hydrated, spentOnBlock, paused, pause, loadFailed, retry, rest } =
+  const { blocks, dayBlocks, countsFor, start, reorderBlocks, focusLocked, hydrated, spentOnBlock, paused, pause, loadFailed, retry, rest } =
     useBlocks();
   const [draggingId, setDraggingId] = useState(null);
   const [over, setOver] = useState(null);
@@ -124,10 +127,11 @@ export function BlockLineup() {
      in front of you; what you already did lives in the centre, where it
      gets a whole panel to itself instead of a crossed-out card. */
   // the running block always leads the line; sort is stable, so the rest keep their order
+  // a block with nothing in it today isn't in the line — there is nothing in it to do
   const ordered = [
     ...(focusLocked && running.length > 0
       ? running
-      : blocks.filter((b) => b.status !== "done")),
+      : dayBlocks.filter((b) => b.status !== "done")),
   ].sort((a, b) => (b.status === "ongoing") - (a.status === "ongoing"));
 
   /* Nothing left in the line — at the end of a day every block has moved to
@@ -203,8 +207,8 @@ export function BlockLineup() {
         const lifted = drag?.block.id === b.id;
 
         return (
-          <Button 
-            key={b.id}
+          <div key={b.id} className="relative flex min-w-56 flex-1">
+          <Button
             type="button"
             /* OPENS IT. Starting is the drag — which is what the empty
                state under the board has always said: "Drag a block down
@@ -245,7 +249,7 @@ export function BlockLineup() {
             /* milo-lift owns the transition, so `transition-all` is gone:
                two authorities on the same property meant the press either
                animated over 300ms or not at all. */
-            className={`milo-lift flex h-16 min-w-56 flex-1 cursor-grab items-center justify-between gap-3 rounded-xl px-4 text-left active:cursor-grabbing ${
+            className={`milo-lift flex h-16 w-full min-w-0 flex-1 cursor-grab items-center justify-between gap-3 rounded-xl px-4 text-left active:cursor-grabbing ${
               lifted ? "border-2 border-dashed border-foreground/25 *:invisible" : opacity
             } ${over === b.id ? "scale-[0.97] ring-2 ring-foreground/40" : ""}`}
             style={
@@ -259,8 +263,23 @@ export function BlockLineup() {
                   }
             }
           >
-            <BlockInside name={b.name} sub={sub} counts={counts} />
+            <BlockInside name={b.name} sub={sub} counts={counts} reserve={ongoing} />
           </Button>
+
+          {/* stop the running block without opening its sheet; the clock stops and the block waits where it was */}
+          {ongoing && !lifted && (
+            <button
+              type="button"
+              onClick={() => start(b.id)}
+              aria-label={`Pause ${b.name.replace(" Block", "")}`}
+              title="Pause this block"
+              style={{ backgroundColor: b.ink, color: b.bg }}
+              className="absolute top-1/2 right-16 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110 active:scale-95"
+            >
+              <Pause className="size-3.5" fill="currentColor" />
+            </button>
+          )}
+          </div>
         );
       })}
 

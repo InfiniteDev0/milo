@@ -57,21 +57,26 @@ export function NotesView() {
         </div>
       </div>
 
-      <div className="scrollbar-pill min-h-0 flex-1 overflow-y-auto pb-8">
+      {/* the heading and buttons above stay put; only the notes below scroll */}
+      <div className="flex min-h-0 flex-1 flex-col">
         {loadFailed ? (
           // a failed read knows nothing about your notes, so it never says there are none
           <p className="pt-16 text-center text-sm text-foreground/45">
             Couldn&rsquo;t reach your notes. Nothing you wrote is gone.
           </p>
         ) : !hydrated || !blocksReady ? (
-          byBlock ? <BlockCardsSkeleton /> : <NoteCardsSkeleton />
+          <div className="min-h-0 flex-1 overflow-hidden">
+            {byBlock ? <BlockCardsSkeleton /> : <NoteCardsSkeleton />}
+          </div>
         ) : byBlock ? (
-          <ByBlock
-            notes={notes}
-            canWrite={canWrite}
-            onOpen={sheet.openNote}
-            onAdd={(blockId) => add({ blockId })}
-          />
+          <div className="scrollbar-pill min-h-0 flex-1 overflow-y-auto pb-8">
+            <ByBlock
+              notes={notes}
+              canWrite={canWrite}
+              onOpen={sheet.openNote}
+              onAdd={(blockId) => add({ blockId })}
+            />
+          </div>
         ) : (
           <CardsView
             notes={notes}

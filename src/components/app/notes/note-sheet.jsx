@@ -10,22 +10,30 @@ import { useBlocks } from "../blocks-provider";
 import { useNotes } from "../notes-provider";
 import { ListPage } from "../tray/list-page";
 import { NotePage } from "../tray/note-page";
+import { SheetGrip } from "../tray/sheet-grip";
+import { useSheetPosition } from "@/hooks/use-sheet-position";
 
 export function NoteSheet({ sheet }) {
   const { state, showNote, back, close } = sheet;
   const { notes } = useNotes();
   // remembered while the page is open, and only ever widens around an open note
   const [full, setFull] = useState(false);
+  // the same place as the notes sheet on the day page
+  const position = useSheetPosition();
   const onNote = state.page === "note" && notes.some((n) => n.id === state.noteId);
 
   return (
     <Sheet
-      side="right"
+      // full screen always grows from the right, up to the nav rail
+      side={full && onNote ? "right" : position}
+      // it floats: clicking another card changes the note instead of closing the sheet
+      floating
       open={state.open}
       onOpenChange={(o) => !o && close()}
       // the transition stays on both ways, so shrinking back glides like growing does
       style={{ transition: GROW_TRANSITION, ...(full && onNote ? { width: PANE_WIDTH } : {}) }}
     >
+      <SheetGrip position={position} />
       <Slides
         state={state}
         onShow={showNote}

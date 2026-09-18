@@ -14,6 +14,13 @@ import { TaskSheet } from "../task-sheet";
 import { Header } from "./header";
 import { TaskRow } from "./task-row";
 import { Footer } from "./footer";
+import { AllTasks } from "./all-tasks";
+import { Segmented } from "../settings/row";
+
+const VIEWS = [
+  { value: "today", label: "Today" },
+  { value: "all", label: "All tasks" },
+];
 
 export function BlockSheet() {
   const { blocks, tasks, setTaskStatus, reorderTasks, spentOnBlock, isToday } = useBlocks();
@@ -21,12 +28,15 @@ export function BlockSheet() {
   const [openId, setOpenId] = useState(null);
   const [full, setFull] = useState(false);
   const [openTask, setOpenTask] = useState(null);
+  // today's tasks, or every task in the block
+  const [view, setView] = useState("today");
 
   // The lineup is in the page and this is in the shell — siblings, no shared parent.
   useEffect(() => {
     const onOpen = (e) => {
       setOpenId(e.detail);
       setFull(false);
+      setView("today");
       // or Reflect opens with Learning's task still sitting next to it
       setOpenTask(null);
     };
@@ -68,8 +78,11 @@ export function BlockSheet() {
   const byId = new Map(mine.map((t) => [t.id, t]));
   const shown = order.map((id) => byId.get(id)).filter(Boolean);
 
-  // Rescheduling the open task away would otherwise leave it on screen.
-  const shownTask = openTask && byId.has(openTask) ? openTask : null;
+  // Rescheduling (in Today) or moving it to another block would otherwise leave it on screen.
+  const shownTask =
+    openTask && (view === "all" ? tasks.some((t) => t.id === openTask && t.blockId === block?.id) : byId.has(openTask))
+      ? openTask
+      : null;
 
   return (
     <Sheet
@@ -89,11 +102,26 @@ export function BlockSheet() {
             onToggleFull={() => setFull((v) => !v)}
           />
 
+          <div className="shrink-0 px-5 pt-3">
+            <Segmented label="Which tasks" value={view} options={VIEWS} onChange={setView} />
+          </div>
+
           <div className="scrollbar-pill min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-5 py-4">
-            {mine.length === 0 ? (
-              <p className="py-8 text-center text-sm text-foreground/35">
-                Nothing in this block today.
-              </p>
+            {view === "all" ? (
+              <div className={full ? "mx-auto w-full max-w-2xl" : ""}>
+                <AllTasks block={block} activeId={shownTask} onOpen={setOpenTask} />
+              </div>
+            ) : mine.length === 0 ? (
+              <div className="flex flex-col items-center gap-3 py-8 text-center">
+                <p className="text-sm text-foreground/35">Nothing in this block today.</p>
+                <button
+                  type="button"
+                  onClick={() => setView("all")}
+                  className="cursor-pointer rounded-lg px-3 py-1.5 text-xs text-foreground/55 ring-1 ring-foreground/10 transition-colors hover:text-foreground"
+                >
+                  See all its tasks
+                </button>
+              </div>
             ) : (
               <Reorder.Group
                 axis="y"

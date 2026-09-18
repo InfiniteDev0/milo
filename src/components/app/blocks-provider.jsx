@@ -10,6 +10,7 @@ import { useDayActions } from "./blocks/use-day-actions";
 import { useDayLoad } from "./blocks/use-day-load";
 import { useDaySave } from "./blocks/use-day-save";
 import { useDayState } from "./blocks/use-day-state";
+import { useDayThemes } from "./blocks/use-day-themes";
 import { useMidnight } from "./blocks/use-midnight";
 import { useMood } from "./blocks/use-mood";
 import { useNewDay } from "./blocks/use-new-day";
@@ -37,6 +38,7 @@ export function BlocksProvider({ children }) {
   const planActions = usePlanActions({ ...state, ...plan, reconcile });
   const dayActions = useDayActions({ ...state, ...plan });
   const completeSetup = useSetup({ ...state, userId: load.userId });
+  const themes = useDayThemes(state);
   const filing = useNewDay({ ...state, resetSent });
   useMidnight({ ...state, hydrated: load.hydrated, newDay: filing.newDay });
 
@@ -51,6 +53,7 @@ export function BlocksProvider({ children }) {
     ...planActions,
     ...dayActions,
     ...filing,
+    ...themes,
     completeSetup,
   });
 

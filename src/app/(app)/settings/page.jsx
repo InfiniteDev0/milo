@@ -3,6 +3,7 @@
 // The shell only. Each section owns its own state, so adding one is a file.
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { TabBar } from "@/components/app/settings/tab-bar";
 import { Appearance } from "@/components/app/settings/appearance";
 import { Interruptions } from "@/components/app/settings/interruptions";
@@ -10,18 +11,22 @@ import { BlocksSection } from "@/components/app/settings/blocks";
 import { Account } from "@/components/app/settings/account";
 import { Shortcuts } from "@/components/app/settings/shortcuts";
 import { Writing } from "@/components/app/settings/writing";
+import { Week } from "@/components/app/settings/week";
 
 const TABS = [
   { id: "appearance", label: "Appearance", render: () => <Appearance /> },
   { id: "interruptions", label: "Interruptions", render: () => <Interruptions /> },
   { id: "writing", label: "Writing", render: () => <Writing /> },
   { id: "blocks", label: "Blocks", render: () => <BlocksSection /> },
+  { id: "week", label: "Week", render: () => <Week /> },
   { id: "shortcuts", label: "Shortcuts", render: () => <Shortcuts /> },
   { id: "account", label: "Account", render: () => <Account /> },
 ];
 
 export default function SettingsPage() {
-  const [tab, setTab] = useState("appearance");
+  // a link can open a tab straight away, like /settings?tab=week from a day's theme
+  const asked = useSearchParams().get("tab");
+  const [tab, setTab] = useState(() => (TABS.some((t) => t.id === asked) ? asked : "appearance"));
   const current = TABS.find((t) => t.id === tab) ?? TABS[0];
 
   return (

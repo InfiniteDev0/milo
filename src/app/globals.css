@@ -229,6 +229,12 @@ body{
   font-family: 'Outfit';
 }
 
+/* The app doesn't select text on drag, but what you write can always be selected and copied. */
+.tiptap.ProseMirror {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 h1 , h2 , h3 , h4 , h5 , h6 , li{
   font-family: 'Albert sans';
 }

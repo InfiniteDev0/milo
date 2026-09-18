@@ -17,6 +17,7 @@ export function useDaySave({
   userId,
   profile,
   restMinutes,
+  dayThemes,
   day,
   blocks,
   tasks,
@@ -26,8 +27,8 @@ export function useDaySave({
 }) {
   useEffect(() => {
     if (!hydrated || !userId || !profile) return;
-    queueWrite("profile", () => saveProfile(userId, { ...profile, restMinutes }));
-  }, [hydrated, userId, profile, restMinutes]);
+    queueWrite("profile", () => saveProfile(userId, { ...profile, restMinutes, dayThemes }));
+  }, [hydrated, userId, profile, restMinutes, dayThemes]);
 
   // the day, upserted whole to its own row; queued, because only where it settles matters
   useEffect(() => {

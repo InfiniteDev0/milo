@@ -33,7 +33,7 @@ function EraserIcon(props) {
 const NUMBER = ["none", "one", "two", "three", "four", "five", "six", "seven", "eight"];
 
 export function DropZone({ draggingId, onDone }) {
-  const { dropBlock, blocks } = useBlocks();
+  const { dropBlock, blocks, dayBlocks } = useBlocks();
 
   /* Only rises for a block that could actually be dropped. Showing it for
      a finished block and then refusing the drop would be worse than not
@@ -49,7 +49,8 @@ export function DropZone({ draggingId, onDone }) {
     dropBlock(id);
 
     // count what's left, said as words — a number in a badge reads like a score
-    const left = blocks.filter((b) => b.id !== id).length;
+    // only blocks with something in them today count as what's left
+    const left = dayBlocks.filter((b) => b.id !== id).length;
     toast.custom(
       () => (
         <div className="flex items-center gap-3 rounded-2xl bg-chrome py-2.5 pl-2.5 pr-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">

@@ -2,13 +2,16 @@
 
 // Changing tasks: their days, kind, time, note, order and status. A change to a task's shape reaches the database.
 
-import { useCallback } from "react";
-import { createTask, deleteTask, saveTask, saveTaskOrder } from "@/lib/db/blocks";
+import { useCallback, useEffect, useRef } from "react";
+import { createTask, deleteTask, moveTaskRow, saveTask, saveTaskOrder } from "@/lib/db/blocks";
 import { queueWrite, writeNow } from "@/lib/db/sync";
 import { closeSessions, openSession } from "@/lib/day/intervals";
 import { blockFinished, moreToCome } from "@/lib/day/work";
-import { playBlock, playTask } from "@/lib/sound";
+import { playBlock, playTask, playTuck } from "@/lib/sound";
 import { celebrateTask } from "../celebrate";
+import { showMovedToast } from "../moved-toast";
+import { TASK_MOVED } from "../notes/use-follow-tasks";
+import { showUndoToast } from "../undo-toast";
 
 export function useTaskActions({
   userId,
@@ -25,7 +28,14 @@ export function useTaskActions({
   holdMood,
   resetRun,
   bumpRun,
+  sessions,
 }) {
+  // the newest list and reconcile, for an Undo pressed seconds after the delete
+  const latest = useRef({ tasks, reconcile });
+  useEffect(() => {
+    latest.current = { tasks, reconcile };
+  });
+
   // `next` is built outside setTasks: an updater must be pure, and React runs it twice in development
   const setTaskDays = useCallback(
     (id, days) => {
@@ -108,14 +118,63 @@ export function useTaskActions({
     [userId, tasks, reconcile, setTasks],
   );
 
+  // into another block, at the end of its list; the block it left may now be finished, and the one it joined reopens
+  const moveTask = useCallback(
+    (id, blockId) => {
+      const task = tasks.find((t) => t.id === id);
+      if (!task || task.blockId === blockId) return;
+
+      const next = [...tasks.filter((t) => t.id !== id), { ...task, blockId }];
+      setTasks(next);
+      reconcile(next);
+      // the clock stays with the block you're in, not with the work that just left it
+      if (sessions.some((x) => x.endedAt === null && x.taskId === id)) {
+        setSessions((log) => openSession(log, task.blockId));
+      }
+
+      const at = tasks.filter((t) => t.blockId === blockId).length;
+      // its own key, so a note still being typed on this task isn't cancelled by the move
+      writeNow(`task-block:${id}`, () => moveTaskRow(id, blockId, at));
+      // its notes live in the notes provider, which listens for this and moves them too
+      window.dispatchEvent(new CustomEvent(TASK_MOVED, { detail: { taskId: id, from: task.blockId, to: blockId } }));
+      playTask();
+      showMovedToast({ count: 1, to: blocks.find((b) => b.id === blockId), noun: "task" });
+    },
+    [tasks, blocks, sessions, reconcile, setTasks, setSessions],
+  );
+
+  // gone from the day at once, deleted for real only once Undo has had its few seconds
   const removeTask = useCallback(
     (id) => {
+      const index = tasks.findIndex((t) => t.id === id);
+      if (index === -1) return;
+      const task = tasks[index];
+
       const next = tasks.filter((t) => t.id !== id);
       setTasks(next);
       reconcile(next);
-      writeNow(`task:${id}`, () => deleteTask(id));
+      // the clock was on it: it goes back to the block, as when a card returns to To Do
+      if (sessions.some((x) => x.endedAt === null && x.taskId === id)) {
+        setSessions((log) => openSession(log, task.blockId));
+      }
+      playTuck();
+
+      showUndoToast({
+        title: `Deleted “${task.name}”`,
+        hint: "You can still bring it back.",
+        onCommit: () => writeNow(`task:${id}`, () => deleteTask(id)),
+        onUndo: () => {
+          // Undo runs seconds later, so it puts the task back into the list as it is now
+          const { tasks: now, reconcile: settle } = latest.current;
+          if (now.some((t) => t.id === id)) return;
+          const back = [...now.slice(0, index), task, ...now.slice(index)];
+          setTasks(back);
+          settle(back);
+          playTask();
+        },
+      });
     },
-    [tasks, reconcile, setTasks],
+    [tasks, sessions, reconcile, setTasks, setSessions],
   );
 
   // the whole finished order, because the list reflows live while you drag; written straight away
@@ -186,7 +245,7 @@ export function useTaskActions({
         setSessions((log) => closeSessions(log));
 
         // 0 means never, so no timer at all rather than one that fires instantly
-        if (restMinutes > 0 && moreToCome(blocks, task.blockId)) {
+        if (restMinutes > 0 && moreToCome(blocks, task.blockId, next, skippedToday)) {
           setRest({
             until: Date.now() + restMinutes * 60000,
             blockName: blocks.find((b) => b.id === task.blockId)?.name ?? "",
@@ -229,6 +288,7 @@ export function useTaskActions({
     setTaskNote,
     addTask,
     removeTask,
+    moveTask,
     reorderTasks,
     setTaskStatus,
   };

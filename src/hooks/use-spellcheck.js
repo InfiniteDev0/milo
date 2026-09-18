@@ -2,9 +2,9 @@
 
 // The spelling-underline setting, live: every editor follows it the moment it changes.
 
-import { useSyncExternalStore } from "react";
-import { spellcheckOn, subscribeSpellcheck } from "@/lib/spellcheck";
+import { usePreference } from "./use-preference";
+import { SPELLCHECK } from "@/lib/spellcheck";
 
 export function useSpellcheck() {
-  return useSyncExternalStore(subscribeSpellcheck, spellcheckOn, () => true);
+  return usePreference(SPELLCHECK) === "on";
 }

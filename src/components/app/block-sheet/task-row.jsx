@@ -9,6 +9,8 @@ import { ACCENT } from "@/lib/palette";
 import { shade } from "@/lib/shade";
 import { Hint, Tick } from "../task-bits";
 import { Strike } from "../strike";
+import { DeleteTaskButton } from "../delete-task-button";
+import { TaskNoteCount, useTaskNoteCount } from "../task-note-count";
 
 const RESTING = "0px 4px 0px rgba(219, 219, 219, 1)";
 // The one whose sheet is open, so you can see which card you are editing.
@@ -19,6 +21,7 @@ export function TaskRow({ task, running, active, onToggle, onCommit, onOpen }) {
   const y = useMotionValue(0);
   const boxShadow = useRaisedShadow(y, active ? RESTING_OPEN : RESTING);
   const controls = useDragControls();
+  const noteCount = useTaskNoteCount(task.id);
 
   /* Ticking done needs the block running; un-ticking never does.
      Without the first half you can finish any block without starting it —
@@ -43,7 +46,7 @@ export function TaskRow({ task, running, active, onToggle, onCommit, onOpen }) {
       dragControls={controls}
       onDragEnd={onCommit}
       onClick={() => onOpen(task.id)}
-      className={`list-none cursor-pointer rounded-xl border bg-card px-3 py-3 transition-colors ${
+      className={`group list-none cursor-pointer rounded-xl border bg-card px-3 py-3 transition-colors ${
         active ? "border-[#5e17eb]/40" : "border-foreground/10"
       }`}
     >
@@ -84,6 +87,9 @@ export function TaskRow({ task, running, active, onToggle, onCommit, onOpen }) {
             {ticked}/{steps.length}
           </span>
         )}
+
+        <TaskNoteCount count={noteCount} className="pt-1" />
+        <DeleteTaskButton task={task} className="-my-1 -mr-1.5" />
       </div>
 
       {task.note && (

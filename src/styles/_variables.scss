@@ -162,15 +162,20 @@
   --tt-accent-contrast: 8%;
   --tt-destructive-contrast: 8%;
   --tt-foreground-contrast: 8%;
+}
 
-  &,
-  *,
-  ::before,
-  ::after {
-    box-sizing: border-box;
-    transition: none var(--tt-transition-duration-default)
-      var(--tt-transition-easing-default);
-  }
+/* MODIFIED FROM THE TIPTAP SOURCE: this sat on every element (`:root *`). It isn't in a CSS layer, so it beat
+   Tailwind's layered `transition-*` utilities across all of Milo and no hover could fade. It now reaches only
+   Tiptap's own elements, which are what it was written for. */
+.tiptap,
+.tiptap *,
+[class^="tiptap-"],
+[class*=" tiptap-"],
+[class^="tiptap-"] *,
+[class*=" tiptap-"] * {
+  box-sizing: border-box;
+  transition: none var(--tt-transition-duration-default)
+    var(--tt-transition-easing-default);
 }
 
 :root {

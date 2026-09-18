@@ -1,51 +1,25 @@
-/* Real image handling for notes.
- *
- * Tiptap's template ships `handleImageUpload` as a demo: it fakes five seconds
- * of progress and returns "/images/tiptap-ui-placeholder-image.jpg", a file
- * that doesn't exist in this project. Their own comment says to replace it.
- *
- * There is no file store yet, so the image is inlined as a data URI and rides
- * along inside the note's HTML. That is a real, working upload for a local
- * app and a bad one for a hosted app: localStorage caps out around 5MB, so
- * this holds a handful of small images, not a photo library.
- *
- * When Supabase Storage is live, this one function is the swap — everything
- * above it keeps working unchanged.
- */
+// Images in notes. There is no file store yet, so an image rides inside the note's own HTML as a data URI,
+// shrunk first so the note stays light. When Supabase Storage is set up, this one function is the swap.
 
-export const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
+import { shrinkImage } from "./shrink-image";
 
-export async function uploadNoteImage(file, onProgress, abortSignal) {
-  if (!file) throw new Error("No file provided");
+// the file you pick; what's stored is usually far smaller once shrunk
+export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-  if (!file.type.startsWith("image/")) {
-    throw new Error("That isn't an image");
-  }
-
-  if (file.size > MAX_FILE_SIZE) {
-    throw new Error(
-      `Images need to be under ${MAX_FILE_SIZE / (1024 * 1024)}MB for now`,
-    );
-  }
-
+// the file as it is, for anything that can't or shouldn't be shrunk
+function readAsDataUrl(file, onProgress, abortSignal) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
     // real progress, not a timer pretending to be one
     reader.onprogress = (e) => {
-      if (e.lengthComputable) {
-        onProgress?.({ progress: Math.round((e.loaded / e.total) * 100) });
-      }
+      if (e.lengthComputable) onProgress?.({ progress: Math.round((e.loaded / e.total) * 100) });
     };
-
     reader.onload = () => {
       if (abortSignal?.aborted) return reject(new Error("Upload cancelled"));
-      onProgress?.({ progress: 100 });
       resolve(reader.result);
     };
-
     reader.onerror = () => reject(new Error("Couldn't read that file"));
-
     abortSignal?.addEventListener("abort", () => {
       reader.abort();
       reject(new Error("Upload cancelled"));
@@ -53,4 +27,33 @@ export async function uploadNoteImage(file, onProgress, abortSignal) {
 
     reader.readAsDataURL(file);
   });
+}
+
+export async function uploadNoteImage(file, onProgress, abortSignal) {
+  if (!file) throw new Error("No file provided");
+  if (!file.type.startsWith("image/")) throw new Error("That isn't an image");
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`Images need to be under ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
+  }
+
+  onProgress?.({ progress: 10 });
+
+  let shrunk = null;
+  try {
+    shrunk = await shrinkImage(file);
+  } catch (err) {
+    // a format the browser can't draw is still kept, just unshrunk
+    console.warn("[milo] could not shrink that image, keeping it as it is", err);
+  }
+  if (abortSignal?.aborted) throw new Error("Upload cancelled");
+
+  // a data URI is about 4/3 of the file; keep whichever is smaller
+  if (shrunk && shrunk.length < (file.size * 4) / 3) {
+    onProgress?.({ progress: 100 });
+    return shrunk;
+  }
+
+  const original = await readAsDataUrl(file, onProgress, abortSignal);
+  onProgress?.({ progress: 100 });
+  return original;
 }

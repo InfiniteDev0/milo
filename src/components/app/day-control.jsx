@@ -1,71 +1,34 @@
 "use client";
 
-/* Pause the day, under the block rail.
- *
- * Not the same thing as the rest between blocks — that one starts on its own
- * when a block finishes. This is for the interruptions that don't wait: the
- * door goes, someone calls, you step out. The running block is remembered and
- * resuming puts you straight back into it.
- *
- * A paused day accrues nothing and is never reported back as time lost. There
- * is no "paused for 2h" anywhere, because that would be a guilt counter with a
- * different label.
- */
+// Pause the day, one press from the day header — for the interruptions that don't wait for a block to finish.
+// The running block and task are remembered, and picking the day back up puts you straight back in.
+// A paused day accrues nothing and is never reported as time lost.
 
+import { Pause, Play } from "lucide-react";
+import { DONE, DONE_INK, PAUSE, PAUSE_INK } from "@/lib/palette";
+import { shade } from "@/lib/shade";
 import { useBlocks } from "./blocks-provider";
-
-function PauseIcon(props) {
-  return (
-    <svg viewBox="0 0 14 14" fill="none" width="16" height="16" {...props}>
-      <g
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1"
-      >
-        <path d="M7 13.25c4 0 6.25 -2.25 6.25 -6.25S11 0.75 7 0.75 0.75 3 0.75 7 3 13.25 7 13.25Z" />
-        <path d="m5.375 4.95312 0 4.09376" />
-        <path d="m8.625 4.95312 0 4.09376" />
-      </g>
-    </svg>
-  );
-}
-
-function PlayIcon(props) {
-  return (
-    <svg viewBox="0 0 14 14" fill="none" width="16" height="16" {...props}>
-      <g
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1"
-      >
-        <path d="M4.85323 6.99991c0 0.56278 0.0963 1.37137 0.189 2.01932 0.08238 0.57588 0.65151 0.94515 1.19961 0.75015 1.31612 -0.46827 2.54308 -1.18811 3.3874 -2.26825 0.23069 -0.29513 0.23071 -0.70732 0.00003 -1.00246 -0.84425 -1.08016 -2.07125 -1.79999 -3.38737 -2.26823 -0.54807 -0.19499 -1.11719 0.17424 -1.1996 0.7501 -0.09273 0.64795 -0.18907 1.45658 -0.18907 2.01937Z" />
-        <path d="M0.959867 10.2685C1.114 11.7092 2.2727 12.8679 3.71266 13.0284 4.78221 13.1476 5.88037 13.25 7 13.25s2.21779 -0.1024 3.2873 -0.2216c1.44 -0.1605 2.5987 -1.3192 2.7528 -2.7599 0.1138 -1.06348 0.2099 -2.15535 0.2099 -3.2685 0 -1.11316 -0.0961 -2.20502 -0.2099 -3.26853 -0.1541 -1.44065 -1.3128 -2.59936 -2.7528 -2.759861C9.21779 0.852392 8.11963 0.75 7 0.75S4.78221 0.852392 3.71266 0.971609C2.2727 1.13211 1.114 2.29082 0.959867 3.73147 0.846083 4.79498 0.75 5.88684 0.75 7c0 1.11315 0.096084 2.20502 0.209867 3.2685Z" />
-      </g>
-    </svg>
-  );
-}
 
 export function DayControl() {
   const { day, paused, pauseDay, resumeDay } = useBlocks();
 
-  // Nothing to pause before the day has begun.
-  if (!day.startedAt || day.endedAt) return null;
+  // nothing to pause before the day has begun, or once it's closed
+  if (!day.startedAt || (day.endedAt && !paused)) return null;
+
+  const bg = paused ? DONE : PAUSE;
+  const label = paused ? "Pick the day back up" : "Pause the day";
 
   return (
     <button
       type="button"
       onClick={paused ? resumeDay : pauseDay}
-      aria-label={paused ? "Resume your day" : "Pause your day"}
-      title={paused ? "Resume" : "Pause your day"}
-      className={`flex w-9 cursor-pointer items-center justify-center rounded-[11px] py-2.5 transition-colors duration-200 ${
-        paused
-          ? "bg-[#00d078] text-foreground"
-          : "bg-chrome text-chrome-ink/60 hover:text-chrome-ink"
-      }`}
+      aria-label={label}
+      title={label}
+      style={{ backgroundColor: bg, color: paused ? DONE_INK : PAUSE_INK, "--lift": shade(bg) }}
+      className="milo-lift flex h-9 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm"
     >
-      {paused ? <PlayIcon /> : <PauseIcon />}
+      {paused ? <Play className="size-4" fill="currentColor" /> : <Pause className="size-4" fill="currentColor" />}
+      <span className="hidden sm:inline">{paused ? "Pick up" : "Pause day"}</span>
     </button>
   );
 }
