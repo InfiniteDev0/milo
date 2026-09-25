@@ -16,6 +16,7 @@ import { BlocksProvider } from "@/components/app/blocks-provider";
 import { NotesProvider } from "@/components/app/notes-provider";
 import { SetupWizard } from "@/components/app/setup-wizard";
 import { MonthReview } from "@/components/app/month-review";
+import { Tray } from "@/components/app/tray";
 import { requireUser } from "@/lib/session";
 
 /* The workspace shell — three columns, no header.
@@ -88,6 +89,8 @@ export default async function AppLayout({ children }) {
       <SetupWizard />
       {/* the other door: opens when the calendar month turns over */}
       <MonthReview />
+      {/* the notes sheet and its button, on every page but Notes */}
+      <Tray />
       </NotesProvider>
     </BlocksProvider>
   );

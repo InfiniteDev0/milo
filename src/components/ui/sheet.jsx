@@ -36,6 +36,8 @@ export function Sheet({
   beside = false,
   // stays open while you use the page behind it: no backdrop, and clicking elsewhere doesn't close it
   floating = false,
+  // floating, but a click outside still closes it
+  dismissible = false,
   style,
   children,
 }) {
@@ -45,7 +47,7 @@ export function Sheet({
     <DialogPrimitive.Root
       open={open}
       modal={!floating}
-      disablePointerDismissal={floating}
+      disablePointerDismissal={floating && !dismissible}
       onOpenChange={(next, details) => {
         if (!next && details?.reason === "outside-press" && onDismiss) {
           onDismiss();

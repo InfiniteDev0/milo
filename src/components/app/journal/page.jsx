@@ -9,7 +9,7 @@ import { INK, LEAF_CLIP, PAGE_IMAGE, textBox } from "./paper";
 export function Page({ side, number, leaf, children }) {
   return (
     <div
-      className="absolute inset-0 bg-no-repeat"
+      className="group/page absolute inset-0 bg-no-repeat"
       style={{
         backgroundImage: `url(${PAGE_IMAGE[side]})`,
         backgroundSize: "100% 100%",
@@ -30,11 +30,11 @@ export function Page({ side, number, leaf, children }) {
 }
 
 // a page's writing when it can't be edited, like while it turns
-export function PageWords({ side, text }) {
+export function PageWords({ side, text, head = false, foot = false }) {
   return (
     <div
       className={`${bookHand.className} absolute overflow-hidden break-words whitespace-pre-wrap`}
-      style={textBox(side)}
+      style={textBox(side, { head, foot })}
     >
       {text}
     </div>

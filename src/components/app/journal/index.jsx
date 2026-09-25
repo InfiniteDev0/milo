@@ -1,30 +1,29 @@
 "use client";
 
-// The journal page. UI first — built step by step as it's designed.
+// The journal page: your journals as books on a shelf. Open one to write, plan, pin and look back.
 
 import { useCallback, useState } from "react";
 import { Search } from "lucide-react";
-import { toast } from "sonner";
 import { AddJournalCard } from "./add-journal-card";
 import { BookCard } from "./book-card";
 import { JournalHero } from "./journal-hero";
 import { OpenBook } from "./open-book";
-import { useBookPages } from "./use-book-pages";
-
-// said honestly while the page is still a design
-const comingNext = (what) =>
-  toast(`${what} is the next thing we build.`, { id: "milo-journal-next", duration: 2500 });
+import { useJournals } from "./use-journals";
 
 export function JournalShelf() {
   const [query, setQuery] = useState("");
-  const [reading, setReading] = useState(false);
-  // no journal books exist yet; this becomes real once journals are wired up
-  const hasBooks = false;
-  // what's written stays while you're on this page, even with the book closed
-  const book = useBookPages();
+  const [readingId, setReadingId] = useState(null);
+  const { journals, userId, hydrated, loadFailed, canWrite, createJournal, updateJournal } = useJournals();
+  const reading = journals.find((j) => j.id === readingId) ?? null;
+  const shown = journals.filter((j) => j.title.toLowerCase().includes(query.trim().toLowerCase()));
 
   // stable, so the Esc listener isn't re-added every time this page re-renders
-  const close = useCallback(() => setReading(false), []);
+  const close = useCallback(() => setReadingId(null), []);
+
+  const start = () => {
+    const made = createJournal();
+    if (made) setReadingId(made.id);
+  };
 
   return (
     // the open book covers this whole pane, not just the part scrolled into view
@@ -52,14 +51,35 @@ export function JournalShelf() {
           {/* on wide screens the two columns follow the two-tone background: words on the left, books on the right */}
           <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,34%)_1fr]">
             <JournalHero
-              hasBooks={hasBooks}
-              onOpen={() => comingNext(hasBooks ? "Reading your journal" : "Writing your first entry")}
+              hasBooks={journals.length > 0}
+              disabled={!canWrite}
+              // back into the newest journal, or the first one made for you
+              onOpen={() => (journals.length > 0 ? setReadingId(journals.at(-1).id) : start())}
             />
 
             {/* below the hanging shelf and in from the split; -ml-12 cancels the card padding on narrow screens */}
             <div className="-ml-12 flex flex-wrap items-stretch gap-6 lg:ml-0 lg:pt-32 lg:pl-16">
-              <BookCard open={reading} onOpen={() => setReading(true)} onMenu={() => comingNext("The book menu")} />
-              <AddJournalCard onAdd={() => comingNext("Starting a new journal")} />
+              {loadFailed ? (
+                // a failed read knows nothing about your journals, so it never says there are none
+                <p className="ml-12 max-w-xs text-sm text-foreground/50 lg:ml-0">
+                  Couldn&rsquo;t reach your journals. Nothing you wrote is gone.
+                </p>
+              ) : !hydrated ? (
+                <div className="ml-12 aspect-[1414/2000] w-44 animate-pulse rounded-[3px_10px_10px_3px] bg-foreground/5 lg:ml-0" />
+              ) : (
+                <>
+                  {shown.map((j) => (
+                    <BookCard
+                      key={j.id}
+                      journal={j}
+                      open={readingId === j.id}
+                      onChange={(patch) => updateJournal(j.id, patch)}
+                      onOpen={() => setReadingId(j.id)}
+                    />
+                  ))}
+                  {canWrite && <AddJournalCard onAdd={start} first={journals.length === 0} />}
+                </>
+              )}
             </div>
           </div>
 
@@ -76,7 +96,7 @@ export function JournalShelf() {
         </div>
       </div>
 
-      <OpenBook open={reading} onClose={close} book={book} />
+      <OpenBook journal={reading} userId={userId} onClose={close} />
     </div>
   );
 }

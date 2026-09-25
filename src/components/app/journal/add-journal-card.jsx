@@ -5,7 +5,7 @@
 import { Plus } from "lucide-react";
 import { AddArt } from "../notes/add-art";
 
-export function AddJournalCard({ onAdd }) {
+export function AddJournalCard({ onAdd, first = false }) {
   return (
     // the same footprint as a book card, so the two sit level side by side
     <div className="flex w-68 flex-col items-center justify-center gap-5 rounded-3xl bg-foreground/4 p-6">
@@ -17,7 +17,7 @@ export function AddJournalCard({ onAdd }) {
         className="milo-lift flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-solid px-4 text-sm text-solid-ink hover:bg-solid-hover"
       >
         <Plus className="size-4" />
-        Add a new journal
+        {first ? "Start your first journal" : "Add a new journal"}
       </button>
     </div>
   );

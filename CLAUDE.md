@@ -191,7 +191,10 @@ From POSITIONING.md, enforced on every page:
 - **Notes are not the journal** (14 Sep). A note is something written during the
   day, linked to one block or just to the day (`notes.block_id`, nullable).
   Every note autosaves the moment it is created — there is no Save button and
-  nothing is deleted at midnight. The notes sheet shows today's notes; `/notes`
+  nothing is deleted at midnight. The notes sheet (on every page but `/notes`,
+  25 Sep) shows one scope at a time — Day notes or a block, picked from its
+  title — with Today first and Earlier under it, and closes on a click outside
+  it. A note opened on `/notes` starts full screen. `/notes`
   opens grouped by block (with a Day notes card for the rest) and switches to
   every note as cards. A block's name opens `/notes/[blockId]` (`/notes/day` for
   day notes). Cards: a click opens, the checkbox selects; selected notes can be
@@ -245,21 +248,22 @@ From POSITIONING.md, enforced on every page:
 4. ✅ Time tracking — the interval log (`TIME.md`)
 5. ✅ Database schema + RLS
 6. ✅ Every feature on Supabase — blocks, tasks, days, sessions, profile, notes.
-7. 🔄 **Here:** writing. Notes are built (migrations up to `0011` must be applied):
-   the notes sheet and `/notes` share `NotesProvider`. The journal is being
-   specified by Abdiaziz step by step: `/journal` (`components/app/journal/`) is
-   **UI only, nothing saved** (17 Sep) — search, the "Your story, kept." hero with
-   Start reading, and the shelf illustration (`public/journal.png`) bottom-right.
-   Opening a book follows codrops BookPreview/BookBlock, rebuilt in React +
-   motion (no jQuery): the shelf cover swings open in 3D, then the open book
-   grows in beside an empty right column kept for later. The open book is
-   `public/bookui.png` cut out of its white background and split at the spine
-   (`public/journal-page-left.webp` / `-right.webp`), so a 3D page turn shows
-   the real photo on both faces; a turning leaf is clipped so the stacked page
-   edges stay behind. You type onto the pages in Caveat (`journal/paper.js`
-   holds the margins and sizes). A full page flows on with the cursor and turns
-   the leaf. Pages live in memory only.
-   He is guiding the rest; build only what he describes.
+7. 🔄 **Here:** writing. Notes are built and the journal is saved (migrations up
+   to `0012` must be applied). `/journal` (`components/app/journal/`) is a shelf
+   of journals (`journals`), each a book of ordered pages (`journal_pages`, float
+   `position`). Page kinds: `write` (free writing; `heads` marks an entry's first
+   page, with the paper heading from SYSTEM.md §4 and an optional morning /
+   pause / night label), `day-schedule` + `day-plan` (a two-page spread that
+   always starts on a left page — `layOut()` in `pages.js` inserts a blank
+   slot), `month` and `vision`. Everything in the book is indexed by **slot**,
+   not by place in the page list. A full writing page flows into the next
+   continuation page, or slips a new one in. Pages pin notes and blocks by id
+   (references, not copies) and carry voice notes (`journal_voice`, audio as a
+   data URI until Storage exists). Search, contents and bookmarks sit left of
+   the book; month tabs run down its edge. Removing a page asks twice. Opening
+   a book still follows codrops BookPreview/BookBlock (`public/bookui.png` split
+   at the spine); you type in Caveat (`paper.js` holds margins and sizes). No
+   counts, streaks or prompts anywhere in it — see RESEARCH.md.
 8. ⬜ Offline via PowerSync
 9. ⬜ The flows in `BACKLOG.md` — partial-day close, month-end swap, block CRUD
 10. ⬜ Habits *(or shipping without them — PRODUCT.md allows it)*

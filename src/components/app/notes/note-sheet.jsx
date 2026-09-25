@@ -11,13 +11,14 @@ import { useNotes } from "../notes-provider";
 import { ListPage } from "../tray/list-page";
 import { NotePage } from "../tray/note-page";
 import { SheetGrip } from "../tray/sheet-grip";
+import { ScopePicker, scopeName } from "./scope-picker";
 import { useSheetPosition } from "@/hooks/use-sheet-position";
 
 export function NoteSheet({ sheet }) {
-  const { state, showNote, back, close } = sheet;
+  const { state, showNote, back, close, toggleFull, setScope } = sheet;
   const { notes } = useNotes();
-  // remembered while the page is open, and only ever widens around an open note
-  const [full, setFull] = useState(false);
+  // on for every note clicked on the page, and only ever widens around an open note
+  const full = state.full;
   // the same place as the notes sheet on the day page
   const position = useSheetPosition();
   const onNote = state.page === "note" && notes.some((n) => n.id === state.noteId);
@@ -38,14 +39,15 @@ export function NoteSheet({ sheet }) {
         state={state}
         onShow={showNote}
         onBack={back}
+        onScope={setScope}
         full={full}
-        onToggleFull={() => setFull((v) => !v)}
+        onToggleFull={toggleFull}
       />
     </Sheet>
   );
 }
 
-function Slides({ state, onShow, onBack, full, onToggleFull }) {
+function Slides({ state, onShow, onBack, onScope, full, onToggleFull }) {
   const { blocks, droppedToday, archived, hydrated: blocksReady } = useBlocks();
   const { notes, hydrated, loadFailed, canWrite, addNote, editNote, moveNotes, removeNotes } = useNotes();
   const [api, setApi] = useState(null);
@@ -60,7 +62,7 @@ function Slides({ state, onShow, onBack, full, onToggleFull }) {
   const note = notes.find((n) => n.id === state.noteId) ?? null;
   // a note deleted while open falls back to its list
   const onNote = state.page === "note" && note !== null;
-  const name = block ? block.name.replace(" Block", "") : "Day notes";
+  const name = scopeName(block);
 
   // lands on the right slide the moment the sheet opens, then glides between them
   useEffect(() => {
@@ -85,17 +87,7 @@ function Slides({ state, onShow, onBack, full, onToggleFull }) {
       >
         <CarouselItem className="h-full">
           <ListPage
-            title={
-              <span
-                // its own box, so the title's clipping can't shave the pill's top and bottom
-                className={`inline-block max-w-full truncate rounded-lg px-3 py-1 align-middle ${
-                  block ? "" : "bg-foreground/5"
-                }`}
-                style={block ? { backgroundColor: block.bg, color: block.ink } : undefined}
-              >
-                {name}
-              </span>
-            }
+            title={<ScopePicker block={block} onPick={onScope} />}
             notes={list}
             ready={hydrated && blocksReady}
             loadFailed={loadFailed}

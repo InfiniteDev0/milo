@@ -32,6 +32,8 @@ export function ListPage({
   // passing these turns on ticking notes to move or delete them
   onMove,
   onDelete,
+  // passing this splits the list into Today and Earlier
+  todayIds = null,
 }) {
   const [query, setQuery] = useState("");
   const selectable = canWrite && onMove != null && onDelete != null;
@@ -40,6 +42,20 @@ export function ListPage({
   const shown = notes.filter((n) => matchesSearch(n, query));
   const summary = query.trim() ? summarise(shown, query) : null;
   const { selected, toggle, clear } = useSelection(new Set(shown.map((n) => n.id)));
+
+  const row = (n) => (
+    <NoteRow
+      key={n.id}
+      note={n}
+      onOpen={onOpen}
+      query={query}
+      when={when}
+      since={since}
+      showBlock={showBlock}
+      selected={selected.has(n.id)}
+      onToggleSelect={selectable ? toggle : undefined}
+    />
+  );
 
   return (
     <div className="relative flex h-full flex-col">
@@ -109,20 +125,15 @@ export function ListPage({
           <div className="scrollbar-pill flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-5 pb-24">
             {shown.length === 0 ? (
               <p className="pt-8 text-center text-sm text-foreground/35">Nothing matches that.</p>
+            ) : todayIds ? (
+              <Sections
+                today={shown.filter((n) => todayIds.has(n.id))}
+                earlier={shown.filter((n) => !todayIds.has(n.id))}
+                searching={query.trim() !== ""}
+                row={row}
+              />
             ) : (
-              shown.map((n) => (
-                <NoteRow
-                  key={n.id}
-                  note={n}
-                  onOpen={onOpen}
-                  query={query}
-                  when={when}
-                  since={since}
-                  showBlock={showBlock}
-                  selected={selected.has(n.id)}
-                  onToggleSelect={selectable ? toggle : undefined}
-                />
-              ))
+              shown.map(row)
             )}
           </div>
 
@@ -131,4 +142,22 @@ export function ListPage({
       )}
     </div>
   );
+}
+
+// Today's notes first, then everything older in the same place; an empty today still says so while nothing is searched
+function Sections({ today, earlier, searching, row }) {
+  return (
+    <>
+      {(today.length > 0 || !searching) && <Label>Today</Label>}
+      {today.length > 0
+        ? today.map(row)
+        : !searching && <p className="pb-2 text-sm text-foreground/35">Nothing yet today.</p>}
+      {earlier.length > 0 && <Label>Earlier</Label>}
+      {earlier.map(row)}
+    </>
+  );
+}
+
+function Label({ children }) {
+  return <p className="pt-1 text-xs font-medium tracking-wide text-foreground/40 uppercase">{children}</p>;
 }

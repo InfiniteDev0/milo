@@ -3,8 +3,8 @@
 // One journal book. The book is always there; on hover only the card's colour fades in, with its ⋯ menu.
 // Opening it swings the cover back in 3D as the book grows, like BookPreview; closing swings it shut again.
 
-import { MoreHorizontal } from "lucide-react";
 import { motion } from "motion/react";
+import { CoverMenu } from "./cover-menu";
 import { JournalCover } from "./journal-cover";
 import { COVER, PAPER } from "./paper";
 
@@ -15,31 +15,28 @@ const SPINE =
 const HIDE_BACK = { backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" };
 const EASE = [0.4, 0, 0.2, 1];
 
-export function BookCard({ open, onOpen, onMenu }) {
+export function BookCard({ journal, open, onChange, onOpen }) {
+  const cover = journal.cover;
   return (
     // p-12 leaves the ⋯ its own corner of the card, clear of the book; a click anywhere on the card opens it
     <div
       onClick={onOpen}
       className="group relative w-fit cursor-pointer rounded-3xl p-12 transition-all duration-500 ease-out hover:bg-foreground/5"
     >
-      <button
-        type="button"
-        onClick={(e) => {
-          // the menu is its own thing; it doesn't open the book
-          e.stopPropagation();
-          onMenu();
-        }}
-        aria-label="Book options"
-        // hidden until hover; always shown where there's no hover, and to the keyboard
-        className="absolute top-2 right-2 flex size-8 cursor-pointer items-center justify-center rounded-full text-foreground/70 opacity-0 transition-all duration-500 ease-out hover:bg-foreground/10 hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
-      >
-        <MoreHorizontal className="size-4" />
-      </button>
+      {/* the menu is its own thing; a click in it doesn't open the book */}
+      <div onClick={(e) => e.stopPropagation()}>
+        <CoverMenu
+          cover={cover}
+          onCover={(c) => onChange({ cover: c })}
+          title={journal.title}
+          onTitle={(t) => onChange({ title: t })}
+        />
+      </div>
 
       {/* the book itself is the button, so the keyboard can open it too */}
       <button
         type="button"
-        aria-label="Open your journal"
+        aria-label={`Open ${journal.title}`}
         className="relative block aspect-[1414/2000] w-44 cursor-pointer"
         style={{ perspective: "1800px" }}
       >
@@ -62,7 +59,7 @@ export function BookCard({ open, onOpen, onMenu }) {
             transition={{ duration: 0.28, delay: open ? 0 : 0.22, ease: EASE }}
           >
             <span className="absolute inset-0 block overflow-hidden rounded-[3px_10px_10px_3px]" style={HIDE_BACK}>
-              <JournalCover />
+              <JournalCover cover={cover} />
               <span aria-hidden className="pointer-events-none absolute inset-0" style={{ background: SPINE }} />
             </span>
             {/* the inside of the cover */}
@@ -73,6 +70,8 @@ export function BookCard({ open, onOpen, onMenu }) {
           </motion.span>
         </motion.span>
       </button>
+
+      <p className="mt-4 w-44 truncate text-center text-sm text-foreground/70">{journal.title}</p>
     </div>
   );
 }

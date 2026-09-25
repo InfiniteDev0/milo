@@ -1,10 +1,10 @@
 "use client";
 
 // A leaf turning over the spine: its front is the page you're leaving, its back the page you're turning to.
-// Turning on, the right page swings left; turning back, the left page swings right.
+// Turning on, the right page swings left; turning back, the left page swings right. Each face comes drawn, as `content`.
 
 import { motion } from "motion/react";
-import { Page, PageWords, paperMask } from "./page";
+import { Page, paperMask } from "./page";
 import { TURN } from "./paper";
 
 const EASE = [0.45, 0.05, 0.3, 1];
@@ -31,7 +31,7 @@ function Face({ side, page, shade, flipped }) {
   return (
     <div className="absolute inset-0" style={{ ...HIDE_BACK, transform: flipped ? "rotateY(180deg)" : undefined }}>
       <Page side={side} number={page.number} leaf>
-        <PageWords side={side} text={page.text} />
+        {page.content}
         {/* the page darkens as it lifts away from the light, and brightens as it lands */}
         <motion.span
           aria-hidden

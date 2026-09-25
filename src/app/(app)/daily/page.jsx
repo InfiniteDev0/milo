@@ -7,7 +7,6 @@ import { ArchiveButton } from "@/components/app/archive-panel";
 import { DayLabel } from "@/components/app/day-label";
 import { DayControl } from "@/components/app/day-control";
 import { DayTheme } from "@/components/app/day-theme";
-import { Tray } from "@/components/app/tray";
 
 export const metadata = {
   title: "Today — Milo",
@@ -63,7 +62,6 @@ export default function DailyPage() {
 
       {/* today's notes. Belongs to the day, so it lives on the day page and not
           in the shell — the button was following you onto every other screen. */}
-      <Tray />
     </div>
   );
 }
