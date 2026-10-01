@@ -107,8 +107,10 @@ function QuickRow({ task, onToggle, onOpen }) {
       <Tick done={done} onToggle={onToggle} />
       <button
         type="button"
-        onClick={() => onOpen(task)}
-        className={`min-w-0 flex-1 cursor-pointer truncate text-left text-sm ${
+        // a double-click opens it, so a slip on the way to the tick doesn't; Enter still opens it from the keyboard
+        onDoubleClick={() => onOpen(task)}
+        onKeyDown={(e) => e.key === "Enter" && onOpen(task)}
+        className={`min-w-0 flex-1 cursor-pointer select-none truncate text-left text-sm ${
           done ? "text-foreground/35" : ""
         }`}
       >
@@ -157,8 +159,9 @@ function TaskCard({ task, asHandle, isOverlay, onOpen, onToggle, isRunning, elap
       style={{ "--lift": "var(--card-lift)" }}
     >
       <CardContent
-        onClick={() => onOpen?.(task)}
-        className="flex flex-col gap-2 py-3"
+        // a double-click opens it, so a slip on the way to the tick doesn't
+        onDoubleClick={() => onOpen?.(task)}
+        className="flex select-none flex-col gap-2 py-3"
       >
         <div className="flex items-start gap-2">
           {onToggle && <Tick done={done} onToggle={onToggle} className="mt-0.5 size-5" />}

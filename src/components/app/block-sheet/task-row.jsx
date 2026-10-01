@@ -45,8 +45,9 @@ export function TaskRow({ task, running, active, onToggle, onCommit, onOpen }) {
       dragListener={false}
       dragControls={controls}
       onDragEnd={onCommit}
-      onClick={() => onOpen(task.id)}
-      className={`group list-none cursor-pointer rounded-xl border bg-card px-3 py-3 transition-colors ${
+      // a double-click opens it, so a slip on the way to the tick doesn't
+      onDoubleClick={() => onOpen(task.id)}
+      className={`group list-none cursor-pointer select-none rounded-xl border bg-card px-3 py-3 transition-colors ${
         active ? "border-[#5e17eb]/40" : "border-foreground/10"
       }`}
     >

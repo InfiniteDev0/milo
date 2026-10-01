@@ -52,6 +52,8 @@ export function Tick({ done, onToggle, disabled = false, title, className = "siz
         e.stopPropagation();
         onToggle();
       }}
+      // two quick ticks are two ticks, never a double-click that opens the sheet
+      onDoubleClick={(e) => e.stopPropagation()}
       className={`flex shrink-0 items-center justify-center rounded-full transition-colors ${
         done ? "bg-foreground text-background" : "ring-1 ring-foreground/20"
       } ${
