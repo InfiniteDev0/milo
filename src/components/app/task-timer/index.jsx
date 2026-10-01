@@ -3,10 +3,11 @@
 // Watches the task the clock is on. When it has run for the minutes you set, Milo says so once — never a countdown,
 // never "late". Time that had already passed before the app opened is not announced after the fact.
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePreference } from "@/hooks/use-preference";
 import { playLock } from "@/lib/sound";
 import { TASK_TIMER, notifyDesktop } from "@/lib/task-timer";
+import { startPush } from "@/lib/push";
 import { useNow } from "@/lib/time";
 import { useBlocks } from "../blocks-provider";
 import { showTimerToast } from "./timer-toast";
@@ -18,6 +19,18 @@ export function TaskTimer() {
   const task = runningTaskId ? (tasks.find((t) => t.id === runningTaskId) ?? null) : null;
   const armed = mode !== "off" && task != null && task.minutes > 0;
   const now = useNow(armed, 10000);
+
+  // with notifications on, this device gets a real push, even with Milo closed; until it has one, the tab says it itself
+  const [pushing, setPushing] = useState(false);
+  useEffect(() => {
+    if (mode !== "desktop") return;
+    let live = true;
+    startPush().then((ok) => live && setPushing(ok));
+    return () => {
+      live = false;
+      setPushing(false);
+    };
+  }, [mode]);
 
   // timers already looked at, and timers already announced; a changed timer is a new one
   const looked = useRef(new Set());
@@ -45,10 +58,10 @@ export function TaskTimer() {
       name: task.name,
       onDone: () => setTaskStatus(task.id, "done"),
     });
-    if (mode === "desktop") {
+    if (mode === "desktop" && !pushing) {
       notifyDesktop("Milo", `${task.minutes} minutes on ${task.name}. The time you set.`, key);
     }
-  }, [armed, now, task, mode, spentOnTask, setTaskStatus]);
+  }, [armed, now, task, mode, pushing, spentOnTask, setTaskStatus]);
 
   return null;
 }

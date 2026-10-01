@@ -305,6 +305,14 @@ From POSITIONING.md, enforced on every page:
     edited in Settings → Week.
   - The task timer is the task's minutes: one nudge when the clock has been on it
     that long (`components/app/task-timer/`). Never a countdown.
+  - **Push notifications** (1 Oct, migration `0013`): "Toast + notification"
+    subscribes the device (`lib/push.js`, `public/sw.js`) into
+    `push_subscriptions`. A pg_cron job runs `private.push_due()` every minute:
+    it finds task timers that came up in the last 10 minutes (from `sessions`),
+    records them in `private.push_told`, and posts them to `/api/push`, which
+    signs with VAPID and sends. Env: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`,
+    `VAPID_PRIVATE_KEY`, `PUSH_SECRET` (must match `private.push_config`).
+    Sign-out removes the device. The mobile app will reuse the same tables.
   - Both notes sheets (day page and Notes page) float (no backdrop, stay open)
     and share one position: dragged to left / centre / right.
   - A moved task takes its notes along: `moveTask` fires `milo:task-moved` and

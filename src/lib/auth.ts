@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "./supabase/client";
+import { stopPush } from "./push";
 
 /* Client-side sign-in. Every one of these hands off to Supabase, which sets
    the auth cookies itself — there is no session endpoint to call afterwards,
@@ -40,6 +41,8 @@ export const signInWithGoogle = () => oauth("google");
 export const signInWithApple = () => oauth("apple");
 
 export async function signOut() {
+  // this device stops getting this account's notifications
+  await stopPush();
   const supabase = createClient();
   // scope 'global' revokes refresh tokens everywhere, not just this browser.
   const { error } = await supabase.auth.signOut({ scope: "global" });
