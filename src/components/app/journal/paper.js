@@ -1,19 +1,19 @@
 // How a journal page is drawn. Sizes are shares of the page (cqw across, cqh down), so a page looks the same at any size.
 
-// pen ink; the photo's paper, for the pages glimpsed as the shelf book opens; the shelf cover's charcoal
+// pen ink; the paper; its dots; the shelf cover's charcoal
 export const INK = "#27324d";
-export const PAPER = "#f8f5f2";
+export const PAPER = "#faf8f3";
+export const DOT = "rgba(110, 98, 82, 0.32)";
 export const COVER = "#2b2b2b";
 
 // how long a page takes to turn, in seconds
 export const TURN = 0.7;
 
-// the open book is public/bookui.png cut out and split at the spine: two pages of 678×912
-export const PAGE_IMAGE = ["/journal-page-left.webp", "/journal-page-right.webp"];
+// two facing pages of 678×912
 export const BOOK_RATIO = 1356 / 912;
 
-// the stacked page edges down each outer side, which stay put when a single leaf turns
-export const LEAF_CLIP = ["inset(0 0 0 6%)", "inset(0 5% 0 0)"];
+// pages round off at the outer corners only; the spine side stays square
+export const PAGE_RADIUS = ["4% 0 0 4% / 3% 0 0 3%", "0 4% 4% 0 / 0 3% 3% 0"];
 
 // lines of writing on a page, each 3.8% of the page tall, starting 9% down
 export const LINES = 21;

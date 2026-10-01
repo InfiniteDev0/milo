@@ -30,7 +30,7 @@ export function PageFlip({ dir, front, back, onDone }) {
 function Face({ side, page, shade, flipped }) {
   return (
     <div className="absolute inset-0" style={{ ...HIDE_BACK, transform: flipped ? "rotateY(180deg)" : undefined }}>
-      <Page side={side} number={page.number} leaf>
+      <Page side={side} number={page.number}>
         {page.content}
         {/* the page darkens as it lifts away from the light, and brightens as it lands */}
         <motion.span

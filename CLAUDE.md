@@ -261,8 +261,8 @@ From POSITIONING.md, enforced on every page:
    (references, not copies) and carry voice notes (`journal_voice`, audio as a
    data URI until Storage exists). Search, contents and bookmarks sit left of
    the book; month tabs run down its edge. Removing a page asks twice. Opening
-   a book still follows codrops BookPreview/BookBlock (`public/bookui.png` split
-   at the spine); you type in Caveat (`paper.js` holds margins and sizes). No
+   a book still follows codrops BookPreview/BookBlock; the pages are drawn
+   blank dotted paper (no photo, no decoration); you type in Caveat (`paper.js` holds margins and sizes). No
    counts, streaks or prompts anywhere in it — see RESEARCH.md.
 8. ⬜ Offline via PowerSync
 9. ⬜ The flows in `BACKLOG.md` — partial-day close, month-end swap, block CRUD

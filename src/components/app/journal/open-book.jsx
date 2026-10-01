@@ -11,7 +11,6 @@ import { BookSidebar } from "./book-sidebar";
 import { BookSpread } from "./book-spread";
 import { bookSerif } from "./font";
 import { MonthTabs } from "./month-tabs";
-import { PAGE_IMAGE } from "./paper";
 import { useJournalBook } from "./use-journal-book";
 
 // round page-turn buttons on the book's outer margins, faint until you reach for them
@@ -19,11 +18,6 @@ const TURN_BUTTON =
   "absolute top-1/2 z-20 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-[#dddddd]/70 text-[#333] opacity-40 transition-opacity duration-300 hover:opacity-100 focus-visible:opacity-100";
 
 export function OpenBook({ journal, userId, onClose }) {
-  // fetch the page photos early, so the book never opens blank
-  useEffect(() => {
-    for (const src of PAGE_IMAGE) new window.Image().src = src;
-  }, []);
-
   // Esc closes
   useEffect(() => {
     if (!journal) return;

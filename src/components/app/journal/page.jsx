@@ -1,22 +1,32 @@
 "use client";
 
-// One page of the open journal: its half of the book photo, the writing, and its number.
+// One page of the open journal: blank dotted paper, the writing, and its number.
 
 import { bookHand } from "./font";
-import { INK, LEAF_CLIP, PAGE_IMAGE, textBox } from "./paper";
+import { DOT, INK, LINE, PAGE_RADIUS, PAPER, TOP, textBox } from "./paper";
 
-// a turning leaf is one sheet, so it leaves the stack of page edges behind
-export function Page({ side, number, leaf, children }) {
+// paper darkening into the spine, which is on the right of a left page and the left of a right one
+const fold = (side) =>
+  `linear-gradient(to ${side === 0 ? "left" : "right"}, rgba(60,45,30,0.13), rgba(60,45,30,0.04) 3.5%, transparent 9%)`;
+
+export function Page({ side, number, children }) {
   return (
-    <div
-      className="group/page absolute inset-0 bg-no-repeat"
-      style={{
-        backgroundImage: `url(${PAGE_IMAGE[side]})`,
-        backgroundSize: "100% 100%",
-        clipPath: leaf ? LEAF_CLIP[side] : undefined,
-        containerType: "size",
-      }}
-    >
+    <div className="group/page absolute inset-0" style={{ containerType: "size" }}>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{ background: `${fold(side)}, ${PAPER}`, borderRadius: PAGE_RADIUS[side] }}
+      />
+      {/* a dot where each writing line meets the next, kept in from the edges */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-[6cqw] inset-y-[4cqh]"
+        style={{
+          backgroundImage: `radial-gradient(circle, ${DOT} 0.16cqh, transparent 0.22cqh)`,
+          backgroundSize: `${LINE}cqh ${LINE}cqh`,
+          backgroundPosition: `center ${TOP - 4 - LINE / 2}cqh`,
+        }}
+      />
       {children}
       <span
         aria-hidden
@@ -41,10 +51,5 @@ export function PageWords({ side, text, head = false, foot = false }) {
   );
 }
 
-// shade that follows the paper's shape, not the box round it
-export const paperMask = (side) => ({
-  maskImage: `url(${PAGE_IMAGE[side]})`,
-  WebkitMaskImage: `url(${PAGE_IMAGE[side]})`,
-  maskSize: "100% 100%",
-  WebkitMaskSize: "100% 100%",
-});
+// shade that follows the paper's rounded corners, not the box round it
+export const paperMask = (side) => ({ borderRadius: PAGE_RADIUS[side] });

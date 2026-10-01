@@ -1,6 +1,6 @@
 "use client";
 
-// The open journal: the book photo's two facing pages. Writing pages you type straight onto; planner pages have their own lines.
+// The open journal: two facing pages of dotted paper. Writing pages you type straight onto; planner pages have their own lines.
 // A full writing page passes the rest of your writing — and your cursor — on to the next page, turning the leaf when it must.
 
 import { useEffect, useLayoutEffect, useRef } from "react";
@@ -137,7 +137,7 @@ export function BookSpread({ book, gutter = "0rem", children }) {
   };
 
   return (
-    // the book keeps the photo's shape, as big as the space allows
+    // the book keeps its shape, as big as the space allows
     <div className="absolute inset-0 flex items-center justify-center" style={{ containerType: "size" }}>
       <div
         className="relative"
@@ -148,7 +148,7 @@ export function BookSpread({ book, gutter = "0rem", children }) {
         }}
       >
         {/* resting on the desk */}
-        <span aria-hidden className="absolute inset-x-[1.5%] inset-y-[1%] shadow-[0_30px_60px_-24px_rgba(0,0,0,0.55)]" />
+        <span aria-hidden className="absolute inset-0 rounded-[2%] shadow-[0_2px_6px_rgba(0,0,0,0.12),0_30px_60px_-24px_rgba(0,0,0,0.5)]" />
 
         {[0, 1].map((side) => (
           <div
