@@ -17,6 +17,8 @@ import { NotesProvider } from "@/components/app/notes-provider";
 import { SetupWizard } from "@/components/app/setup-wizard";
 import { MonthReview } from "@/components/app/month-review";
 import { Tray } from "@/components/app/tray";
+import { Tray as DayStrip } from "@/components/app/day-strip";
+import { TrayHandle as DayStripHandle } from "@/components/app/day-strip/handle";
 import { requireUser } from "@/lib/session";
 
 /* The workspace shell — three columns, no header.
@@ -91,6 +93,9 @@ export default async function AppLayout({ children }) {
       <MonthReview />
       {/* the notes sheet and its button, on every page but Notes */}
       <Tray />
+      {/* the 11 Sep day strip, restored as it was. the handle is a placeholder trigger, not the design */}
+      <DayStrip />
+      <DayStripHandle />
       </NotesProvider>
     </BlocksProvider>
   );
