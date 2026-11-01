@@ -6,9 +6,9 @@
 import { usePathname } from "next/navigation";
 import { ThemeProvider as NextThemes } from "next-themes";
 
-// the public site is always light, whatever the app is set to
-const MARKETING = ["/about", "/pricing", "/features"];
-const isMarketing = (path) => path === "/" || MARKETING.some((p) => path.startsWith(p));
+// the public site and sign-in are always light, whatever the app is set to
+const ALWAYS_LIGHT = ["/about", "/pricing", "/features", "/auth", "/signup"];
+const isAlwaysLight = (path) => path === "/" || ALWAYS_LIGHT.some((p) => path.startsWith(p));
 
 export function ThemeProvider({ children }) {
   const path = usePathname() ?? "";
@@ -17,7 +17,7 @@ export function ThemeProvider({ children }) {
       attribute="class"
       defaultTheme="light"
       enableSystem
-      forcedTheme={isMarketing(path) ? "light" : undefined}
+      forcedTheme={isAlwaysLight(path) ? "light" : undefined}
       // the palette is flat colour, nothing to cross-fade, and the transition
       // would show as a wash down the page
       disableTransitionOnChange

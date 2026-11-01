@@ -61,7 +61,8 @@ export function BlockNotes({
         onDrop(e.dataTransfer.getData(NOTE_DRAG));
       }}
       style={over ? { boxShadow: `inset 0 0 0 2px ${ring}` } : undefined}
-      className="flex min-h-72 flex-col gap-3 rounded-2xl bg-foreground/4 p-4 transition-shadow"
+      // a fixed height, so a long block scrolls inside its card instead of stretching the row
+      className="flex h-72 flex-col gap-3 rounded-2xl bg-foreground/4 p-4 transition-shadow"
     >
       <div className="flex items-center justify-between gap-2">
         <Link
@@ -130,7 +131,7 @@ export function BlockNotes({
         />
       )}
 
-      <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+      <ul className="scrollbar-pill m-0 flex min-h-0 flex-1 list-none flex-col gap-1.5 overflow-y-auto p-0">
         {/* where the carried note will land */}
         {over && (
           <li
@@ -169,7 +170,7 @@ export function BlockNotes({
                   dragIds?.includes(n.id)
                     ? "border-dashed border-foreground/25 *:invisible"
                     : "border-transparent bg-card hover:bg-card/70"
-                } ${selected.has(n.id) ? "ring-1 ring-foreground/40" : ""}`}
+                } ${selected.has(n.id) ? "ring-1 ring-inset ring-foreground/40" : ""}`}
               >
                 <SelectBox checked={selected.has(n.id)} onToggle={() => onToggleSelect(n.id)} />
 

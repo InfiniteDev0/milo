@@ -57,7 +57,6 @@ import { DailyReflection } from "./daily-reflection";
 import { TaskRings } from "./task-rings";
 import { Strike } from "./strike";
 import { DeleteTaskButton } from "./delete-task-button";
-import { MorningCard } from "./day-ahead/morning-card";
 import { TaskNoteCount, useTaskNoteCount } from "./task-note-count";
 
 // Module scope, so the array identity never changes between renders.
@@ -495,12 +494,6 @@ export function TaskBoard() {
                   ? "Let go to start your day."
                   : "Drag a block down here to start it. One at a time."}
               </p>
-              {/* offered before the first block, never opened for you */}
-              {!dropping && (
-                <div className="flex w-full justify-center pt-3">
-                  <MorningCard />
-                </div>
-              )}
             </>
           )}
         </div>
