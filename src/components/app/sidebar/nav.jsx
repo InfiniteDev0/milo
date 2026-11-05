@@ -51,7 +51,7 @@ export function NavMain({ items, className }) {
     <SidebarGroup className={className}>
       <SidebarMenu className="gap-1 group-data-[collapsible=icon]:items-center">
         {items.map((item) => (
-          <SidebarMenuItem key={item.href}>
+          <SidebarMenuItem key={item.href} data-tour={`nav-${item.label.toLowerCase()}`}>
             <SidebarMenuButton
               isActive={isActive(item.href)}
               className={NAV_ITEM_CLASS}

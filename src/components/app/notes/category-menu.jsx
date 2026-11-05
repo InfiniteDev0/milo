@@ -22,7 +22,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tip } from "../tasks-view/tip";
-import { PickedIcon } from "../icon-picker/picked-icon";
 import { Photo } from "../user-menu/photo";
 import { useUser } from "../user-provider";
 
@@ -105,7 +104,6 @@ export function CategoryMenu({ category, isSub, tops, hasSubs, onFavorite, onAdd
               )}
               {homes.map((t) => (
                 <DropdownMenuItem key={t.id} className={ROW} onClick={() => onMove(t.id)}>
-                  <PickedIcon icon={t.icon} size={14} />
                   <span className="truncate">{t.name || "Untitled"}</span>
                 </DropdownMenuItem>
               ))}

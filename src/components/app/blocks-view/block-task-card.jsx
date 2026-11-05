@@ -130,7 +130,12 @@ const Body = memo(function Body({ nodeRef, attributes, listeners, task, blockId,
               </button>
             </Tip>
           )}
-          {/* the estimate: press to choose one */}
+          {/* the estimate: press to choose one — not once it's done, when it's only a label */}
+          {done ? (
+            <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground/70">
+              {task.minutes ? minutesLabel(task.minutes) : "0:00"}
+            </span>
+          ) : (
           <span onClick={(e) => e.stopPropagation()} className="shrink-0">
             <TimePicker
               onPick={(m) => setTaskMinutes(task.id, m)}
@@ -144,6 +149,7 @@ const Body = memo(function Body({ nodeRef, attributes, listeners, task, blockId,
               }
             />
           </span>
+          )}
         </div>
 
         {/* the tools ease open on hover, the accordion's way; kept while one is open or its menu is */}

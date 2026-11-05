@@ -31,7 +31,6 @@ import { ComingSoonArt } from "../icons/coming-soon-art";
 import { useCategories } from "../categories-provider";
 import { TrashView } from "./trash-view";
 import { CategoryTasks } from "./category-tasks";
-import { IconPicker, PickedIcon } from "../icon-picker";
 
 
 export function NotesView() {
@@ -153,6 +152,8 @@ export function NotesView() {
               <button
                 key={t.id}
                 type="button"
+                // All notes is where the categories show: the What's new spotlight points here from By block
+                data-tour={t.id === "all" ? "notes-all" : undefined}
                 onClick={() => {
                   setTab(t.id);
                   // leaving By block lets go of the block picked in it; any tab lets go of a category
@@ -220,16 +221,6 @@ export function NotesView() {
             // one category: its name, how many notes are in it (its subcategories' too), then the notes
             <>
               <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-5 text-sm">
-                {/* the icon: click it to change it, as the reference does */}
-                <IconPicker value={category.icon} onChange={(icon) => categories.setIcon(category.id, icon)}>
-                  <button
-                    type="button"
-                    aria-label="Change icon"
-                    className="-ms-1 flex size-7 cursor-pointer items-center justify-center rounded-sm transition-colors hover:bg-foreground/10 data-popup-open:bg-foreground/10"
-                  >
-                    <PickedIcon icon={category.icon} size={16} />
-                  </button>
-                </IconPicker>
                 <span className="min-w-0 flex-1 truncate font-medium">
                   {parent && <span className="font-normal text-muted-foreground">{parent.name || "Untitled"} / </span>}
                   {category.name || "Untitled"}

@@ -57,6 +57,8 @@ const GAP_REM = 1.5;
 const SPARE = 10;
 
 const keyOf = (d) => d.toDateString();
+// the time now, read when something happens (never while drawing)
+const nowMs = () => Date.now();
 // one empty list for every empty day, so an untouched day never looks changed
 const NONE = [];
 
@@ -191,11 +193,16 @@ export function TasksView() {
     (key, id) => {
       const list = latest.current[key] ?? NONE;
       const task = list.find((t) => t.id === id);
-      setTasks((all) => ({ ...all, [key]: all[key].map((t) => (t.id === id ? { ...t, done: !t.done } : t)) }));
+      // its clock so far; ticking it done stops the clock and keeps that time
+      const spent = task ? (task.actualMs ?? 0) + (task.startedAt ? nowMs() - task.startedAt : 0) : 0;
+      setTasks((all) => ({
+        ...all,
+        [key]: all[key].map((t) => (t.id !== id ? t : t.done ? { ...t, done: false } : { ...t, done: true, actualMs: spent, startedAt: null })),
+      }));
       if (!task || task.done) return;
       playTask();
       if (new Date(key).getTime() === start) {
-        celebrateTask({ task: { ...task, minutes: task.minutes ?? 0 }, block: null, doneToday: list.filter((t) => t.done).length + 1, blockComplete: false, run: 0 });
+        celebrateTask({ task: { ...task, minutes: task.minutes ?? 0 }, block: null, doneToday: list.filter((t) => t.done).length + 1, blockComplete: false, run: 0, spentMs: spent });
       }
     },
     [setTasks, start],
@@ -372,7 +379,7 @@ export function TasksView() {
     if (!recurring.length) return byDay;
     for (const day of days) {
       const dayKey = keyOf(day);
-      const here = recurring.filter((r) => repeatsOn(r.task.repeat, r.origin, day));
+      const here = recurring.filter((r) => repeatsOn(r.task.repeat, r.origin, day, r.task.repeatRule));
       if (!here.length) continue;
       byDay[dayKey] = here.map((r) => {
         const doneOn = r.task.doneOn ?? {};

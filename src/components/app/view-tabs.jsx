@@ -21,7 +21,7 @@ export function ViewTabs() {
   if (usePathname() !== "/daily") return null;
 
   return (
-    <div className={mounted ? undefined : "invisible"}>
+    <div data-tour="switch-view" className={mounted ? undefined : "invisible"}>
     <Tabs
       value={view}
       onValueChange={(v) => {

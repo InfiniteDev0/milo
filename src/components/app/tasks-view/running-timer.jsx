@@ -1,11 +1,14 @@
 "use client";
 
-/* The clock that's running, floating at the bottom right of the Tasks view, clear of the long scrollbar —
-   beside Milo's face, not over it. The time and the task's name, and Pause.
-   On hover, three: Done (banks the time and ticks it, with the usual
-   celebration), Stop (banks the time and closes the timer), and Pause, or
-   Play once paused. A paused timer stays, its time dimmed, so you can pick the
-   same task straight back up; Stop is what puts it away. */
+/* The clock that's running, floating at the bottom right — beside Milo's face,
+   his height, flat like him, clear of the long scrollbar. The time and the
+   task's name, and Pause. On hover, three: Done (ticks it, with the usual
+   celebration — and if it beat its estimate, Milo says so), Stop (puts the
+   timer away), and Pause, or Play once paused. A paused timer stays, its time
+   dimmed, so the same task can be picked straight back up.
+
+   FloatingTimer is only the box; each view feeds it: RunningTimer for the
+   Tasks view's day tasks (here), BlockTimer for block tasks (blocks-view). */
 
 import { useState } from "react";
 import { Check, Pause, Play, Square } from "lucide-react";
@@ -28,9 +31,43 @@ const nowMs = () => Date.now();
 
 const ROUND = "flex size-8 cursor-pointer items-center justify-center rounded-full bg-white transition-transform hover:scale-105";
 
-// tasks: { [dayKey]: task[] }. onPatch(key, id, patch); onDone(key, id) ticks it done
+// spent(now): the time on it so far. running: its clock is moving
+export function FloatingTimer({ title, running, spent, onPause, onResume, onDone, onStop }) {
+  const now = useNow(running, 1000);
+  return (
+    // Milo's face's height and corners (size-12, rounded-xl), level with it, and flat like it
+    <div className="group/timer fixed right-[5.5rem] bottom-12 z-40 flex h-12 items-center gap-5 rounded-xl bg-black pr-2 pl-3.5 text-white">
+      <div className="flex min-w-0 flex-col">
+        <span className={cn("font-mono text-lg leading-none tabular-nums", !running && "text-white/45")}>{clockOf(spent(now))}</span>
+        <span className="max-w-40 truncate pt-0.5 text-[11px] font-semibold leading-tight">{title || "Untitled task"}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        {/* on hover: Done and Stop join Pause / Play */}
+        <span className="hidden items-center gap-2 group-focus-within/timer:flex group-hover/timer:flex">
+          <Tip label="Done">
+            <button type="button" onClick={onDone} aria-label="Done" className={ROUND}>
+              <Check className="size-4 text-[#00b86b]" strokeWidth={3} />
+            </button>
+          </Tip>
+          <Tip label="Stop">
+            <button type="button" onClick={onStop} aria-label="Stop the timer" className={ROUND}>
+              <Square className="size-3.5 fill-[#ef4444] text-[#ef4444]" />
+            </button>
+          </Tip>
+        </span>
+        <Tip label={running ? "Pause" : "Resume"}>
+          <button type="button" onClick={running ? onPause : onResume} aria-label={running ? "Pause" : "Resume"} className={ROUND}>
+            {running ? <Pause className="size-3.5 fill-black text-black" /> : <Play className="size-3.5 fill-[#555] text-[#555]" />}
+          </button>
+        </Tip>
+      </div>
+    </div>
+  );
+}
+
+// the Tasks view's: tasks is { [dayKey]: task[] }. onPatch(key, id, patch); onDone(key, id) ticks it done
 export function RunningTimer({ tasks, onPatch, onDone }) {
-  // the one paused from here, kept showing until it\x27s resumed, stopped or done
+  // the one paused from here, kept showing until it's resumed, stopped or done
   const [paused, setPaused] = useState(null);
 
   let found = null;
@@ -43,61 +80,37 @@ export function RunningTimer({ tasks, onPatch, onDone }) {
   }
   if (!found && paused) {
     const t = (tasks[paused.key] ?? []).find((x) => x.id === paused.id);
-    if (t) found = { key: paused.key, task: t };
+    if (t && !t.done) found = { key: paused.key, task: t };
   }
-  const running = Boolean(found?.task.startedAt);
-  const now = useNow(running, 1000);
   if (!found) return null;
 
   const { key, task } = found;
-  // the clock\x27s time, banked into the task as it stops
+  const running = Boolean(task.startedAt);
+  // the clock's time, banked into the task as it stops
   const bank = () => (running ? { actualMs: spentMs(task, nowMs()), startedAt: null } : {});
 
-  const pause = () => {
-    onPatch(key, task.id, bank());
-    setPaused({ key, id: task.id });
-  };
-  const resume = () => {
-    onPatch(key, task.id, { startedAt: nowMs() });
-    setPaused(null);
-  };
-  const stop = () => {
-    if (running) onPatch(key, task.id, bank());
-    setPaused(null);
-  };
-  const done = () => {
-    if (running) onPatch(key, task.id, bank());
-    if (!task.done) onDone(key, task.id);
-    setPaused(null);
-  };
-
   return (
-    // Milo's face's height and corners (size-12, rounded-xl), level with it, and flat like it
-    <div className="group/timer fixed right-[5.5rem] bottom-12 z-40 flex h-12 items-center gap-5 rounded-xl bg-black pr-2 pl-3.5 text-white">
-      <div className="flex min-w-0 flex-col">
-        <span className={cn("font-mono text-lg leading-none tabular-nums", !running && "text-white/45")}>{clockOf(spentMs(task, now))}</span>
-        <span className="max-w-40 truncate pt-0.5 text-[11px] font-semibold leading-tight">{task.title || "Untitled task"}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        {/* on hover: Done and Stop join Pause / Play */}
-        <span className="hidden items-center gap-2 group-focus-within/timer:flex group-hover/timer:flex">
-          <Tip label="Done">
-            <button type="button" onClick={done} aria-label="Done" className={ROUND}>
-              <Check className="size-4 text-[#00b86b]" strokeWidth={3} />
-            </button>
-          </Tip>
-          <Tip label="Stop">
-            <button type="button" onClick={stop} aria-label="Stop the timer" className={ROUND}>
-              <Square className="size-3.5 fill-[#ef4444] text-[#ef4444]" />
-            </button>
-          </Tip>
-        </span>
-        <Tip label={running ? "Pause" : "Resume"}>
-          <button type="button" onClick={running ? pause : resume} aria-label={running ? "Pause" : "Resume"} className={ROUND}>
-            {running ? <Pause className="size-3.5 fill-black text-black" /> : <Play className="size-3.5 fill-[#555] text-[#555]" />}
-          </button>
-        </Tip>
-      </div>
-    </div>
+    <FloatingTimer
+      title={task.title}
+      running={running}
+      spent={(now) => spentMs(task, now)}
+      onPause={() => {
+        onPatch(key, task.id, bank());
+        setPaused({ key, id: task.id });
+      }}
+      onResume={() => {
+        onPatch(key, task.id, { startedAt: nowMs() });
+        setPaused(null);
+      }}
+      onStop={() => {
+        if (running) onPatch(key, task.id, bank());
+        setPaused(null);
+      }}
+      // ticking it done banks the time itself (and says so if it beat the estimate)
+      onDone={() => {
+        if (!task.done) onDone(key, task.id);
+        setPaused(null);
+      }}
+    />
   );
 }

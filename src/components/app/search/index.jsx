@@ -47,7 +47,6 @@ import { useNotes } from "../notes-provider";
 import { dayLabel, readDay } from "./days";
 import { markStep } from "../whats-new/steps";
 import { cn } from "@/lib/utils";
-import { PickedIcon } from "../icon-picker/picked-icon";
 import { UserGroup } from "../icons/user-group";
 import { matchRanges, matchScore, normalize, queryWords, SLIP_SCORE } from "./match";
 import { KIND_LABELS, SCOPES, useSearchEntries } from "./use-search-entries";
@@ -79,8 +78,8 @@ function Mask({ file, gradient = GREEN, active }) {
   );
 }
 
-// a result's icon, by what it is. Block colours and category icons are the thing itself, so they
-// always show; the app's own icons colour in only on the active row
+// a result's icon, by what it is. A block's colour is the thing itself, so it always shows; the
+// app's own icons colour in only on the active row
 function ResultIcon({ entry, active }) {
   const tint = (colour) => cn("size-5 shrink-0 transition-colors", active ? colour : "text-muted-foreground/70");
   switch (entry.kind) {
@@ -98,7 +97,7 @@ function ResultIcon({ entry, active }) {
       return <Mask file="/pencil.svg" active={active} />;
     case "category":
     case "subcategory":
-      return entry.icon ? <PickedIcon icon={entry.icon} size={18} /> : <Folder className={tint("text-foreground")} />;
+      return <Folder className={tint("text-[#f5a524]")} />;
     case "entry":
       return <Mask file="/notes.svg" gradient={PINK} active={active} />;
     case "voice":
@@ -446,7 +445,7 @@ export function Search() {
       <TooltipProvider delay={200}>
         <Tooltip>
           <TooltipTrigger
-            render={<button type="button" onClick={() => setOpen(true)} aria-label="Search" aria-keyshortcuts="Control+K" />}
+            render={<button type="button" data-tour="search" onClick={() => setOpen(true)} aria-label="Search" aria-keyshortcuts="Control+K" />}
             className="flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-white/10"
           >
             <SearchIcon className="size-4" />

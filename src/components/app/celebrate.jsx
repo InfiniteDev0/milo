@@ -42,6 +42,9 @@ const RUN = [
   "Another one, back to back.",
 ];
 
+// how long, short: "3m", or "under a minute"
+const shortTime = (ms) => (ms < 60000 ? "under a minute" : `${Math.round(ms / 60000)}m`);
+
 let lastPicked = null;
 
 /** Never the same line twice running — repetition is what kills the effect. */
@@ -58,9 +61,11 @@ function pick(list) {
  * @param doneToday      how many things have been finished today, including this
  * @param blockComplete  did this finish every task in its block
  * @param run            consecutive completions without a gap
+ * @param spentMs        how long its clock ran, if it ran: finishing under the estimate is said so.
+ *                       Going over is never said — nothing in Milo is late
  * @returns the Milo pose to hold for a moment
  */
-export function celebrateTask({ task, block, doneToday, blockComplete, run }) {
+export function celebrateTask({ task, block, doneToday, blockComplete, run, spentMs = 0 }) {
   let headline;
   let mood = "happy";
 
@@ -68,6 +73,10 @@ export function celebrateTask({ task, block, doneToday, blockComplete, run }) {
     // The biggest moment in the product: a whole block finished.
     headline = `${block.name.replace(" Block", "")} — that's the whole block.`;
     mood = "cheer";
+  } else if (task.minutes > 0 && spentMs > 0 && spentMs < task.minutes * 60000) {
+    // done before the time it was given
+    headline = spentMs < 60000 ? `Done in under a minute. You gave it ${task.minutes}m.` : `Done in ${shortTime(spentMs)}, under the ${task.minutes}m you gave it.`;
+    mood = "proud";
   } else if (doneToday === 1) {
     headline = pick(FIRST);
     mood = "content";

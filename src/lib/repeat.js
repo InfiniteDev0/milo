@@ -30,9 +30,47 @@ export function repeatOptions(origin) {
   ];
 }
 
+// the Sunday a day's week starts on
+const weekStart = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay());
+
+// a custom rule, { every, unit, days }, read against the origin the same way the fixed ones are
+function customOn(custom, origin, day) {
+  const every = Math.max(1, Number(custom?.every) || 1);
+  switch (custom?.unit) {
+    case "day":
+      return daysBetween(origin, day) % every === 0;
+    case "week": {
+      const days = custom.days?.length ? custom.days : [origin.getDay()];
+      return days.includes(day.getDay()) && (daysBetween(weekStart(origin), weekStart(day)) / 7) % every === 0;
+    }
+    case "month": {
+      const months = (day.getFullYear() - origin.getFullYear()) * 12 + day.getMonth() - origin.getMonth();
+      return day.getDate() === origin.getDate() && months % every === 0;
+    }
+    case "year":
+      return day.getMonth() === origin.getMonth() && day.getDate() === origin.getDate() && (day.getFullYear() - origin.getFullYear()) % every === 0;
+    default:
+      return false;
+  }
+}
+
+const UNITS = { day: ["day", "days"], week: ["week", "weeks"], month: ["month", "months"], year: ["year", "years"] };
+const SHORT_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+// "Every 2 weeks on Mon, Thu", "Every 3 days"
+export function customLabel(custom) {
+  if (!custom) return "Custom";
+  const every = Math.max(1, Number(custom.every) || 1);
+  const [one, many] = UNITS[custom.unit] ?? UNITS.day;
+  const head = every === 1 ? `Every ${one}` : `Every ${every} ${many}`;
+  return custom.unit === "week" && custom.days?.length ? `${head} on ${custom.days.map((d) => SHORT_DAYS[d]).join(", ")}` : head;
+}
+
 // does a task written on `origin` with this rule come round again on `day`? (never before its origin)
-export function repeatsOn(rule, origin, day) {
+// custom: the rule itself, when rule is "custom"
+export function repeatsOn(rule, origin, day, custom) {
   if (!rule || rule === "none" || day <= origin) return false;
+  if (rule === "custom") return customOn(custom, origin, day);
   const dow = day.getDay();
   switch (rule) {
     case "daily":

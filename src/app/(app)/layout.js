@@ -2,7 +2,6 @@ import { cookies } from "next/headers";
 import { BlockRail } from "@/components/app/block-rail";
 import { DayControl } from "@/components/app/day-control";
 import { ArchivePanel } from "@/components/app/archive-panel";
-import { BlockSheet } from "@/components/app/block-sheet";
 import { DayAhead } from "@/components/app/day-ahead";
 import { CheckIn } from "@/components/app/check-in";
 import { TaskTimer } from "@/components/app/task-timer";
@@ -70,8 +69,6 @@ export default async function AppLayout({ children }) {
       </SidebarProvider>
 
       <ArchivePanel />
-      {/* one block, looked at without starting it */}
-      <BlockSheet />
       {/* today or tomorrow, one block at a time */}
       <DayAhead />
       {/* speaks while a block runs — see check-in.jsx for why this one

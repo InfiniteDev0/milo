@@ -14,7 +14,6 @@ import { useState } from "react";
 import { ChevronRight, FileText, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tip } from "../tasks-view/tip";
-import { PickedIcon } from "../icon-picker/picked-icon";
 import { useNotes } from "../notes-provider";
 import { CategoryMenu } from "./category-menu";
 import { NOTES_DRAG } from "./note-card";
@@ -150,15 +149,15 @@ export function Categories({ categories, selected, onSelect, onAdd, onOpenNote }
     );
 
   return (
-    <nav aria-label="Categories" className="flex flex-col gap-0.5">
+    <nav aria-label="Categories" data-tour="categories" className="flex flex-col gap-0.5">
       {tops.map((c) => {
         const isOpen = open.has(c.id);
         const subs = list.filter((s) => s.parentId === c.id);
         const own = notes.filter((n) => n.categoryId === c.id);
         return (
           <div key={c.id}>
-            {/* at rest: the icon and the name. On hover (or picked, or with its menu open) the row takes a
-                box, the icon turns into the chevron (with a box of its own under the pointer), and + and ⋯ show */}
+            {/* the chevron and the name (categories have no icons, 5 Nov). On hover (or picked, or with its
+                menu open) the row takes a box, the chevron one of its own under the pointer, and + and ⋯ show */}
             <div
               {...dropOn(c)}
               className={cn(
@@ -174,14 +173,7 @@ export function Categories({ categories, selected, onSelect, onAdd, onOpenNote }
                 aria-label={isOpen ? `Close ${c.name || "Untitled"}` : `Open ${c.name || "Untitled"}`}
                 className="relative flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm transition-colors hover:bg-foreground/10"
               >
-                <PickedIcon icon={c.icon} size={15} className="group-hover/cat:invisible" />
-                <ChevronRight
-                  className={cn(
-                    "absolute size-4 text-muted-foreground opacity-0 transition-[rotate,opacity] group-hover/cat:opacity-100",
-                    EASE,
-                    isOpen && "rotate-90",
-                  )}
-                />
+                <ChevronRight className={cn("size-4 text-muted-foreground transition-[rotate]", EASE, isOpen && "rotate-90")} />
               </button>
               <Name category={c} renaming={renaming === c.id} onRenamed={renamed(c)} onSelect={() => onSelect(c.id)} />
               {tools(c, false)}
@@ -213,7 +205,6 @@ export function Categories({ categories, selected, onSelect, onAdd, onOpenNote }
                         over === s.id && LIT,
                       )}
                     >
-                      {s.icon && <PickedIcon icon={s.icon} size={13} />}
                       <Name category={s} renaming={renaming === s.id} onRenamed={renamed(s)} onSelect={() => onSelect(s.id)} />
                       {tools(s, true)}
                     </li>

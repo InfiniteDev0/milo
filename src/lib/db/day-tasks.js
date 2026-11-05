@@ -9,8 +9,9 @@ import { createRowQueue } from "./row-queue";
 import { liveFilter, trashOrDelete } from "./trash";
 
 const BASE = "id, day, title, done, position, minutes, actual_ms, started_at, note, steps, repeat, done_on";
-// category_id (the label) comes with migration 0016; until then the tasks load without it
-const TRIES = [`${BASE}, category_id`, BASE];
+// newer columns, newest first: category_id (the label) with 0016, repeat_rule and at_time with 0020.
+// Until one is applied, the tasks load without it (and without anything newer)
+const TRIES = [`${BASE}, category_id, repeat_rule, at_time`, `${BASE}, category_id`, BASE];
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -38,11 +39,16 @@ const fromRow = (r) => ({
   doneOn: r.done_on ?? {},
   // its label: a category or subcategory. undefined before 0016, so saves don't send the column
   categoryId: "category_id" in r ? (r.category_id ?? null) : undefined,
+  // a custom repeat's rule, and a time of day; undefined before 0020
+  repeatRule: "repeat_rule" in r ? (r.repeat_rule ?? null) : undefined,
+  atTime: "at_time" in r ? (r.at_time ?? null) : undefined,
 });
 
-// whether the database has labels yet (0016), learned by the last listDayTasks()
+// whether the database has labels yet (0016), and custom repeats and times (0020), learned by the last listDayTasks()
 let labels = false;
+let extras = false;
 export const dayTaskLabels = () => labels;
+export const dayTaskExtras = () => extras;
 
 // every day task, grouped by the day it sits in and in its order there: { [dayKey]: task[] }
 export async function listDayTasks() {
@@ -55,6 +61,7 @@ export async function listDayTasks() {
     ({ data, error } = await read(columns));
     if (error?.code !== "42703") {
       labels = columns.includes("category_id");
+      extras = columns.includes("repeat_rule");
       break;
     }
   }
@@ -81,6 +88,8 @@ function saveDayTask(userId, task, key, position) {
     repeat: task.repeat ?? "none",
     done_on: task.doneOn ?? {},
     ...(task.categoryId !== undefined && { category_id: task.categoryId }),
+    ...(task.repeatRule !== undefined && { repeat_rule: task.repeatRule }),
+    ...(task.atTime !== undefined && { at_time: task.atTime }),
   });
 }
 

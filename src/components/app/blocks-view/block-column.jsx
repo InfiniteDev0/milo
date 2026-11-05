@@ -5,6 +5,7 @@
    target, as the day columns are. */
 
 import { memo, useState } from "react";
+import { Check, ChevronDown } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
 import { AddTask } from "../tasks-view/add-task";
 import { CardMenu } from "../tasks-view/card-menu";
@@ -36,13 +37,50 @@ function DropArea({ blockId, children }) {
 }
 
 // hidden: the block's tasks that aren't today's, under the "Hidden tasks" button
-export const BlockColumn = memo(function BlockColumn({ block, tasks, hidden, now, anyRunning, dragId, over, onAdd, onToggle, onNote, onDuplicate, onDelete }) {
+export const BlockColumn = memo(function BlockColumn({ block, tasks, hidden, now, anyRunning, dragId, over, onAdd, onToggle, onNote, onDuplicate, onDelete, selected, selecting, onToggleSelect }) {
   const [drafting, setDrafting] = useState(false);
+  // a finished block folds away to its box and one line; open it to see what was done
+  const [showDone, setShowDone] = useState(false);
+  const finished = block.status === "done";
+
+  if (finished && !showDone) {
+    return (
+      <section className="flex min-h-0 w-[18rem] shrink-0 flex-col gap-2.5">
+        <BlockBox block={block} now={now} anyRunning={anyRunning} selected={selected} selecting={selecting} onToggleSelect={onToggleSelect} />
+        <button
+          type="button"
+          onClick={() => setShowDone(true)}
+          aria-expanded={false}
+          className="flex h-9 w-full cursor-pointer items-center gap-2 rounded-lg border border-dashed border-foreground/15 px-3 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+        >
+          <Check className="size-4 text-[#00b86b]" strokeWidth={2.5} />
+          <span className="flex-1 text-left">Done</span>
+          <span className="rounded-sm bg-muted px-1.5 py-0.5 text-[11px] tabular-nums">
+            {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
+          </span>
+          <ChevronDown className="size-4" />
+        </button>
+      </section>
+    );
+  }
 
   return (
     <section className="flex min-h-0 w-[18rem] shrink-0 flex-col gap-2.5">
       {/* the block, as its box has always looked */}
-      <BlockBox block={block} now={now} anyRunning={anyRunning} />
+      <BlockBox block={block} now={now} anyRunning={anyRunning} selected={selected} selecting={selecting} onToggleSelect={onToggleSelect} />
+      {/* a finished block, opened: fold it back */}
+      {finished && (
+        <button
+          type="button"
+          onClick={() => setShowDone(false)}
+          aria-expanded
+          className="flex h-9 w-full cursor-pointer items-center gap-2 rounded-lg border border-dashed border-foreground/15 px-3 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+        >
+          <Check className="size-4 text-[#00b86b]" strokeWidth={2.5} />
+          <span className="flex-1 text-left">Done</span>
+          <ChevronDown className="size-4 rotate-180" />
+        </button>
+      )}
 
       <AddTask onStart={() => setDrafting(true)} />
 

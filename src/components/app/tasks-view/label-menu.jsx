@@ -2,7 +2,7 @@
 
 /* A day task's label: one of your categories (the same ones notes live in), so a
    category holds its notes and its tasks. "Select label" until one is picked,
-   then its icon and name. The list has every category with its subcategories
+   then its name (categories have no icons). The list has every category with its subcategories
    under it, No label, and New category to name one right there and pick it.
    Before migration 0016 there's nowhere to keep a label, and it says so. */
 
@@ -13,10 +13,23 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { dayTaskLabels } from "@/lib/db/day-tasks";
 import { cn } from "@/lib/utils";
 import { useCategories } from "../categories-provider";
-import { PickedIcon } from "../icon-picker/picked-icon";
 import { Tip } from "./tip";
 
 const ROW = "flex w-full cursor-pointer items-center gap-2 rounded-sm px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-muted";
+
+// a label's colour: one of eight, picked from its category's id, so it's always the same one
+const COLOURS = ["#2f80ed", "#00b86b", "#9a6dd7", "#e07c39", "#e255a1", "#06b6d4", "#dfab01", "#e5534b"];
+export function labelColour(id) {
+  let h = 0;
+  for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return COLOURS[h % COLOURS.length];
+}
+// the chip's look in that colour: a soft fill, the colour itself for the words
+const chipStyle = (id) => {
+  const c = labelColour(id);
+  return { background: `color-mix(in srgb, ${c} 18%, transparent)`, color: `color-mix(in srgb, ${c} 85%, var(--foreground))` };
+};
+const CHIP = "flex max-w-32 shrink-0 items-center rounded-sm px-1.5 py-0.5 text-[11px] font-medium";
 
 // the label on a card, small, beside its name
 export function LabelChip({ categoryId }) {
@@ -24,8 +37,7 @@ export function LabelChip({ categoryId }) {
   const c = categoryId ? list.find((x) => x.id === categoryId) : null;
   if (!c) return null;
   return (
-    <span className="mt-0.5 flex max-w-28 shrink-0 items-center gap-1 rounded-sm bg-foreground/[0.07] px-1.5 py-0.5 text-[11px] text-muted-foreground">
-      <PickedIcon icon={c.icon} size={11} />
+    <span className={CHIP} style={chipStyle(c.id)}>
       <span className="truncate">{c.name || "Untitled"}</span>
     </span>
   );
@@ -64,13 +76,14 @@ export function LabelMenu({ value, onChange }) {
       <Tip label={current ? "Label" : "Label it with a category"}>
         <PopoverTrigger
           onClick={(e) => e.stopPropagation()}
-          className={cn("flex max-w-32 cursor-pointer items-center gap-1 transition-colors hover:text-[#2f80ed] data-popup-open:text-[#2f80ed]", current && "text-foreground")}
+          style={current ? chipStyle(current.id) : undefined}
+          className={cn(
+            "cursor-pointer transition-[color,opacity]",
+            current ? cn(CHIP, "hover:opacity-80") : "flex items-center hover:text-[#2f80ed] data-popup-open:text-[#2f80ed]",
+          )}
         >
           {current ? (
-            <>
-              <PickedIcon icon={current.icon} size={12} />
-              <span className="truncate">{current.name || "Untitled"}</span>
-            </>
+            <span className="truncate">{current.name || "Untitled"}</span>
           ) : (
             "Select label"
           )}
@@ -92,7 +105,6 @@ export function LabelMenu({ value, onChange }) {
           tops.map((c) => (
             <div key={c.id} className="flex flex-col gap-0.5">
               <button type="button" onClick={() => pick(c.id)} className={ROW}>
-                <PickedIcon icon={c.icon} size={14} />
                 <span className="min-w-0 flex-1 truncate">{c.name || "Untitled"}</span>
                 {value === c.id && <Check className="size-3.5" />}
               </button>

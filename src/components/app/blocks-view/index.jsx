@@ -5,7 +5,7 @@
    are. Each column is topped by the block's own box; open it to start the block. Drag a task within a block to reorder it,
    or onto another block to move it there. Click a task for its sheet. */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNow } from "@/lib/time";
 import { onDay, todayId } from "@/lib/days";
 import { DndContext, DragOverlay, PointerSensor, pointerWithin, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
@@ -13,6 +13,9 @@ import { useBlocks } from "../blocks-provider";
 import { BlocksHeader } from "../blocks-header";
 import { LongScrollbar } from "../tasks-view/long-scrollbar";
 import { BlockColumn, dropIndex } from "./block-column";
+import { BlockTimer } from "./block-timer";
+import { BlockSelectionBar } from "./block-selection-bar";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { BoardArea } from "./board-area";
 import { BoardFailed, BoardSkeleton } from "./board-states";
 import { NoteSheet, openingNote } from "./note-sheet";
@@ -29,6 +32,19 @@ export function BlocksView() {
   const anyRunning = blocks.some((b) => b.status === "ongoing");
   const now = useNow(anyRunning);
   const rowRef = useRef(null);
+  // blocks ticked on their boxes, for the bar's Archive and Delete
+  const [pickedBlocks, setPickedBlocks] = useState(() => new Set());
+  const togglePicked = useCallback(
+    (id) =>
+      setPickedBlocks((now) => {
+        const next = new Set(now);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      }),
+    [],
+  );
+  const clearPicked = useCallback(() => setPickedBlocks(new Set()), []);
   // the task whose notes sheet is open, the note it opened on, and a count that makes each opening fresh
   const { notes, addNote } = useNotes();
   const [noteFor, setNoteFor] = useState(null);
@@ -132,8 +148,14 @@ export function BlocksView() {
       onDragMove: ({ over, activatorEvent, delta }) => {
         const d = dragRef.current;
         if (!d) return;
-        // a block over the board: it will lead and start when let go
-        if (d.type === "block") return land(over ? { key: "board", index: 0 } : null);
+        // a block starts only if it's let go down among the tasks — below the top of the task lists.
+        // Up on the boxes (a grab by mistake), letting go just puts it back
+        if (d.type === "block") {
+          const y = activatorEvent.clientY + delta.y;
+          const lists = rowRef.current?.querySelector("[data-drop]");
+          const line = lists ? lists.getBoundingClientRect().top : Infinity;
+          return land(over && y >= line ? { key: "board", index: 0 } : null);
+        }
         const list = over && rowRef.current?.querySelector(`[data-drop="${over.id}"]`);
         if (!list) return land(null);
         const index = dropIndex(list, activatorEvent.clientY + delta.y);
@@ -148,7 +170,7 @@ export function BlocksView() {
         const d = dragRef.current;
         const l = landingRef.current;
         if (d?.type === "block") {
-          // dropped anywhere on the board: first in line, and running — and the row
+          // let go among the tasks: first in line, and running — and the row
           // glides back to the front, where it now is (once it has been redrawn there)
           if (l) {
             latest.current.startAndLead(d.block.id);
@@ -164,6 +186,8 @@ export function BlocksView() {
   return (
     <div className="flex h-full flex-col">
       <BlocksHeader />
+      {/* ticked blocks: archive or delete them */}
+      <BlockSelectionBar selected={pickedBlocks} onClear={clearPicked} />
 
       <DndContext sensors={sensors} {...dnd}>
         <BoardArea
@@ -197,6 +221,9 @@ export function BlocksView() {
               onNote={openNotes}
               onDuplicate={(t) => addTask(b.id, t.name, t.minutes ?? null)}
               onDelete={removeTask}
+              selected={pickedBlocks.has(b.id)}
+              selecting={pickedBlocks.size > 0}
+              onToggleSelect={togglePicked}
             />
           ))}
         </BoardArea>
@@ -218,6 +245,10 @@ export function BlocksView() {
         </DragOverlay>
       </DndContext>
       <LongScrollbar targetRef={rowRef} />
+      {/* the block task whose clock is going, at the bottom right — the same timer as the Tasks view */}
+      <TooltipProvider delay={300}>
+        <BlockTimer />
+      </TooltipProvider>
 
       {/* a task's notes, from the note icon on its card */}
       <NoteSheet

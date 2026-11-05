@@ -19,7 +19,7 @@ import { writeNow } from "@/lib/db/sync";
 
 // everything a saved row holds, as one string: when it changes, the row is saved again
 const shape = (t, key, position) =>
-  JSON.stringify([key, position, t.title, t.done, t.minutes ?? null, t.actualMs ?? 0, t.startedAt ?? null, t.note ?? "", t.steps ?? [], t.repeat ?? "none", t.doneOn ?? {}, t.categoryId ?? null]);
+  JSON.stringify([key, position, t.title, t.done, t.minutes ?? null, t.actualMs ?? 0, t.startedAt ?? null, t.note ?? "", t.steps ?? [], t.repeat ?? "none", t.doneOn ?? {}, t.categoryId ?? null, t.repeatRule ?? null, t.atTime ?? null]);
 
 export function useDayTasks() {
   const [tasks, setTasks] = useState({});

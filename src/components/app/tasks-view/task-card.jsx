@@ -24,7 +24,7 @@ import { useNow } from "@/lib/time";
 import { Strike } from "../strike";
 import { Tick } from "../task-bits";
 import { NoteSection, StepCount, SubtasksSection, TimeSection } from "./card-sections";
-import { RepeatMenu } from "./repeat-menu";
+import { RepeatMenu, timeLabel } from "./repeat-menu";
 import { MoveMenu } from "./move-menu";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Tip } from "./tip";
@@ -42,7 +42,9 @@ export function spentMs(task, now) {
   return (task.actualMs ?? 0) + (task.startedAt && now ? now - task.startedAt : 0);
 }
 
-export function TimePill({ ms = 0, active = false, onClick }) {
+// locked: a finished task shows its time but doesn't open the clock or the estimate
+export function TimePill({ ms = 0, active = false, onClick, locked = false }) {
+  if (locked) return <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground/70">{clock(ms)}</span>;
   return (
     <button
       type="button"
@@ -85,7 +87,7 @@ function Tools({ task, origin, open, toggle, onPatch, onMove, always = false }) 
           <Workflow className="size-3.5" />
         </button>
       </Tip>
-      {origin && <RepeatMenu origin={origin} value={task.repeat} onChange={(repeat) => onPatch({ repeat })} />}
+      {origin && <RepeatMenu origin={origin} value={task.repeat} rule={task.repeatRule} time={task.atTime} onChange={onPatch} />}
       {origin && onMove && <MoveMenu origin={origin} onMoveToBlock={onMove.toBlock} onMoveToDay={onMove.toDay} />}
       {/* how far through its subtasks, at the end of the row */}
       <StepCount steps={steps} />
@@ -159,11 +161,13 @@ const CardBody = memo(function CardBody({ nodeRef, attributes, listeners, task, 
         </span>
         {/* it has a note: said on the card itself, so you don't have to hover to know */}
         <NoteMark count={task.note?.trim() ? 1 : 0} />
-        {/* its label, so you can see it without hovering */}
-        <LabelChip categoryId={task.categoryId} />
+        {/* its time of day, so you can see it without hovering (the label lives in the tools row) */}
+        {task.atTime && (
+          <span className="mt-0.5 shrink-0 rounded-sm bg-[#2f80ed]/12 px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-[#2f80ed]">{timeLabel(task.atTime)}</span>
+        )}
         <TooltipProvider delay={300}>
           <Tip label={running ? "Time · the clock is running" : "Time: track it, or estimate it"}>
-            <TimePill ms={ms} active={open.time || running} onClick={() => toggle("time")} />
+            <TimePill ms={ms} active={open.time || running} onClick={() => toggle("time")} locked={task.done} />
           </Tip>
         </TooltipProvider>
       </div>

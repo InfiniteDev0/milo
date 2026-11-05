@@ -54,25 +54,30 @@ function DropArea({ dayKey, children }) {
 // loading: the saved tasks haven't arrived yet, so the day shows placeholders rather than looking empty
 export const DayColumn = memo(function DayColumn({ dayKey, date, isToday, tasks, repeats, loading, dragId, over, onAdd, onToggle, onPatch, onDuplicate, onDelete, onMoveToBlock, onMoveToDay }) {
   const special = specialDays(date);
+  // how many it holds that are done, a repeat's copy included; it only ever counts up
+  const doneCount = tasks.filter((t) => t.done).length + repeats.filter((r) => r.task.done).length;
   const [drafting, setDrafting] = useState(false);
 
   return (
-    <section data-today={isToday || undefined} className="flex min-h-0 w-[18rem] shrink-0 flex-col gap-2">
+    <section data-today={isToday || undefined} data-tour={isToday ? "today" : undefined} className="flex min-h-0 w-[18rem] shrink-0 flex-col gap-2">
       <header className="flex h-10 items-center gap-2">
         <h2 className="text-lg font-semibold">
           {date.toLocaleDateString([], WEEKDAY)}{" "}
           <span className="text-muted-foreground">{date.toLocaleDateString([], MONTHDAY)}</span>
         </h2>
         {isToday && <span className="text-xs font-semibold text-[#2f80ed]">Today</span>}
-        {/* the far end: the day's badges, then Focus on today */}
+        {/* the far end: the day's badges, then how many it holds that are done (where Focus used to sit) */}
         <span className="ml-auto flex min-w-0 items-center gap-1.5">
           {special.map((name) => (
             <span key={name} className="truncate rounded-sm bg-[#0b8043] px-2 py-0.5 text-xs font-semibold text-white">
               {name}
             </span>
           ))}
-          {/* Sunsama's focus mode; not wired to anything yet */}
-          {isToday && <span className="shrink-0 text-xs font-medium text-muted-foreground">Focus</span>}
+          {doneCount > 0 && (
+            <span title="Tasks done on this day" className="shrink-0 rounded-sm bg-[#00b86b]/15 px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-[#00a35f] dark:text-[#3ddc97]">
+              {doneCount} done
+            </span>
+          )}
         </span>
       </header>
 

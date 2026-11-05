@@ -89,7 +89,11 @@ export function useSearchEntries(open) {
   const entries = useMemo(() => {
     if (!open) return [];
     const go = (href) => () => router.push(href);
-    const openBlock = (id) => () => window.dispatchEvent(new CustomEvent("milo:open-block", { detail: id }));
+    // the Blocks view, where the block and its tasks are (the block sheet is gone)
+    const openBlock = () => () => {
+      VIEW.set("blocks");
+      router.push("/daily");
+    };
     const allBlocks = [...blocks, ...droppedToday, ...archived];
     const blockOf = new Map(allBlocks.map((b) => [b.id, b]));
     const categoryOf = new Map(categories.list.map((c) => [c.id, c]));

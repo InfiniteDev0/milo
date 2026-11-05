@@ -3,8 +3,9 @@
 /* What's new, as beui's todo list, small, sitting just above Milo's face at
    the bottom right of the home page.
 
-   First it's a list with Start under it. Once started, the step to do now is
-   green and every other step is blurred, so only that one asks for attention.
+   First it's a list with Start under it. Once started, the list shows just the
+   step to do now (in green), and the whole screen blurs except the place that
+   step happens (spotlight.jsx), so only that asks for attention.
    Steps tick themselves as you do them anywhere in Milo (steps.js), started or
    not, and the next one comes into focus the moment one is done. Finishing
    fires the confetti and Milo says welcome; the list closes up and goes.
@@ -21,6 +22,7 @@ import { TodoList } from "@/components/agents/todo-list";
 import { loadTour, saveTour } from "@/lib/db/tour";
 import { sideCannons } from "../confetti";
 import { showWelcome } from "./welcome-toast";
+import { Spotlight } from "./spotlight";
 import { STEPS, VERSION, onStep } from "./steps";
 
 // Milo's green to blue, drawn as an inline style so it can't lose to a class
@@ -31,9 +33,8 @@ const GRADIENT = {
   color: "transparent",
 };
 
-// once started, every row but the current one goes soft and out of focus
-const BLUR =
-  "[&_li[data-status=completed]]:opacity-50 [&_li[data-status=completed]]:blur-[2px] [&_li[data-status=pending]]:opacity-50 [&_li[data-status=pending]]:blur-[2px]";
+// once started, only the current step shows in the list; the rest wait their turn
+const ONLY_CURRENT = "[&_li[data-status=completed]]:hidden [&_li[data-status=pending]]:hidden";
 
 export function WhatsNew() {
   // every page, so a step that lives elsewhere (a category in Notes) can be done with the list in sight
@@ -98,7 +99,8 @@ export function WhatsNew() {
 
   if (!pathname || !state || state.closed) return null;
 
-  const current = state.started ? STEPS.find((x) => !state.done.has(x.id))?.id : null;
+  const currentStep = state.started ? STEPS.find((x) => !state.done.has(x.id)) : null;
+  const current = currentStep?.id ?? null;
   const items = STEPS.map((x) => ({
     id: x.id,
     title: x.title,
@@ -106,8 +108,11 @@ export function WhatsNew() {
   }));
 
   return (
-    // above Milo's face (bottom-12, 3rem tall), its right edge level with it
-    <div className="fixed right-6 bottom-[6.75rem] z-30 w-72 max-w-[calc(100vw-2rem)]">
+    <>
+    {/* the rest of the screen out of focus, the current step's place clear */}
+    {currentStep && <Spotlight targets={currentStep.targets} />}
+    {/* above Milo's face (bottom-12, 3rem tall), its right edge level with it, and above the blur */}
+    <div className="fixed right-6 bottom-[6.75rem] z-[45] w-72 max-w-[calc(100vw-2rem)]">
       {/* its own grey in light mode (the page is white), the popover colour in dark; a firm edge, no shadow */}
       <div className="relative rounded-2xl border border-foreground/15 bg-muted dark:border-border dark:bg-popover">
         <TodoList
@@ -118,7 +123,7 @@ export function WhatsNew() {
             </span>
           }
           maxHeight={220}
-          className={`border-0 bg-transparent text-[13px] [&_li]:transition-[filter,opacity,background-color] [&_li:hover]:bg-foreground/[0.06] ${state.started ? BLUR : ""}`}
+          className={`border-0 bg-transparent text-[13px] [&_li]:transition-[filter,opacity,background-color] [&_li:hover]:bg-foreground/[0.06] ${state.started ? ONLY_CURRENT : ""}`}
         />
         {!state.started && !allDone && (
           <div className="px-3 pb-3">
@@ -133,5 +138,6 @@ export function WhatsNew() {
         )}
       </div>
     </div>
+    </>
   );
 }

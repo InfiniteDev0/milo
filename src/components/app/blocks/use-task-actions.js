@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { createTask, deleteTask, moveTaskRow, saveTask, saveTaskOrder } from "@/lib/db/blocks";
 import { queueWrite, writeNow } from "@/lib/db/sync";
-import { closeSessions, openSession } from "@/lib/day/intervals";
+import { closeSessions, openSession, spentOn } from "@/lib/day/intervals";
 import { blockFinished, moreToCome } from "@/lib/day/work";
 import { playBlock, playTask, playTuck } from "@/lib/sound";
 import { celebrateTask } from "../celebrate";
@@ -261,6 +261,8 @@ export function useTaskActions({
         doneToday: next.filter((t) => t.status === "done").length,
         blockComplete,
         run: streak,
+        // its clock so far, so finishing under the estimate can be said
+        spentMs: spentOn(sessions, (x) => x.taskId === taskId, Date.now()),
       });
 
       holdMood(mood, 4000);
@@ -268,6 +270,7 @@ export function useTaskActions({
     [
       tasks,
       blocks,
+      sessions,
       holdMood,
       restMinutes,
       reconcile,
