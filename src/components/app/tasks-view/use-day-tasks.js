@@ -14,7 +14,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { dayTaskQueue, listDayTasks } from "@/lib/db/day-tasks";
+import { dayTaskQueue, listDayTasks, trashDayTask } from "@/lib/db/day-tasks";
+import { writeNow } from "@/lib/db/sync";
 
 // everything a saved row holds, as one string: when it changes, the row is saved again
 const shape = (t, key, position) =>
@@ -82,7 +83,8 @@ export function useDayTasks() {
     held.current.delete(id);
     if (!gone) return;
     saved.current.delete(id);
-    dayTaskQueue.remove(id);
+    // deleted on purpose: to Trash, not gone for good
+    writeNow(`day-task-trash:${id}`, () => trashDayTask(id));
   }, []);
 
   return { tasks, setTasks, hydrated, loadFailed, canWrite, hold, release };

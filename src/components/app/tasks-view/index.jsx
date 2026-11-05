@@ -40,6 +40,7 @@ import { LongScrollbar } from "./long-scrollbar";
 import { useDayTasks } from "./use-day-tasks";
 import { dayName, showDayToast } from "./day-toasts";
 import { RunningTimer } from "./running-timer";
+import { markStep } from "../whats-new/steps";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { celebrateTask } from "../celebrate";
 import { showMovedToast } from "../moved-toast";
@@ -160,6 +161,7 @@ export function TasksView() {
       if (!canWrite) return;
       setTasks((all) => ({ ...all, [key]: [{ id: crypto.randomUUID(), title, done: false }, ...(all[key] ?? [])] }));
       showDayToast({ title: "Added to", day: dayName(key), hint: title });
+      markStep("add-day-task");
     },
     [canWrite, setTasks],
   );
@@ -199,7 +201,12 @@ export function TasksView() {
     [setTasks, start],
   );
   const update = useCallback(
-    (key, id, patch) => setTasks((all) => ({ ...all, [key]: all[key].map((t) => (t.id === id ? { ...t, ...patch } : t)) })),
+    (key, id, patch) => {
+      setTasks((all) => ({ ...all, [key]: all[key].map((t) => (t.id === id ? { ...t, ...patch } : t)) }));
+      // the What's new steps these count for
+      if (patch.startedAt) markStep("start-timer");
+      if (patch.categoryId) markStep("label-task");
+    },
     [setTasks],
   );
   // as the Blocks view deletes: gone at once, with a few seconds to bring it back

@@ -56,7 +56,7 @@ export function useBlockActions({
     [blocks, setBlocks],
   );
 
-  // gone for good, tasks with it; past days keep their ids and show a neutral chip
+  // into Trash, tasks with it (0019; for good before then); past days keep their ids and show a neutral chip
   const removeBlock = useCallback(
     (id) => {
       setBlocks((prev) => prev.filter((b) => b.id !== id));

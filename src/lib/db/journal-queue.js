@@ -4,6 +4,7 @@
 // and a deleted page refuses later saves so one still on the wire can't bring it back.
 
 import { deletePage, saveJournal, savePage } from "./journals";
+import { trashOrDelete } from "./trash";
 
 const BACKOFF = [1000, 3000, 8000, 20000];
 
@@ -11,13 +12,14 @@ const BACKOFF = [1000, 3000, 8000, 20000];
 const rows = new Map();
 
 const entry = (key) => {
-  if (!rows.has(key)) rows.set(key, { latest: null, userId: null, timer: null, inflight: false, attempts: 0, gone: false });
+  if (!rows.has(key)) rows.set(key, { latest: null, userId: null, timer: null, inflight: false, attempts: 0, gone: false, trash: false });
   return rows.get(key);
 };
 
 const send = (key, e, value) => {
   const [kind, id] = key.split(":");
-  if (e.gone) return deletePage(id);
+  // a page you removed goes to Trash; one the book tidied away itself is gone for good
+  if (e.gone) return e.trash ? trashOrDelete("journal_pages", id) : deletePage(id);
   return kind === "page" ? savePage(e.userId, value) : saveJournal(e.userId, value);
 };
 
@@ -63,6 +65,12 @@ const later = (key, userId, value, wait) => {
 // typing waits a beat, so a burst of keystrokes is one save
 export const savePageSoon = (userId, page, wait = 700) => later(`page:${page.id}`, userId, page, wait);
 export const saveJournalSoon = (userId, journal, wait = 0) => later(`journal:${journal.id}`, userId, journal, wait);
+
+// removed on purpose: into Trash (0019), or for good before then
+export function trashPage(id) {
+  entry(`page:${id}`).trash = true;
+  deletePageForGood(id);
+}
 
 export function deletePageForGood(id) {
   const e = entry(`page:${id}`);

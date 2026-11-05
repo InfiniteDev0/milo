@@ -20,6 +20,7 @@ import { MiloChat } from "@/components/app/milo-chat";
 import { ViewOnly } from "@/components/app/view-only";
 import { StopBlocksInTasksView } from "@/components/app/tasks-view/stop-blocks";
 import { UserProvider } from "@/components/app/user-provider";
+import { WhatsNew } from "@/components/app/whats-new";
 import { requireUser } from "@/lib/session";
 
 /* The workspace shell, laid out as Manasik: three layers, no lines.
@@ -80,6 +81,8 @@ export default async function AppLayout({ children }) {
       </ViewOnly>
       {/* says once when a task has run for the time you set on it */}
       <TaskTimer />
+      {/* the steps through this update, on the home page until they're done */}
+      <WhatsNew />
       {/* what yesterday held, if midnight filed it and nobody looked */}
       <ViewOnly view="blocks">
         <MorningRecap />

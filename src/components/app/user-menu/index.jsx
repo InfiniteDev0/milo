@@ -19,7 +19,6 @@ import {
   CircleHelp,
   Command,
   Download,
-  Lock,
   LogOut,
   PaintRoller,
   Settings,
@@ -39,7 +38,6 @@ import {
 import { usePreference } from "@/hooks/use-preference";
 import { signOut } from "@/lib/auth";
 import { SOUND, playTask } from "@/lib/sound";
-import { useFocusLock } from "../focus-lock";
 import { MuteMenu } from "./mute-menu";
 import { Photo } from "./photo";
 import { MenuStats } from "./stats";
@@ -71,7 +69,6 @@ export function UserMenu({ user }) {
   const router = useRouter();
   const install = useInstall();
   const sound = usePreference(SOUND) === "on";
-  const focus = useFocusLock();
   const [leaving, setLeaving] = useState(false);
 
   const logOut = async () => {
@@ -138,9 +135,6 @@ export function UserMenu({ user }) {
         >
           Sound effects
         </Row>
-        <Row icon={Lock} closeOnClick={false} disabled={focus.disabled} onClick={focus.toggle} end={<Switch on={focus.locked} disabled={focus.disabled} />}>
-          {focus.disabled ? "Focus lock · start a block" : "Focus lock"}
-        </Row>
 
         <Gap />
         <Row icon={Settings} href="/settings">Settings</Row>
@@ -158,7 +152,7 @@ export function UserMenu({ user }) {
 
 
         <Gap />
-        <SoonRow icon={Trash2}>Trash</SoonRow>
+        <Row icon={Trash2} href="/trash">Trash</Row>
         <Row icon={LogOut} disabled={leaving} onClick={logOut}>
           {leaving ? "Logging out…" : "Log out"}
         </Row>

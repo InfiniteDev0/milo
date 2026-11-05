@@ -19,6 +19,7 @@
  */
 
 import { createClient } from "@/lib/supabase/client";
+import { liveFilter, trashOrDelete } from "./trash";
 
 const blockFromRow = (r) => ({
   id: r.id,
@@ -48,31 +49,32 @@ const taskFromRow = (r) => ({
 export async function loadShape() {
   const db = createClient();
 
+  // nothing in Trash (0019): leaves deleted rows out once the column exists
+  const only = await liveFilter();
   const [blocks, tasks] = await Promise.all([
-    db
-      .from("blocks")
-      .select("id, name, bg, ink, archived, position")
-      .order("position"),
+    only(db.from("blocks").select("id, name, bg, ink, archived, position").order("position")),
     /* Archived tasks are gone from the day, not from the record. A `once`
        task you finished is archived at the roll-over — done is done, it
        leaves the block — but its row stays, because days store task ids and
        deleting one would leave every past day holding an id nothing can
        resolve. */
-    db
-      .from("tasks")
-      .select(
-        "id, block_id, name, reason, note, minutes, kind, days, position, steps(id, name, done, position)",
-      )
-      .eq("archived", false)
-      .order("position"),
+    only(
+      db
+        .from("tasks")
+        .select("id, block_id, name, reason, note, minutes, kind, days, position, steps(id, name, done, position)")
+        .eq("archived", false)
+        .order("position"),
+    ),
   ]);
 
   if (blocks.error) throw blocks.error;
   if (tasks.error) throw tasks.error;
 
+  // a block in Trash takes its tasks out of sight with it
+  const kept = new Set(blocks.data.map((b) => b.id));
   return {
     blocks: blocks.data.map(blockFromRow),
-    tasks: tasks.data.map(taskFromRow),
+    tasks: tasks.data.filter((t) => kept.has(t.block_id)).map(taskFromRow),
   };
 }
 
@@ -118,9 +120,9 @@ export function saveOrder(blocks) {
   ).then(() => ({ error: null }));
 }
 
+// into Trash (0019), with its tasks; before 0019, gone for good with them as it always was
 export function deleteBlock(id) {
-  const db = createClient();
-  return db.from("blocks").delete().eq("id", id);
+  return trashOrDelete("blocks", id);
 }
 
 /* ----------------------------------------------------------------- tasks -- */
@@ -203,9 +205,9 @@ export function saveTaskOrder(tasks) {
   ).then(() => ({ error: null }));
 }
 
+// into Trash (0019); before 0019, gone for good as it always was
 export function deleteTask(id) {
-  const db = createClient();
-  return db.from("tasks").delete().eq("id", id);
+  return trashOrDelete("tasks", id);
 }
 
 /* ----------------------------------------------------------------- steps -- */

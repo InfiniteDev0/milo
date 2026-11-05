@@ -45,6 +45,7 @@ import { VIEW } from "@/lib/view";
 import { useCategories } from "../categories-provider";
 import { useNotes } from "../notes-provider";
 import { dayLabel, readDay } from "./days";
+import { markStep } from "../whats-new/steps";
 import { cn } from "@/lib/utils";
 import { PickedIcon } from "../icon-picker/picked-icon";
 import { UserGroup } from "../icons/user-group";
@@ -264,6 +265,10 @@ export function Search() {
   const listRef = useRef(null);
   const inputRef = useRef(null);
   const { entries, failed } = useSearchEntries(open);
+  // opening it counts for the What's new step
+  useEffect(() => {
+    if (open) markStep("search");
+  }, [open]);
 
   // Ctrl+K (⌘K on a Mac) opens it from anywhere and closes it again; the Milo panel can open it too
   useEffect(() => {

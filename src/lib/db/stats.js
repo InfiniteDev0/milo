@@ -9,6 +9,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { stampOf } from "@/lib/stamp";
 import { dateOfKey } from "./day-tasks";
+import { liveFilter } from "./trash";
 
 export async function readStats() {
   const db = createClient();
@@ -19,10 +20,11 @@ export async function readStats() {
   const first = dateOfKey(week[0].toDateString());
   const last = dateOfKey(week[6].toDateString());
 
+  const only = await liveFilter();
   const [days, dayTasks, notes] = await Promise.all([
     db.from("days").select("task_state").in("stamp", week.map(stampOf)),
     // done ones, and any repeat (its ticks live in done_on, whatever day it started)
-    db.from("day_tasks").select("day, done, repeat, done_on").or("done.eq.true,repeat.neq.none"),
+    only(db.from("day_tasks").select("day, done, repeat, done_on").or("done.eq.true,repeat.neq.none")),
     db.from("notes").select("id", { count: "exact", head: true }),
   ]);
   const failed = [days, dayTasks, notes].find((r) => r.error);

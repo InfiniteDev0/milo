@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { deletePageForGood, savePageSoon } from "@/lib/db/journal-queue";
+import { deletePageForGood, savePageSoon, trashPage } from "@/lib/db/journal-queue";
 import { addVoice, deleteVoice, listPages, listVoice } from "@/lib/db/journals";
 import { hasContent, layOut, newPage } from "./pages";
 
@@ -142,7 +142,8 @@ export function useJournalBook(journal, userId, startPage = null) {
         ? list.filter((p) => p.kind.startsWith("day-") && p.stamp === page.stamp)
         : [page];
       const going = new Set(pair.map((p) => p.id));
-      for (const g of going) deletePageForGood(g);
+      // removed on purpose: to Trash
+      for (const g of going) trashPage(g);
       const next = list.filter((p) => !going.has(p.id));
       latest.current = next;
       setPages(next);

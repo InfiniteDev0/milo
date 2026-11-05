@@ -6,6 +6,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { createRowQueue } from "./row-queue";
+import { liveFilter, trashOrDelete } from "./trash";
 
 const BASE = "id, day, title, done, position, minutes, actual_ms, started_at, note, steps, repeat, done_on";
 // category_id (the label) comes with migration 0016; until then the tasks load without it
@@ -45,7 +46,9 @@ export const dayTaskLabels = () => labels;
 
 // every day task, grouped by the day it sits in and in its order there: { [dayKey]: task[] }
 export async function listDayTasks() {
-  const read = (columns) => createClient().from("day_tasks").select(columns).order("day", { ascending: true }).order("position", { ascending: true });
+  // nothing in Trash (0019)
+  const only = await liveFilter();
+  const read = (columns) => only(createClient().from("day_tasks").select(columns).order("day", { ascending: true }).order("position", { ascending: true }));
   let data, error;
   // 42703: no such column — 0016 isn't applied yet, so read them without the label
   for (const columns of TRIES) {
@@ -85,4 +88,8 @@ function deleteDayTask(id) {
   return createClient().from("day_tasks").delete().eq("id", id);
 }
 
+// the queue's own delete is for good: a task that left the day for a block was moved, not deleted
 export const dayTaskQueue = createRowQueue("day task", saveDayTask, deleteDayTask);
+
+// deleted on purpose (after Undo): into Trash
+export const trashDayTask = (id) => trashOrDelete("day_tasks", id);

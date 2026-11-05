@@ -14,6 +14,7 @@ import { categoryQueue, listCategories } from "@/lib/db/categories";
 import { playTask, playTuck } from "@/lib/sound";
 import { useNotes } from "./notes-provider";
 import { showUndoToast } from "./undo-toast";
+import { markStep } from "./whats-new/steps";
 
 const CategoriesContext = createContext(null);
 
@@ -77,6 +78,7 @@ export function CategoriesProvider({ children }) {
       const c = { id: crypto.randomUUID(), parentId, name, icon, favorite: false, position: nextPosition(parentId), createdAt: now, editedAt: now };
       setList((all) => [...all, c]);
       save(c);
+      markStep("make-category");
       return c;
     },
     // nextPosition reads list

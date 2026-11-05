@@ -4,6 +4,7 @@
 // No user_id in reads: RLS puts auth.uid() = user_id on every row.
 
 import { createClient } from "@/lib/supabase/client";
+import { liveFilter } from "./trash";
 
 const JOURNAL_COLUMNS = "id, title, cover, created_at";
 const PAGE_COLUMNS =
@@ -53,11 +54,9 @@ export function saveJournal(userId, journal) {
 }
 
 export async function listPages(journalId) {
-  const { data, error } = await createClient()
-    .from("journal_pages")
-    .select(PAGE_COLUMNS)
-    .eq("journal_id", journalId)
-    .order("position", { ascending: true });
+  // nothing in Trash (0019)
+  const only = await liveFilter();
+  const { data, error } = await only(createClient().from("journal_pages").select(PAGE_COLUMNS).eq("journal_id", journalId).order("position", { ascending: true }));
   if (error) throw error;
   return data.map(pageFromRow);
 }
@@ -88,7 +87,8 @@ export function deletePage(id) {
 
 // every page of every journal, for the top bar's search
 export async function listAllPages() {
-  const { data, error } = await createClient().from("journal_pages").select(PAGE_COLUMNS).order("updated_at", { ascending: false });
+  const only = await liveFilter();
+  const { data, error } = await only(createClient().from("journal_pages").select(PAGE_COLUMNS).order("updated_at", { ascending: false }));
   if (error) throw error;
   return data.map(pageFromRow);
 }

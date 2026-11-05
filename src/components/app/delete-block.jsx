@@ -21,7 +21,7 @@ export function DeleteBlock({ block, onDone }) {
         className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2 text-xs text-foreground/30 transition-colors hover:text-[#B4231F]"
       >
         <Trash2 className="size-3.5" />
-        Delete permanently
+        Delete
       </button>
     );
   }
@@ -32,7 +32,7 @@ export function DeleteBlock({ block, onDone }) {
       <p className="text-xs text-foreground/60">
         Delete <span className="font-medium">{block.name.replace(" Block", "")}</span>
         {tasks > 0 && <> and its {tasks} {tasks === 1 ? "task" : "tasks"}</>}? Days
-        you already lived keep what happened in them. This cannot be undone.
+        you already lived keep what happened in them. It waits in Trash until you delete it for good.
       </p>
 
       <div className="flex gap-2">

@@ -88,7 +88,9 @@ function TodoStatusIcon({
       initial={false}
       className={cn(
         "mx-0.5 size-5 shrink-0 overflow-visible text-muted-foreground",
-        status === "in-progress" && "text-foreground",
+        // Milo: the step to do next, and the ones done, in green
+        status === "in-progress" && "text-[#00b86b]",
+        status === "completed" && "text-[#00b86b]",
         status === "cancelled" && "text-rose-600 dark:text-rose-400",
       )}
     >
@@ -289,6 +291,8 @@ export function TodoList({
                   <motion.li
                     layout="position"
                     key={item.id}
+                    // Milo: lets a page style rows by where they are (the What's new list blurs all but the current one)
+                    data-status={status}
                     initial={reduce ? { opacity: 1 } : { opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={reduce ? { opacity: 0 } : { opacity: 0, y: -3 }}

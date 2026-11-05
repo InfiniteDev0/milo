@@ -8,6 +8,7 @@ import { usePreference } from "@/hooks/use-preference";
 import { VIEW } from "@/lib/view";
 import { useMounted } from "@/hooks/use-mounted";
 import { usePathname } from "next/navigation";
+import { markStep } from "./whats-new/steps";
 
 // shorter than beui's default, so the bar keeps room above and below
 const TAB = "px-3 py-1 text-[13px]";
@@ -21,7 +22,14 @@ export function ViewTabs() {
 
   return (
     <div className={mounted ? undefined : "invisible"}>
-    <Tabs value={view} onValueChange={VIEW.set} variant="segment">
+    <Tabs
+      value={view}
+      onValueChange={(v) => {
+        VIEW.set(v);
+        markStep("switch-view");
+      }}
+      variant="segment"
+    >
       <TabsList>
         <TabsTrigger value="tasks" className={TAB}>Tasks</TabsTrigger>
         <TabsTrigger value="blocks" className={TAB}>Blocks</TabsTrigger>
