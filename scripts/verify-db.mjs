@@ -47,7 +47,7 @@ if (!url || !key) {
 
 const db = createClient(url, key, { auth: { persistSession: false } });
 
-const TABLES = ["profiles", "blocks", "tasks", "steps", "days", "sessions", "notes", "day_plans", "journals", "journal_pages", "journal_voice", "push_subscriptions"];
+const TABLES = ["profiles", "blocks", "tasks", "steps", "days", "sessions", "notes", "day_plans", "journals", "journal_pages", "journal_voice", "push_subscriptions", "categories", "day_tasks", "note_opens"];
 
 // a plausible row per table, so the insert is refused by RLS and not by a
 // column that doesn't exist — otherwise the test passes for the wrong reason
@@ -83,6 +83,9 @@ const SAMPLE = {
     page_id: "00000000-0000-0000-0000-000000000000",
     audio: "x",
   },
+  categories: { user_id: "00000000-0000-0000-0000-000000000000", name: "x" },
+  day_tasks: { user_id: "00000000-0000-0000-0000-000000000000", day: "2026-01-01", title: "x" },
+  note_opens: { note_id: "00000000-0000-0000-0000-000000000000", user_id: "00000000-0000-0000-0000-000000000000" },
   push_subscriptions: {
     user_id: "00000000-0000-0000-0000-000000000000",
     endpoint: "https://example.com/x",

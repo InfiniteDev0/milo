@@ -13,7 +13,8 @@ import { NoteDragCard } from "./note-drag-card";
 import { SelectionBar } from "./selection-bar";
 import { useSelection } from "./use-selection";
 
-export function ByBlock({ notes, canWrite, onOpen, onAdd }) {
+// search: the page's search box, across every card; a card's own search narrows just that card
+export function ByBlock({ notes, canWrite, onOpen, onAdd, search = "" }) {
   const { blocks, droppedToday, archived } = useBlocks();
   const { moveNotes, removeNotes } = useNotes();
   // each card keeps its own search
@@ -37,8 +38,11 @@ export function ByBlock({ notes, canWrite, onOpen, onAdd }) {
     { key: "day", block: null, href: "/notes/day", notes: notes.filter((n) => cardOf(n) === "day") },
   ];
 
+  // a card searched on its own uses its own words; otherwise the page's search applies to it
+  const queryOf = (key) => queries[key] || search;
+
   const visible = new Set(
-    cards.flatMap((c) => c.notes.filter((n) => matchesSearch(n, queries[c.key])).map((n) => n.id)),
+    cards.flatMap((c) => c.notes.filter((n) => matchesSearch(n, queryOf(c.key))).map((n) => n.id)),
   );
   const { selected, toggle, clear } = useSelection(visible);
 
@@ -98,7 +102,7 @@ export function ByBlock({ notes, canWrite, onOpen, onAdd }) {
               block={c.block}
               href={c.href}
               notes={c.notes}
-              query={queries[c.key] ?? ""}
+              query={queryOf(c.key)}
               onQuery={(q) => setQueries((prev) => ({ ...prev, [c.key]: q }))}
               canWrite={canWrite}
               selected={selected}

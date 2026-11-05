@@ -9,7 +9,8 @@ import { deletePageForGood, savePageSoon } from "@/lib/db/journal-queue";
 import { addVoice, deleteVoice, listPages, listVoice } from "@/lib/db/journals";
 import { hasContent, layOut, newPage } from "./pages";
 
-export function useJournalBook(journal, userId) {
+// startPage: open on the spread holding this page (the search sends one), not on the newest
+export function useJournalBook(journal, userId, startPage = null) {
   const [pages, setPages] = useState(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const [spread, setSpread] = useState(0);
@@ -28,8 +29,10 @@ export function useJournalBook(journal, userId) {
         if (!live) return;
         latest.current = list;
         setPages(list);
-        // opens on the newest spread, where you left off
-        setSpread(Math.max(0, Math.floor((layOut(list).length - 1) / 2)));
+        // opens on the page asked for, or else the newest spread, where you left off
+        const slots = layOut(list);
+        const at = startPage ? slots.findIndex((s) => s?.id === startPage) : -1;
+        setSpread(at >= 0 ? Math.floor(at / 2) : Math.max(0, Math.floor((slots.length - 1) / 2)));
       })
       .catch((err) => {
         console.warn("[milo] couldn't load the journal", err);
@@ -38,7 +41,7 @@ export function useJournalBook(journal, userId) {
     return () => {
       live = false;
     };
-  }, [journal.id]);
+  }, [journal.id, startPage]);
 
   const slots = pages ? layOut(pages) : [];
 

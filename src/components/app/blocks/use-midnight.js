@@ -1,13 +1,15 @@
 "use client";
 
-// Midnight: the day that ended is filed, the new one starts with its own plan, and a block you're still in carries on.
+// Midnight: the day that ended is filed and the new one starts from zero, with its own plan. Nothing carries
+// over — a block still running at midnight stops there, and today begins untouched (Nov 2026: a new day
+// should start fresh, not open on yesterday's block already hours in).
 // A poll, not a timer to 00:00 — laptops sleep, and a poll corrects itself the moment the machine wakes. It never asks.
 
 import { useEffect, useRef } from "react";
 import { closeAnyOpen } from "@/lib/db/days";
 import { loadPlans } from "@/lib/db/plans";
 import { writeNow } from "@/lib/db/sync";
-import { STALE, closeSessions, lastNight, lastSeen, openSession } from "@/lib/day/intervals";
+import { STALE, closeSessions, lastNight, lastSeen } from "@/lib/day/intervals";
 import { nextStamp, stampToday } from "@/lib/stamp";
 
 export function useMidnight({
@@ -20,7 +22,6 @@ export function useMidnight({
   setBlocks,
   setPlans,
   setPlansReady,
-  setDay,
 }) {
   const dayStamp = useRef(stampToday());
 
@@ -41,11 +42,9 @@ export function useMidnight({
       dayStamp.current = now;
       const { sessions: log, newDay: roll } = latest.current;
 
-      // awake at 00:30, the interval closes at 23:59:59 and reopens today; asleep, it closes when you were last seen
+      // awake at 00:30, the interval closes at 23:59:59; asleep, it closes when you were last seen
       const seen = lastSeen();
       const awake = Date.now() - seen < STALE;
-      const open = log.find((x) => x.endedAt === null);
-      const carry = awake && open ? { blockId: open.blockId, taskId: open.taskId } : null;
 
       // min, not max: the hours after you walked away were not work
       const closeAt = awake ? lastNight() : Math.min(seen, lastNight());
@@ -59,15 +58,9 @@ export function useMidnight({
       roll(closing, closed);
       setTodayStamp(now);
 
-      // the new day's plan: blocks set aside for it step out now, never the block you're still in
+      // the new day's plan: blocks set aside for it step out now
       const setAside = (aside) =>
-        setBlocks((prev) =>
-          prev.map((b) =>
-            aside.includes(b.id) && b.status === "todo" && b.id !== carry?.blockId
-              ? { ...b, dropped: true }
-              : b,
-          ),
-        );
+        setBlocks((prev) => prev.map((b) => (aside.includes(b.id) && b.status === "todo" ? { ...b, dropped: true } : b)));
       setAside(latest.current.plans[now]?.setAside ?? []);
 
       // the day after is fetched now, and a change made on another device comes with it
@@ -79,11 +72,6 @@ export function useMidnight({
         })
         .catch((err) => console.warn("[milo] could not load your day plans", err));
 
-      if (carry) {
-        setDay({ startedAt: Date.now(), endedAt: null });
-        setBlocks((prev) => prev.map((b) => (b.id === carry.blockId ? { ...b, status: "ongoing" } : b)));
-        setSessions((list) => openSession(list, carry.blockId, carry.taskId));
-      }
     };
 
     const t = setInterval(check, 30000);
@@ -92,5 +80,5 @@ export function useMidnight({
       clearInterval(t);
       document.removeEventListener("visibilitychange", check);
     };
-  }, [hydrated, setSessions, setTodayStamp, setBlocks, setPlans, setPlansReady, setDay]);
+  }, [hydrated, setSessions, setTodayStamp, setBlocks, setPlans, setPlansReady]);
 }

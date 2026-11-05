@@ -134,6 +134,21 @@ export function useBlockActions({
     [setBlocks],
   );
 
+  // a whole new order at once (Start your day): these blocks, in this order, in the
+  // places they already held; every other block stays where it was
+  const setBlockOrder = useCallback(
+    (orderedIds) => {
+      setBlocks((prev) => {
+        const wanted = new Set(orderedIds);
+        const byId = new Map(prev.map((b) => [b.id, b]));
+        const queue = orderedIds.map((id) => byId.get(id)).filter(Boolean);
+        if (queue.length !== orderedIds.length) return prev;
+        return prev.map((b) => (wanted.has(b.id) ? queue.shift() : b));
+      });
+    },
+    [setBlocks],
+  );
+
   // a sound on the way in only; unlocking is not a failure
   const toggleFocusLock = useCallback(
     () =>
@@ -153,6 +168,7 @@ export function useBlockActions({
     dropBlock,
     undropBlock,
     reorderBlocks,
+    setBlockOrder,
     toggleFocusLock,
   };
 }

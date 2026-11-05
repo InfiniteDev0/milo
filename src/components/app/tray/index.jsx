@@ -15,7 +15,6 @@ import { useNow } from "@/lib/time";
 import { useBlocks } from "../blocks-provider";
 import { useNotes } from "../notes-provider";
 import { ScopePicker } from "../notes/scope-picker";
-import { TrayHandle } from "./handle";
 import { ListPage } from "./list-page";
 import { NotePage } from "./note-page";
 import { SheetGrip } from "./sheet-grip";
@@ -64,6 +63,13 @@ function NotesTray() {
   const note = notes.find((n) => n.id === openId) ?? null;
   // a note deleted while the sheet was closed means reopening on the list
   const onNote = page === "note" && note !== null;
+
+  // opened from the Milo panel, now that Milo's face is the button in the corner
+  useEffect(() => {
+    const show = () => setOpen(true);
+    window.addEventListener("milo:open-notes", show);
+    return () => window.removeEventListener("milo:open-notes", show);
+  }, []);
 
   // a freshly opened sheet lands straight on the slide you left, without gliding there
   const landOn = useRef(onNote);
@@ -149,7 +155,6 @@ function NotesTray() {
       </Sheet>
 
       {/* here, not in the shell, so the button knows whether the sheet is open */}
-      <TrayHandle open={open} onToggle={() => setOpen((v) => !v)} />
     </>
   );
 }

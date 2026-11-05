@@ -313,6 +313,19 @@ From POSITIONING.md, enforced on every page:
     signs with VAPID and sends. Env: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`,
     `VAPID_PRIVATE_KEY`, `PUSH_SECRET` (must match `private.push_config`).
     Sign-out removes the device. The mobile app will reuse the same tables.
+  - **Day tasks and note categories** (5 Nov, migration `0014`, must be applied
+    by hand in the SQL editor). The Tasks view's tasks live in `day_tasks`, NOT
+    `tasks`: `day` is only the column a task sits in, never a due date — an
+    undone task stays on its day, never carried or counted. Steps and note are on
+    the row (jsonb / text). `tasks-view/use-day-tasks.js` diffs the view's state
+    against what was last sent and saves through `db/day-tasks.js`. Note
+    categories are `categories` (two levels, enforced by a trigger) with
+    `notes.category_id` (on delete set null); `categories-provider.jsx` sits
+    inside NotesProvider. Uploaded category icons are 64px PNG data URIs in
+    `categories.icon`. Both new tables save through `db/row-queue.js` (the
+    note-queue pattern, generalised: newest wins, deletes can't be undone by a
+    late save). `listNotes` falls back to reading without `category_id` if 0014
+    isn't applied, so notes never break on it.
   - Both notes sheets (day page and Notes page) float (no backdrop, stay open)
     and share one position: dragged to left / centre / right.
   - A moved task takes its notes along: `moveTask` fires `milo:task-moved` and

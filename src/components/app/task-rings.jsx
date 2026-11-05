@@ -101,7 +101,8 @@ export function TaskRings({ todo = 0, doing = 0, done = 0, className = "size-9" 
           </svg>
         </TooltipTrigger>
 
-        <TooltipContent side="bottom">{label}</TooltipContent>
+        {/* above the rings, so it never sits over the column below */}
+        <TooltipContent side="top">{label}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

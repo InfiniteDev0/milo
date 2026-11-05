@@ -1,35 +1,36 @@
-import Link from "next/link";
-import { ShellFace } from "@/components/app/shell-face";
+import { cookies } from "next/headers";
 import { BlockRail } from "@/components/app/block-rail";
 import { DayControl } from "@/components/app/day-control";
-import { AppNav } from "@/components/app/app-nav";
-import { FocusLock } from "@/components/app/focus-lock";
-import { SoundToggle } from "@/components/app/sound-toggle";
 import { ArchivePanel } from "@/components/app/archive-panel";
 import { BlockSheet } from "@/components/app/block-sheet";
 import { DayAhead } from "@/components/app/day-ahead";
 import { CheckIn } from "@/components/app/check-in";
 import { TaskTimer } from "@/components/app/task-timer";
 import { MorningRecap } from "@/components/app/morning-recap";
-import { UserAvatar } from "@/components/app/user-avatar";
+import { TopBar } from "@/components/app/top-bar";
+import { AppSidebar } from "@/components/app/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { BlocksProvider } from "@/components/app/blocks-provider";
 import { NotesProvider } from "@/components/app/notes-provider";
+import { CategoriesProvider } from "@/components/app/categories-provider";
 import { SetupWizard } from "@/components/app/setup-wizard";
 import { MonthReview } from "@/components/app/month-review";
 import { Tray } from "@/components/app/tray";
-import { Tray as DayStrip } from "@/components/app/day-strip";
-import { TrayHandle as DayStripHandle } from "@/components/app/day-strip/handle";
+import { MiloChat } from "@/components/app/milo-chat";
+import { ViewOnly } from "@/components/app/view-only";
+import { StopBlocksInTasksView } from "@/components/app/tasks-view/stop-blocks";
+import { UserProvider } from "@/components/app/user-provider";
 import { requireUser } from "@/lib/session";
 
-/* The workspace shell — three columns, no header.
+/* The workspace shell, laid out as Manasik: three layers, no lines.
  *
- *   left    Milo, then the nav
- *   centre  the page. The greeting and the date live in there, not here,
- *           because they belong to the day being shown.
- *   right   the avatar, then the block rail
+ *   top      the bar across the whole width — Milo, then the search
+ *   sidebar  under it, black, folds to an icon rail. Open or folded is kept
+ *            in the sidebar_state cookie and read back here
+ *   main     the page, beside the sidebar. The greeting and the date live in
+ *            the page, not here, because they belong to the day being shown.
  *
- * h-svh + overflow-hidden: exactly one screen tall, never scrolls. Anything
- * long scrolls inside <main>.
+ * Exactly one screen tall, never scrolls. Anything long scrolls inside <main>.
  *
  * Nothing in this group renders for a signed-out visitor: requireUser() calls
  * getUser(), which revalidates the token against Supabase and redirects if it
@@ -37,44 +38,35 @@ import { requireUser } from "@/lib/session";
  * guarantee. Every route under (app) inherits it for free.
  */
 export default async function AppLayout({ children }) {
-  await requireUser();
+  const user = await requireUser();
+  const sidebarOpen = (await cookies()).get("sidebar_state")?.value !== "false";
+  const me = { name: user.name, email: user.email, avatarUrl: user.avatarUrl };
 
   return (
+    <UserProvider user={me}>
     <BlocksProvider>
       {/* notes sit inside blocks: a note can belong to a block */}
       <NotesProvider>
-      <div className="fixed inset-0 flex gap-4 overflow-hidden p-3 sm:gap-6 sm:p-4">
-        {/* Left — brand, then nav */}
-        <aside className="flex w-12 shrink-0 flex-col items-center gap-3">
-          <Link
-            href="/daily"
-            aria-label="Milo"
-            className="flex shrink-0 items-center rounded-lg bg-chip shadow"
-          >
-            <ShellFace className="size-12 touch-none select-none" />
-          </Link>
-
-          {/* the nav pins itself to this box, so it must be relative — and
-            flex-1 makes it take the slack, which is what pushes the avatar
-            to the bottom of the column */}
-          <div className="relative w-full flex-1">
-            <AppNav />
-          </div>
-
-          <div className="flex flex-col gap-4 shrink-0 items-center justify-center pb-1">
-            {/* focus time — locks the lineup down to the running block */}
-            <FocusLock />
-            {/* next to the lock on purpose: both are switches for how loud
-                the app is allowed to be at you */}
-            <SoundToggle />
-            <UserAvatar />
-          </div>
-        </aside>
-
-        <main className="min-h-0 min-w-0 flex-1 overflow-hidden rounded-2xl bg-card">
-          {children}
-        </main>
-      </div>
+      {/* categories sit inside notes: deleting one lets its notes go */}
+      <CategoriesProvider>
+      <SidebarProvider
+        defaultOpen={sidebarOpen}
+        className="fixed inset-0 min-h-0 flex-col overflow-hidden"
+        style={{
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          // wide enough for the names under the icons when folded
+          "--sidebar-width-icon": "calc(var(--spacing) * 12)",
+        }}
+      >
+        <TopBar user={me} />
+        <div className="flex min-h-0 flex-1">
+          {/* below the top bar (h-11), not over it */}
+          <AppSidebar variant="inset" className="top-11 bottom-0 h-auto pt-0" />
+          <SidebarInset className="min-h-0 overflow-hidden border border-border bg-card max-md:m-2 max-md:mt-0 max-md:rounded-sm md:mt-0! md:rounded-sm!">
+            {children}
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
 
       <ArchivePanel />
       {/* one block, looked at without starting it */}
@@ -83,21 +75,28 @@ export default async function AppLayout({ children }) {
       <DayAhead />
       {/* speaks while a block runs — see check-in.jsx for why this one
           interruption is allowed */}
-      <CheckIn />
+      <ViewOnly view="blocks">
+        <CheckIn />
+      </ViewOnly>
       {/* says once when a task has run for the time you set on it */}
       <TaskTimer />
       {/* what yesterday held, if midnight filed it and nobody looked */}
-      <MorningRecap />
+      <ViewOnly view="blocks">
+        <MorningRecap />
+      </ViewOnly>
+      {/* the Tasks view pauses the running block: the two don't run together */}
+      <StopBlocksInTasksView />
       <SetupWizard />
       {/* the other door: opens when the calendar month turns over */}
       <MonthReview />
-      {/* the notes sheet and its button, on every page but Notes */}
+      {/* the notes sheet, on every page but Notes. Opened from the Milo panel */}
       <Tray />
-      {/* the 11 Sep day strip, restored as it was. the handle is a placeholder trigger, not the design */}
-      <DayStrip />
-      <DayStripHandle />
+      {/* Milo's face, bottom right, and the panel it opens */}
+      <MiloChat />
+      </CategoriesProvider>
       </NotesProvider>
     </BlocksProvider>
+    </UserProvider>
   );
 }
 

@@ -19,6 +19,8 @@ export function useSelection(visibleIds) {
   }, []);
 
   const clear = useCallback(() => setPicked(new Set()), []);
+  // every note you can see
+  const selectAll = () => setPicked(new Set(visibleIds));
 
-  return { selected, toggle, clear };
+  return { selected, toggle, clear, selectAll };
 }

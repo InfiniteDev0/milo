@@ -4,13 +4,13 @@
 const MAX_SIDE = 1600;
 const QUALITY = 0.82;
 
-// null when the file is better left as it is
-export async function shrinkImage(file) {
+// null when the file is better left as it is. maxSide: smaller for a card's cover
+export async function shrinkImage(file, maxSide = MAX_SIDE) {
   // an animated GIF would lose its motion, and an SVG is already small
   if (file.type === "image/gif" || file.type === "image/svg+xml") return null;
 
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.max(1, Math.round(bitmap.width * scale));
   canvas.height = Math.max(1, Math.round(bitmap.height * scale));

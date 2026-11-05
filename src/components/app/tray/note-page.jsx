@@ -3,6 +3,7 @@
 // One note, open: its title, its settings, and the same editor everywhere in Milo.
 // Full screen widens the sheet to the window and keeps the writing in a readable column.
 
+import { useEffect } from "react";
 import { ChevronLeft, Maximize2, Minimize2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useSpellcheck } from "@/hooks/use-spellcheck";
@@ -11,9 +12,16 @@ import { NoteEditor } from "../note-editor";
 import { NoteSettings } from "./note-settings";
 import { CopyNoteButton, PinNoteButton } from "./note-actions";
 import { noteColour, paperStyle } from "@/lib/note-colours";
+import { useNotes } from "../notes-provider";
 
 export function NotePage({ note, onChange, onBack, full = false, onToggleFull }) {
   const spellcheck = useSpellcheck();
+  const { markOpened } = useNotes();
+  const id = note?.id;
+  // every place a note opens comes through here, so this is where Recent learns of it
+  useEffect(() => {
+    if (id) markOpened(id);
+  }, [id, markOpened]);
   if (!note) return null;
 
   return (
@@ -69,8 +77,10 @@ export function NotePage({ note, onChange, onBack, full = false, onToggleFull })
         <NoteSettings note={note} onChange={onChange} />
       </div>
 
-      {/* the editor's root is flex-1, and the pane supplies its side padding; text starts at the left, full screen or not */}
-      <div className="flex min-h-0 flex-1 flex-col [&_.simple-editor-content]:px-5">
+      {/* the editor's root is flex-1, and the pane supplies its side padding: a share of the width, so the
+          text keeps the same margins as the page grows (the Notes page with a note open, full width) or
+          shrinks (a sheet), never less than 1.25rem. The scroll box stays full width, its scrollbar at the edge */}
+      <div className="flex min-h-0 flex-1 flex-col [&_.simple-editor-content]:px-[max(1.25rem,7%)]">
         {/* only the HTML goes up — the provider keeps the plain copy for search */}
         <NoteEditor noteId={note.id} body={note.body} onChange={(html) => onChange({ body: html })} />
       </div>

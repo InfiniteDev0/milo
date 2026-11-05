@@ -3,9 +3,17 @@
 // The block's name and colour, editable in place. Commitment 5: the user is the author.
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Maximize2, Minimize2, Palette, X } from "lucide-react";
+import { Maximize2, Minimize2, Palette, X } from "lucide-react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { BLOCK_COLOURS } from "@/lib/block-colours";
+import { BLOCK_COLOURS, readableInk } from "@/lib/block-colours";
+import {
+  ColorPicker,
+  ColorPickerArea,
+  ColorPickerHexInput,
+  ColorPickerHue,
+  ColorPickerPreset,
+  ColorPickerPresets,
+} from "@/components/motion/color-picker";
 import { useBlocks } from "../blocks-provider";
 
 export function Header({ block, tasks, done, time, full, onToggleFull }) {
@@ -92,26 +100,25 @@ export function Header({ block, tasks, done, time, full, onToggleFull }) {
         <X className="size-4" />
       </DialogPrimitive.Close>
 
+      {/* any colour: the picker, with Milo's own colours as presets under it */}
       {picking && (
-        <div className="absolute inset-x-3 top-full z-10 -mt-2 flex flex-wrap gap-2 rounded-xl bg-card p-3 shadow-[0_10px_40px_rgba(0,0,0,0.15)] ring-1 ring-foreground/5">
-          {BLOCK_COLOURS.map((c) => (
-            <button
-              key={c.bg}
-              type="button"
-              aria-label={`Use ${c.bg}`}
-              onClick={() => {
-                // ink travels with bg — contrast is chosen, never inferred
-                editBlock(block.id, { bg: c.bg, ink: c.ink });
-                setPicking(false);
-              }}
-              style={{ backgroundColor: c.bg }}
-              className="flex size-8 cursor-pointer items-center justify-center rounded-lg ring-1 ring-foreground/10 transition-transform hover:scale-110"
-            >
-              {c.bg === block.bg && (
-                <Check className="size-4" strokeWidth={3} style={{ color: c.ink }} />
-              )}
-            </button>
-          ))}
+        <div className="absolute inset-x-3 top-full z-10 -mt-2 rounded-xl bg-card p-3 shadow-[0_10px_40px_rgba(0,0,0,0.15)] ring-1 ring-foreground/5">
+          <ColorPicker
+            value={block.bg}
+            alpha={false}
+            // saved when you let go, not on every frame of a drag
+            onValueCommit={(hex) => editBlock(block.id, { bg: hex, ink: readableInk(hex) })}
+            className="flex flex-col gap-3"
+          >
+            <ColorPickerArea className="h-36" />
+            <ColorPickerHue />
+            <ColorPickerHexInput />
+            <ColorPickerPresets>
+              {BLOCK_COLOURS.map((c) => (
+                <ColorPickerPreset key={c.bg} value={c.bg} label={c.bg} />
+              ))}
+            </ColorPickerPresets>
+          </ColorPicker>
         </div>
       )}
     </div>

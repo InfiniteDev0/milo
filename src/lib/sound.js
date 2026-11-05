@@ -1,5 +1,7 @@
 "use client";
 
+import { createPreference } from "./preference";
+
 /* Milo's three sounds.
  *
  * Plays a file when one is there, and synthesises the cue when one isn't.
@@ -18,6 +20,9 @@
  */
 
 const KEY = "milo:sound";
+
+// the same switch, live, for the avatar menu
+export const SOUND = createPreference(KEY, ["on", "off"], "on");
 
 /* The files in web/public/sounds, first match wins. Generic names are listed
    after the real ones so replacing a clip later is a rename, not an edit. */

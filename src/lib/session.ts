@@ -5,6 +5,9 @@ import { createClient } from "./supabase/server";
 export type SessionUser = {
   id: string;
   email: string | null;
+  // from the sign-in provider, when it gave one
+  name: string | null;
+  avatarUrl: string | null;
 };
 
 /**
@@ -21,7 +24,13 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   } = await supabase.auth.getUser();
 
   if (!user) return null;
-  return { id: user.id, email: user.email ?? null };
+  const meta = user.user_metadata ?? {};
+  return {
+    id: user.id,
+    email: user.email ?? null,
+    name: meta.full_name ?? meta.name ?? null,
+    avatarUrl: meta.avatar_url ?? meta.picture ?? null,
+  };
 }
 
 /** For layouts that must not render for signed-out visitors. */

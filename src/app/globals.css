@@ -424,3 +424,11 @@ a{
 .scrollbar-pill::-webkit-scrollbar-thumb:hover {
   background: #71717a; /* zinc-500 color */
 }
+
+/* No scrollbar at all, for a box that draws its own (the Tasks view's days) */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

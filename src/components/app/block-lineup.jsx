@@ -21,7 +21,7 @@ import { Button } from "../ui/button";
 import { DragFollower, dragStart, hideDragImage } from "./drag-follower";
 
 // a block's name, what it holds, and its rings — the same in the line and under the pointer
-function BlockInside({ name, sub, counts, reserve = false }) {
+export function BlockInside({ name, sub, counts, reserve = false }) {
   return (
     <>
       <div className="flex min-w-0 flex-1 flex-col">

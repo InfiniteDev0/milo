@@ -38,7 +38,7 @@ export function NoteCardsSkeleton() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className="flex min-h-56 flex-col gap-3 rounded-2xl bg-foreground/4 p-5">
+          <div key={i} className="flex h-72 flex-col gap-3 rounded-lg bg-foreground/4 p-5">
             <span className="h-4 w-36 rounded bg-foreground/8" />
             <span className="h-5 w-2/3 rounded bg-foreground/8" />
             <span className="h-3 w-full rounded bg-foreground/6" />

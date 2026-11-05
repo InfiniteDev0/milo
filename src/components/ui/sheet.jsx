@@ -39,6 +39,8 @@ export function Sheet({
   // floating, but a click outside still closes it
   dismissible = false,
   style,
+  // extra classes for the panel, like a border or its own colour
+  className = "",
   children,
 }) {
   const bottom = side === "bottom";
@@ -76,7 +78,7 @@ export function Sheet({
           // Below lg there is no room for two, so it covers instead of sitting beside.
           className={`fixed z-50 flex flex-col overflow-hidden rounded-2xl bg-card text-sm shadow-[0_24px_60px_rgba(0,0,0,0.14)] outline-none transition-[width,height] duration-300 ease-out data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 ${SIDES[side]} ${
             !bottom && beside ? "lg:right-[calc(27rem+1.5rem)]" : ""
-          }`}
+          } ${className}`}
         >
           {children}
         </DialogPrimitive.Popup>

@@ -16,3 +16,17 @@ export const BLOCK_COLOURS = [
 // Ink is picked with the colour, never guessed — contrast is not a thing to infer.
 export const inkFor = (bg) =>
   BLOCK_COLOURS.find((c) => c.bg.toLowerCase() === bg?.toLowerCase())?.ink ?? "#1a1400";
+
+// Any colour from the picker: the preset's own ink when it is one of the list,
+// otherwise dark ink on a light colour and white on a dark one, by luminance.
+export function readableInk(bg) {
+  const preset = BLOCK_COLOURS.find((c) => c.bg.toLowerCase() === bg?.toLowerCase());
+  if (preset) return preset.ink;
+  const m = /^#?([da-f]{2})([da-f]{2})([da-f]{2})/i.exec(bg ?? "");
+  if (!m) return "#1a1400";
+  const [r, g, b] = m.slice(1).map((h) => {
+    const c = parseInt(h, 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.4 ? "#1a1400" : "#ffffff";
+}

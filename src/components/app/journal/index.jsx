@@ -1,8 +1,10 @@
 "use client";
 
 // The journal page: your journals as books on a shelf. Open one to write, plan, pin and look back.
+// ?journal= (with &page=) opens that book on that page: the top bar's search sends people here.
 
 import { useCallback, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { AddJournalCard } from "./add-journal-card";
 import { BookCard } from "./book-card";
@@ -13,6 +15,15 @@ import { useJournals } from "./use-journals";
 export function JournalShelf() {
   const [query, setQuery] = useState("");
   const [readingId, setReadingId] = useState(null);
+  // a book asked for in the address opens; a new ask (another search) opens that one instead
+  const params = useSearchParams();
+  const asked = params.get("journal");
+  const startPage = params.get("page");
+  const [seen, setSeen] = useState(null);
+  if (asked !== seen) {
+    setSeen(asked);
+    if (asked) setReadingId(asked);
+  }
   const { journals, userId, hydrated, loadFailed, canWrite, createJournal, updateJournal } = useJournals();
   const reading = journals.find((j) => j.id === readingId) ?? null;
   const shown = journals.filter((j) => j.title.toLowerCase().includes(query.trim().toLowerCase()));
@@ -96,7 +107,7 @@ export function JournalShelf() {
         </div>
       </div>
 
-      <OpenBook journal={reading} userId={userId} onClose={close} />
+      <OpenBook journal={reading} userId={userId} onClose={close} startPage={readingId === asked ? startPage : null} />
     </div>
   );
 }

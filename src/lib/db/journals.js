@@ -86,6 +86,20 @@ export function deletePage(id) {
   return createClient().from("journal_pages").delete().eq("id", id);
 }
 
+// every page of every journal, for the top bar's search
+export async function listAllPages() {
+  const { data, error } = await createClient().from("journal_pages").select(PAGE_COLUMNS).order("updated_at", { ascending: false });
+  if (error) throw error;
+  return data.map(pageFromRow);
+}
+
+// what the search needs of each voice note: where it is and how long, never the audio itself
+export async function listVoiceMeta() {
+  const { data, error } = await createClient().from("journal_voice").select("id, page_id, seconds, created_at");
+  if (error) throw error;
+  return data.map((r) => ({ id: r.id, pageId: r.page_id, seconds: r.seconds, createdAt: Date.parse(r.created_at) }));
+}
+
 // voice notes load per page, never with the book: they are the heavy part
 export async function listVoice(pageIds) {
   if (pageIds.length === 0) return [];

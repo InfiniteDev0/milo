@@ -45,9 +45,9 @@ body {
   overflow-y: auto;
 }
 
-/* Their template centres a 648px column on a blank page. In the note pane
-   the title and date already set the left edge, so the writing has to line up
-   with them — centring pushed it into the middle of nowhere. */
+/* Their template centres a 648px column on a blank page. Here the width is
+   left to the page around the editor: the note page gives it side margins that
+   grow with the width (see tray/note-page.jsx). */
 .simple-editor-content {
   width: 100%;
   height: 100%;

@@ -13,22 +13,29 @@ import { MatchSummary } from "./highlight";
 import { NotesGrid } from "./notes-grid";
 import { SelectionBar } from "./selection-bar";
 import { useSelection } from "./use-selection";
+import { useCategories } from "../categories-provider";
 
-export function CardsView({ notes, onOpen, empty, onAdd }) {
-  const { editNote, moveNotes, removeNotes } = useNotes();
-  const [query, setQuery] = useState("");
-  const [range, setRange] = useState("all");
+// search: given by the page (the Notes side panel's box), the cards' own search box steps aside.
+// sort: an order of its own (Recent goes by last edited) instead of pinned-then-newest
+export function CardsView({ notes, onOpen, empty, onAdd, addLabel, search, sort }) {
+  const { editNote, moveNotes, removeNotes, fileNotes } = useNotes();
+  const categories = useCategories();
+  const [own, setOwn] = useState("");
+  const query = search ?? own;
+  const setQuery = setOwn;
+  // the time filter is off for now, so every note shows
+  const range = "all";
   const now = useNow(true, 60000);
 
   const shown = filterNotes(notes, { query, range, now });
   const summary = query.trim() ? summarise(shown, query) : null;
-  const { selected, toggle, clear } = useSelection(new Set(shown.map((n) => n.id)));
+  const { selected, toggle, clear, selectAll } = useSelection(new Set(shown.map((n) => n.id)));
   const filtering = query.trim() !== "" || range !== "all";
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <div className="flex shrink-0 flex-col gap-2">
-        <Filters query={query} onQuery={setQuery} range={range} onRange={setRange} />
+        {search === undefined && <Filters query={query} onQuery={setQuery} />}
         {summary && summary.hits > 0 && (
           <p className="text-xs text-foreground/45">
             <MatchSummary {...summary} />
@@ -40,6 +47,8 @@ export function CardsView({ notes, onOpen, empty, onAdd }) {
         <div className="shrink-0">
           <SelectionBar
             count={selected.size}
+            total={shown.length}
+            onSelectAll={selectAll}
             onMove={(block) => {
               moveNotes([...selected], block);
               clear();
@@ -49,22 +58,29 @@ export function CardsView({ notes, onOpen, empty, onAdd }) {
               clear();
             }}
             onClear={clear}
+            categories={categories.hydrated && !categories.loadFailed ? categories : undefined}
+            onFile={(category) => {
+              fileNotes([...selected], category);
+              clear();
+            }}
           />
         </div>
       )}
 
       {/* -mx-2 lets the grid's own padding show a selected card's ring without shifting the cards */}
       <div className="scrollbar-pill -mx-2 min-h-0 flex-1 overflow-y-auto pb-8">
-        <NotesGrid
+        <NotesGrid sort={sort}
           notes={shown}
           query={query}
           selected={selected}
           onToggleSelect={toggle}
           onOpen={onOpen}
           onTogglePin={(n) => editNote(n.id, { pinned: !n.pinned })}
+          onCover={(n, cover) => editNote(n.id, { cover })}
           empty={filtering ? "No notes match that." : empty}
           // a new note doesn't answer a search, so the nudge waits until the filters are off
           onAdd={filtering ? undefined : onAdd}
+          addLabel={addLabel}
         />
       </div>
     </div>

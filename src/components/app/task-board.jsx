@@ -443,7 +443,8 @@ export function TaskBoard() {
               : "items-center justify-center text-center"
           }`}
         >
-          {!reflecting && (
+          {/* no picture before the day has started: the board stays empty and quiet */}
+          {!reflecting && (n > 0 || nothingToday) && (
             <img
               src={ART[Math.min(n, ART.length - 1)]}
               alt=""
@@ -483,18 +484,10 @@ export function TaskBoard() {
               </p>
             </>
           ) : (
-            <>
-              {/* Not "Nothing running". A day that hasn't started is not a
-                  day with something missing from it, and Milo does not open by
-                  telling you what you have yet to do. Same rule as the branch
-                  above: an invitation, never a shortfall. */}
-              <h2 className="text-3xl">Ready when you are.</h2>
-              <p className="max-w-sm text-sm text-foreground/45">
-                {dropping
-                  ? "Let go to start your day."
-                  : "Drag a block down here to start it. One at a time."}
-              </p>
-            </>
+            /* Before the day starts the board is simply empty — no picture, no
+               "Ready when you are". It's still where a block is dropped to start,
+               and says so only while one is being carried over it. */
+            dropping && <p className="text-sm text-foreground/45">Let go to start your day.</p>
           )}
         </div>
 

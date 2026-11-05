@@ -4,14 +4,17 @@
 // the letters the app itself listens for, so the code and the list use the same one
 export const DAY_AHEAD_KEY = "d";
 export const SET_ASIDE_KEY = "a";
+export const MILO_CHAT_KEY = "j";
 
 export const SHORTCUTS = [
   {
     group: "Anywhere in Milo",
-    hint: "These wait while you're typing, so they never get in the way of writing.",
+    hint: "The Shift ones wait while you're typing, so they never get in the way of writing.",
     items: [
       { keys: ["Mod", "Shift", DAY_AHEAD_KEY.toUpperCase()], label: "Open the Day ahead" },
       { keys: ["Mod", "Shift", SET_ASIDE_KEY.toUpperCase()], label: "Open blocks set aside" },
+      { keys: ["Mod", "K"], label: "Search" },
+      { keys: ["Mod", MILO_CHAT_KEY.toUpperCase()], label: "Show or hide Milo" },
       { keys: ["Esc"], label: "Close a sheet or a dialog" },
     ],
   },

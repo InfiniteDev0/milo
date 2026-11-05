@@ -1,104 +1,158 @@
 "use client";
 
-// One note as a card: its checkbox selects it, a click opens it. Paper colour, date, pin, block and first lines.
-// While searching, the lines the words turn up in take the place of the first lines.
+/* One note as a card, laid out like the reference: a cover filling the top — the
+   note's own paper, or its cover picture — then its title, its block, and how
+   long since it was last touched. While searching, the cover shows the lines the
+   words turn up in instead, so you can see why it matched.
 
-import { CalendarDays, Pin } from "lucide-react";
+   On hover, these appear over the cover: the tick that selects it, top left; the
+   star (Favorite), top right; and Add cover (or Change cover, with a remove
+   beside it), bottom right. A cover is a picture shrunk to 800px WebP and saved
+   on the note (notes.cover, migration 0015); before 0015 Add cover still shows,
+   and says what it's waiting for. Once any card is selected the ticks stay
+   showing, and Ctrl/⌘- or Shift-click selects too. Every card is the same height. */
+
+import { useRef } from "react";
+import { ImagePlus, Star, X } from "lucide-react";
+import { toast } from "sonner";
+import { shrinkImage } from "@/lib/shrink-image";
 import { noteColour, paperStyle } from "@/lib/note-colours";
-import { findInNote } from "@/lib/note-search";
+import { timeAgo } from "@/lib/time-ago";
+import { cn } from "@/lib/utils";
 import { useBlocks } from "../blocks-provider";
-import { Highlight, MatchCount, MatchLines } from "./highlight";
+import { findInNote } from "@/lib/note-search";
+import { Highlight, MatchLines } from "./highlight";
 import { SelectBox } from "./select-box";
 
-const day = (ms) =>
-  new Date(ms).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+// selecting: some card is selected, so every tick stays showing
+// the drag a card carries onto a category in the side panel: the ids of the notes it moves
+export const NOTES_DRAG = "application/x-milo-notes";
 
-export function NoteCard({ note, query = "", selected, onToggleSelect, onOpen, onTogglePin }) {
+// a small dark box over the cover, for its buttons
+const OVER = "flex h-7 cursor-pointer items-center gap-1.5 rounded-md bg-black/80 px-2.5 text-xs font-medium text-white transition-colors hover:bg-black";
+
+// dragIds: the notes a drag of this card carries. onCover(note, dataUrl | null): set or remove its cover
+export function NoteCard({ note, query = "", selected = false, selecting = false, onToggleSelect, onOpen, onTogglePin, onCover, dragIds }) {
+  const picker = useRef(null);
+  // a cover can only be kept once the database has the column for it (note.cover is undefined before 0015)
+  const canCover = Boolean(onCover);
+  const coverReady = note.cover !== undefined;
+  const takeCover = async (file) => {
+    if (!file?.type.startsWith("image/")) return;
+    try {
+      const src = await shrinkImage(file, 800);
+      if (src) onCover(note, src);
+    } catch {
+      // a file the browser can't draw just isn't taken
+    }
+  };
   const { blocks, droppedToday, archived } = useBlocks();
-  const block = note.blockId
-    ? [...blocks, ...droppedToday, ...archived].find((b) => b.id === note.blockId)
-    : null;
+  const block = note.blockId ? [...blocks, ...droppedToday, ...archived].find((b) => b.id === note.blockId) : null;
   const paper = noteColour(note.colour);
-  const found = findInNote(note, query, 4);
+  // searching: the lines the words are in, shown in place of the cover
+  const found = query.trim() ? findInNote(note, query, 6) : null;
+  const searching = Boolean(found?.lines.length);
 
   return (
-    // a div, not a button: the checkbox and the pin inside it are buttons of their own
+    // a div, not a button: the star inside it is a button of its own
     <div
       role="button"
       tabIndex={0}
-      onClick={() => onOpen(note)}
+      draggable={Boolean(dragIds)}
+      onDragStart={(e) => {
+        e.dataTransfer.setData(NOTES_DRAG, JSON.stringify(dragIds()));
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      // while selecting, a click selects; Ctrl/⌘ or Shift selects any time
+      onClick={(e) => (selecting || e.metaKey || e.ctrlKey || e.shiftKey ? onToggleSelect?.(note.id) : onOpen(note))}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           onOpen(note);
         }
       }}
-      style={paperStyle(paper)}
-      className={`milo-paper relative flex min-h-56 cursor-pointer flex-col gap-3 overflow-hidden rounded-2xl p-5 text-left transition-shadow hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] ${
-        selected ? "ring-2 ring-foreground/70" : "ring-1 ring-foreground/5"
-      }`}
-    >
-      {/* the block's colour in the corner, small enough to stay clear of the checkbox */}
-      {block && (
-        <span
-          aria-hidden
-          className="absolute -left-4 -top-4 size-7 rotate-45"
-          style={{ backgroundColor: block.bg }}
-        />
+      className={cn(
+        "group/note flex h-72 cursor-pointer flex-col overflow-hidden rounded-lg border bg-card text-left transition-colors",
+        selected ? "border-[#2f80ed] ring-2 ring-[#2f80ed]/30" : "border-foreground/10 hover:border-foreground/25",
       )}
+    >
+      {/* the cover; plain paper is white in light mode, the same as the footer, so it takes a soft grey there */}
+      <div
+        className="milo-paper relative min-h-0 flex-1 overflow-hidden"
+        style={{ ...paperStyle(paper), ...(paper.id === "plain" && { "--paper": "color-mix(in srgb, var(--foreground) 5%, var(--card))" }) }}
+      >
+        {searching ? (
+          <div className="absolute inset-0 overflow-hidden p-4 pt-12">
+            <MatchLines found={found} />
+          </div>
+        ) : (
+          note.cover && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={note.cover} alt="" draggable={false} className="absolute inset-0 size-full object-cover" />
+          )
+        )}
 
-      <div className="flex items-center justify-between gap-2 border-b border-dashed border-foreground/10 pb-3">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <SelectBox checked={selected} onToggle={() => onToggleSelect(note.id)} />
-
-          <span className="flex min-w-0 items-center gap-1.5 truncate text-xs text-foreground/60">
-            <CalendarDays className="size-3.5 shrink-0" />
-            {day(note.createdAt)}
-          </span>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-1">
-          {found && <MatchCount count={found.count} />}
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onTogglePin(note);
-            }}
-            aria-pressed={!!note.pinned}
-            aria-label={note.pinned ? "Unpin" : "Pin to the top"}
-            className={`flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-foreground/5 ${
-              note.pinned ? "text-foreground" : "text-foreground/30"
-            }`}
+        {/* on hover, bottom right: Add cover, or Change cover with a remove beside it */}
+        {canCover && (
+          <span
+            onClick={(e) => e.stopPropagation()}
+            className="absolute right-3 bottom-3 flex items-center gap-1.5 opacity-0 transition-opacity group-hover/note:opacity-100 focus-within:opacity-100"
           >
-            <Pin className="size-3.5" fill={note.pinned ? "currentColor" : "none"} />
-          </button>
-        </div>
+            <input ref={picker} type="file" accept="image/*" hidden onChange={(e) => takeCover(e.target.files?.[0])} />
+            <button
+              type="button"
+              onClick={() => (coverReady ? picker.current?.click() : toast("Covers switch on once migration 0015 is run in Supabase."))}
+              className={OVER}
+            >
+              <ImagePlus className="size-3.5" />
+              {note.cover ? "Change cover" : "Add cover"}
+            </button>
+            {note.cover && (
+              <button type="button" onClick={() => onCover(note, null)} aria-label="Remove cover" className={cn(OVER, "w-7 justify-center px-0")}>
+                <X className="size-3.5" />
+              </button>
+            )}
+          </span>
+        )}
+
+        {/* on hover: the tick (it stays while selecting), and the star */}
+        <span
+          className={cn(
+            "absolute left-3 top-3 flex items-center gap-2 transition-opacity",
+            selected || selecting ? "opacity-100" : "opacity-0 group-hover/note:opacity-100",
+          )}
+        >
+          {onToggleSelect && <SelectBox checked={selected} onToggle={() => onToggleSelect(note.id)} className="bg-black/60" />}
+        </span>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onTogglePin(note);
+          }}
+          aria-pressed={!!note.pinned}
+          aria-label={note.pinned ? "Remove from Favorite" : "Add to Favorite"}
+          className="absolute right-3 top-3 flex size-7 cursor-pointer items-center justify-center rounded-md bg-black/80 opacity-0 transition-opacity group-hover/note:opacity-100 focus-visible:opacity-100"
+        >
+          <Star className={cn("size-3.5", note.pinned ? "text-[#f5c542]" : "text-white")} fill={note.pinned ? "currentColor" : "none"} />
+        </button>
       </div>
 
-      <h3 className="line-clamp-2 break-words text-lg font-medium">
-        {note.title?.trim() ? <Highlight text={note.title} query={query} /> : "Untitled"}
-      </h3>
-
-      {found && found.lines.length > 0 ? (
-        <MatchLines found={found} />
-      ) : note.text ? (
-        <p className="line-clamp-6 break-words text-sm leading-relaxed text-foreground/65">
-          {note.text}
-        </p>
-      ) : (
-        <p className="text-sm text-foreground/30">Nothing written yet.</p>
-      )}
-
-      {block && (
-        <span
-          className="mt-auto w-fit rounded-md px-2 py-0.5 text-[11px]"
-          style={{ backgroundColor: block.bg, color: block.ink }}
-        >
-          {block.name.replace(" Block", "")}
-        </span>
-      )}
+      {/* title, block, and when */}
+      <div className="flex shrink-0 flex-col gap-2 px-4 py-3">
+        <h3 className="truncate text-base font-medium">{note.title?.trim() ? <Highlight text={note.title} query={query} /> : "Untitled"}</h3>
+        <div className="flex items-center justify-between gap-2">
+          {block ? (
+            // the block's own colour, solid, with its own ink — no border
+            <span className="truncate rounded-sm px-2 py-0.5 text-xs font-medium" style={{ background: block.bg, color: block.ink }}>
+              {block.name.replace(" Block", "")}
+            </span>
+          ) : (
+            <span className="rounded-sm bg-foreground/10 px-2 py-0.5 text-xs font-medium text-muted-foreground">Day note</span>
+          )}
+          <span className="shrink-0 text-xs text-muted-foreground">{timeAgo(note.updatedAt ?? note.createdAt)}</span>
+        </div>
+      </div>
     </div>
   );
 }

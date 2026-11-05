@@ -13,23 +13,16 @@
  */
 
 import { toast } from "sonner";
-import { Lock } from "@/components/animate-ui/icons/lock";
-import { LockOpen } from "@/components/animate-ui/icons/lock-open";
 import MiloFace from "@/components/MiloFace";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useBlocks } from "./blocks-provider";
 
-export function FocusLock() {
+// the lock as the avatar menu uses it: on, off, and whether there is anything to lock onto
+export function useFocusLock() {
   const { focusLocked, toggleFocusLock, ongoing } = useBlocks();
 
   /* Only the lock is announced. Unlocking is a return to normal and needs
      no confirmation — a toast for every state change is noise. */
-  const onClick = () => {
+  const toggle = () => {
     const locking = !focusLocked;
     toggleFocusLock();
     if (!locking || !ongoing) return;
@@ -61,60 +54,6 @@ export function FocusLock() {
     );
   };
 
-  // Nothing to lock onto until a block is running.
-  const disabled = !ongoing;
-
-  const help = disabled
-    ? "Start a block first"
-    : focusLocked
-      ? "Show the whole lineup again"
-      : "Hide every other block until this one is done";
-
-  return (
-    <TooltipProvider delay={200}>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <button
-              type="button"
-              onClick={onClick}
-              disabled={disabled}
-              aria-pressed={focusLocked}
-              aria-label={focusLocked ? "Unlock focus" : "Lock focus on this block"}
-            />
-          }
-          style={{ "--lift": "var(--card-lift)" }}
-          className="milo-lift group flex size-12 cursor-pointer items-center justify-center rounded-xl border border-foreground/10 bg-card transition-colors disabled:cursor-default disabled:border-foreground/5 disabled:shadow-none"
-        >
-          {/* one shackle path: open is pathLength 0.8, closed is 1 */}
-          {focusLocked ? (
-            <Lock size={20} className={
-              disabled
-                ? "text-foreground/30"
-                : focusLocked
-                  ? "text-foreground"
-                  : "text-foreground/60 transition-colors group-hover:text-foreground"
-            } />
-          ) : (
-            <LockOpen size={20} className={
-              disabled
-                ? "text-foreground/30"
-                : focusLocked
-                  ? "text-foreground"
-                  : "text-foreground/60 transition-colors group-hover:text-foreground"
-            } />
-          )}
-        </TooltipTrigger>
-
-        <TooltipContent side="right" sideOffset={14} className="max-w-52">
-          <span className="flex flex-col gap-0.5">
-            <span className="font-medium">
-              {focusLocked ? "Focus locked" : "Focus"}
-            </span>
-            <span className="opacity-70">{help}</span>
-          </span>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
+  // nothing to lock onto until a block is running
+  return { locked: focusLocked, disabled: !ongoing, toggle };
 }

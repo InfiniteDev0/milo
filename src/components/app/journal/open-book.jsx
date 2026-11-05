@@ -17,7 +17,8 @@ import { useJournalBook } from "./use-journal-book";
 const TURN_BUTTON =
   "absolute top-1/2 z-20 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-[#dddddd]/70 text-[#333] opacity-40 transition-opacity duration-300 hover:opacity-100 focus-visible:opacity-100";
 
-export function OpenBook({ journal, userId, onClose }) {
+// startPage: the page to open on, when the search asked for one
+export function OpenBook({ journal, userId, onClose, startPage }) {
   // Esc closes
   useEffect(() => {
     if (!journal) return;
@@ -39,15 +40,15 @@ export function OpenBook({ journal, userId, onClose }) {
           exit={{ opacity: 0, transition: { duration: 0.2, delay: 0.05, ease: "easeIn" } }}
           className="absolute inset-0 z-20 flex flex-col bg-card"
         >
-          <Reading key={journal.id} journal={journal} userId={userId} onClose={onClose} />
+          <Reading key={journal.id} journal={journal} userId={userId} onClose={onClose} startPage={startPage} />
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
 
-function Reading({ journal, userId, onClose }) {
-  const book = useJournalBook(journal, userId);
+function Reading({ journal, userId, onClose, startPage }) {
+  const book = useJournalBook(journal, userId, startPage);
   // the sidebar is always there on wide screens; on narrow ones it opens over the book
   const [side, setSide] = useState(false);
   const { spread, flip, turn, lastSpread } = book;

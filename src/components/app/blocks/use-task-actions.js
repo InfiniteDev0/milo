@@ -87,8 +87,9 @@ export function useTaskActions({
   );
 
   // a task can be added any day; a block cannot — the month decides the containers, the day fills them
+  // extra: { days, kind } when the task is written with its schedule (the Blocks view's Add a task)
   const addTask = useCallback(
-    (blockId, name, minutes = null) => {
+    (blockId, name, minutes = null, extra = {}) => {
       const clean = name.trim();
       if (!clean || !blockId) return;
 
@@ -100,8 +101,8 @@ export function useTaskActions({
         note: "",
         minutes,
         status: "todo",
-        kind: "routine",
-        days: [],
+        kind: extra.kind ?? "routine",
+        days: extra.days ?? [],
         steps: [],
       };
 
