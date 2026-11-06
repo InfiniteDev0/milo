@@ -32,7 +32,7 @@ export function MatchLines({ found, className = "" }) {
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       {found.lines.map((line, i) => (
-        <p key={i} className="break-words text-xs leading-relaxed text-foreground/55">
+        <p key={i} className="[overflow-wrap:anywhere] text-xs leading-relaxed text-foreground/55">
           {line.cutStart && "… "}
           <Marked parts={line.parts} />
           {line.cutEnd && " …"}

@@ -10,13 +10,14 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { listNotes, notesSupport, toPlain } from "@/lib/db/notes";
+import { listCovers, listNotes, notesSupport, toPlain } from "@/lib/db/notes";
 import { listOpenedToday, saveOpen } from "@/lib/db/note-opens";
 import { deleteNoteForGood, saveNoteSoon } from "@/lib/db/note-queue";
 import { playTask, playTuck } from "@/lib/sound";
 import { showMovedToast } from "./moved-toast";
 import { showUndoToast } from "./undo-toast";
 import { useFollowTasks } from "./notes/use-follow-tasks";
+import { markStep } from "./whats-new/steps";
 
 const NotesContext = createContext(null);
 
@@ -43,6 +44,13 @@ export function NotesProvider({ children }) {
         setUserId(user?.id ?? null);
         setNotes(list);
         setTrashReady(notesSupport().trash);
+        // covers come after the list (same migration as Trash). Until a note's cover is known it stays
+        // undefined, so a save in the meantime leaves the cover column alone rather than clearing it
+        if (notesSupport().trash) {
+          listCovers()
+            .then((covers) => alive && setNotes((prev) => prev.map((n) => ({ ...n, cover: covers[n.id] ?? null }))))
+            .catch((err) => console.warn("[milo] could not load note covers", err));
+        }
         // Recent only: if these can't be read the notes still open; Recent says so instead
         listOpenedToday()
           .then((o) => alive && setOpened(o))
@@ -81,6 +89,8 @@ export function NotesProvider({ children }) {
         blockId: null,
         taskId: null,
         showOn: null,
+        // a new note has no cover; undefined only where the database can't keep one yet
+        cover: notesSupport().trash ? null : undefined,
         createdAt: now,
         updatedAt: now,
         ...fields,
@@ -102,6 +112,8 @@ export function NotesProvider({ children }) {
       if ("body" in patch) next.text = toPlain(patch.body);
       setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, ...patch, text: next.text, updatedAt: next.updatedAt } : n)));
       saveNoteSoon(userId, next);
+      // something written in a note that lives in a category: the What's new step (not the empty note)
+      if (next.categoryId && (next.title?.trim() || next.text?.trim())) markStep("note-in-category");
     },
     [canWrite, userId, notes],
   );
@@ -205,18 +217,20 @@ export function NotesProvider({ children }) {
   );
 
   // into a category (or subcategory), as a drop onto it in the tree does; notes already there stay put
+  // category null takes them out of whatever category they were in
   const fileNotes = useCallback(
     (ids, category) => {
-      if (!canWrite || !category) return;
+      if (!canWrite) return;
+      const to = category?.id ?? null;
       const filing = new Set(ids);
       const at = Date.now();
-      const moved = notes.filter((n) => filing.has(n.id) && n.categoryId !== category.id).map((n) => ({ ...n, categoryId: category.id, updatedAt: at }));
+      const moved = notes.filter((n) => filing.has(n.id) && (n.categoryId ?? null) !== to).map((n) => ({ ...n, categoryId: to, updatedAt: at }));
       if (moved.length === 0) return;
       const byId = new Map(moved.map((n) => [n.id, n]));
       setNotes((prev) => prev.map((n) => byId.get(n.id) ?? n));
       moved.forEach((n) => saveNoteSoon(userId, n, 0));
       playTask();
-      showMovedToast({ count: moved.length, to: { name: category.name || "Untitled" }, noun: "note" });
+      showMovedToast({ count: moved.length, to: { name: category ? category.name || "Untitled" : "no category" }, noun: "note" });
     },
     [canWrite, userId, notes],
   );

@@ -15,12 +15,23 @@ import { useEffect, useState } from "react";
 
 const PAD = 8;
 
+// folded-away things keep a size but sit inside something see-through (a card's tools before hover):
+// those don't count, so the pointer falls back to the card instead of an invisible button
+function shown(el) {
+  for (let n = el; n && n !== document.body; n = n.parentElement) {
+    if (getComputedStyle(n).opacity === "0") return false;
+  }
+  return true;
+}
+
 // the first of the step's places that is on screen, as a padded rectangle
-function find(targets) {
+// a target is a data-tour name, or (with a [ or a space in it) a selector of its own
+export function find(targets) {
   for (const name of targets) {
-    for (const el of document.querySelectorAll(`[data-tour="${name}"]`)) {
+    const selector = /[[\s]/.test(name) ? name : `[data-tour="${name}"]`;
+    for (const el of document.querySelectorAll(selector)) {
       const r = el.getBoundingClientRect();
-      if (r.width > 0 && r.height > 0 && r.bottom > 0 && r.right > 0 && r.top < window.innerHeight && r.left < window.innerWidth) {
+      if (r.width > 0 && r.height > 0 && r.bottom > 0 && r.right > 0 && r.top < window.innerHeight && r.left < window.innerWidth && shown(el)) {
         return {
           top: Math.max(0, r.top - PAD),
           left: Math.max(0, r.left - PAD),

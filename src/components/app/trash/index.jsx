@@ -11,13 +11,14 @@
    too, never "Trash is empty". */
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { BookOpen, CalendarCheck, FileText, RotateCcw, SquareCheck, Trash2 } from "lucide-react";
 import { deleteForGood, hasTrash, listTrash, restore } from "@/lib/db/trash";
 import { writeNow } from "@/lib/db/sync";
 import { timeAgo } from "@/lib/time-ago";
 import { playTask, playTuck } from "@/lib/sound";
 import { cn } from "@/lib/utils";
-import { BOX } from "../view-header";
+import { BOX, COUNT } from "../view-header";
 import { useBlocks } from "../blocks-provider";
 import { useNotes } from "../notes-provider";
 import { showUndoToast } from "../undo-toast";
@@ -72,6 +73,9 @@ export function TrashPage() {
   // null while it loads, false if it couldn't; { tasks, dayTasks, blocks, pages }
   const [items, setItems] = useState(null);
   const [ready, setReady] = useState(true);
+  // ?tab=notes (from the Notes page's Trash tab) opens on that kind
+  const asked = useSearchParams().get("tab");
+  const [tab, setTab] = useState(["notes", "tasks", "blocks", "pages"].includes(asked) ? asked : "all");
 
   useEffect(() => {
     let alive = true;
@@ -125,11 +129,36 @@ export function TrashPage() {
   const everything = items ? [...items.tasks, ...items.dayTasks, ...items.blocks, ...items.pages] : [];
   const total = notes.length + everything.length;
 
+  // the tabs, each with how many it holds; All shows every kind under its heading
+  const TABS = [
+    { id: "all", label: "All", count: total },
+    { id: "notes", label: "Notes", count: notes.length },
+    { id: "tasks", label: "Tasks", count: items ? items.tasks.length + items.dayTasks.length : 0 },
+    { id: "blocks", label: "Blocks", count: items?.blocks.length ?? 0 },
+    { id: "pages", label: "Journal", count: items?.pages.length ?? 0 },
+  ];
+  const show = (id) => tab === "all" || tab === id;
+  const here = TABS.find((t) => t.id === tab)?.count ?? 0;
+
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-11 shrink-0 items-center gap-3 border-b border-border px-5">
-        <h1 className="text-sm font-semibold">Trash</h1>
-        <span className="flex-1 text-sm text-muted-foreground">{total > 0 && "Everything you deleted stays here until you delete it for good."}</span>
+      {/* one bar, as the Notes page has it: the tabs (each with its count), Empty Trash at the end */}
+      <div className="flex h-11 shrink-0 items-center gap-5 border-b border-border px-5">
+        <h1 className="sr-only">Trash</h1>
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            className={cn(
+              "-mb-px flex h-full cursor-pointer items-center gap-1.5 border-b-2 text-sm transition-colors",
+              tab === t.id ? "border-foreground font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {t.label}
+            <span className={COUNT}>{t.count}</span>
+          </button>
+        ))}
         {total > 0 && (
           <button
             type="button"
@@ -137,7 +166,7 @@ export function TrashPage() {
               if (notes.length) deleteForever(notes.map((n) => n.id));
               forGood(everything);
             }}
-            className={cn(BOX, "cursor-pointer gap-1.5 text-[#ef4444] transition-colors hover:bg-[#ef4444]/10")}
+            className={cn(BOX, "ms-auto cursor-pointer gap-1.5 text-[#ef4444] transition-colors hover:bg-[#ef4444]/10")}
           >
             <Trash2 className="size-3.5" />
             Empty Trash
@@ -158,12 +187,15 @@ export function TrashPage() {
           <p className="text-sm text-muted-foreground">
             Trash is empty. Anything you delete — notes, tasks, blocks, journal pages — waits here until you delete it for good.
           </p>
+        ) : here === 0 ? (
+          <p className="text-sm text-muted-foreground">Nothing of this kind in Trash.</p>
         ) : (
-          <div className="mx-auto flex max-w-3xl flex-col gap-6">
+          // from the left edge, like the rest of the app's lists
+          <div className="flex max-w-5xl flex-col gap-6">
             {!ready && (
               <p className="text-xs text-muted-foreground">Tasks, blocks and journal pages join Trash once migration 0019 is run. Until then only notes do.</p>
             )}
-            <Section title="Notes" count={notes.length}>
+            <Section title="Notes" count={show("notes") ? notes.length : 0}>
               {notes.map((n) => (
                 <Row
                   key={n.id}
@@ -176,7 +208,7 @@ export function TrashPage() {
                 />
               ))}
             </Section>
-            <Section title="Tasks" count={items.tasks.length + items.dayTasks.length}>
+            <Section title="Tasks" count={show("tasks") ? items.tasks.length + items.dayTasks.length : 0}>
               {items.tasks.map((t) => (
                 <Row
                   key={t.id}
@@ -200,7 +232,7 @@ export function TrashPage() {
                 />
               ))}
             </Section>
-            <Section title="Blocks" count={items.blocks.length}>
+            <Section title="Blocks" count={show("blocks") ? items.blocks.length : 0}>
               {items.blocks.map((b) => (
                 <Row
                   key={b.id}
@@ -213,7 +245,7 @@ export function TrashPage() {
                 />
               ))}
             </Section>
-            <Section title="Journal pages" count={items.pages.length}>
+            <Section title="Journal pages" count={show("pages") ? items.pages.length : 0}>
               {items.pages.map((p) => (
                 <Row
                   key={p.id}

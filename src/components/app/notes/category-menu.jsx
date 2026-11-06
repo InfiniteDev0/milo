@@ -8,7 +8,7 @@
    subcategory and copies on its own, and a category with subcategories can't
    be moved inside another. */
 
-import { ArrowUpRight, CornerUpRight, Copy, Ellipsis, FolderPlus, SquarePen, Star, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpRight, CornerUpRight, Copy, Ellipsis, FolderPlus, SquarePen, Star, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +29,8 @@ const ROW = "gap-2.5 px-2 py-1.5";
 const WHEN = { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" };
 
 // isSub: it's a subcategory. tops: the top-level categories, for Move to. hasSubs: it has subcategories
-export function CategoryMenu({ category, isSub, tops, hasSubs, onFavorite, onAddSub, onDuplicate, onRename, onMove, onTrash }) {
+// onShift(-1 | 1): one place up or down among its siblings; first/last: which way it can't go
+export function CategoryMenu({ category, isSub, tops, hasSubs, onFavorite, onAddSub, onDuplicate, onRename, onMove, onTrash, onShift, first, last }) {
   const user = useUser();
   const name = category.name || "Untitled";
   // anywhere it could go: inside another category, or (for a subcategory) out on its own
@@ -109,6 +110,18 @@ export function CategoryMenu({ category, isSub, tops, hasSubs, onFavorite, onAdd
               ))}
             </DropdownMenuSubContent>
           </DropdownMenuSub>
+        )}
+        {onShift && !first && (
+          <DropdownMenuItem className={ROW} onClick={() => onShift(-1)}>
+            <ArrowUp />
+            Move up
+          </DropdownMenuItem>
+        )}
+        {onShift && !last && (
+          <DropdownMenuItem className={ROW} onClick={() => onShift(1)}>
+            <ArrowDown />
+            Move down
+          </DropdownMenuItem>
         )}
         <DropdownMenuItem className={ROW} onClick={onTrash}>
           <Trash2 />

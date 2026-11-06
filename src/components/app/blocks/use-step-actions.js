@@ -1,6 +1,6 @@
 "use client";
 
-// The steps inside a task: add, tick, reorder and remove. A tick is something you'd notice losing, so it writes at once.
+// The steps inside a task: add, tick, rename, reorder and remove. A tick is something you'd notice losing, so it writes at once.
 
 import { useCallback } from "react";
 import { createStep, deleteStep, saveStep, saveStepOrder } from "@/lib/db/blocks";
@@ -41,6 +41,23 @@ export function useStepActions({ userId, tasks, setTasks }) {
     [setTasks],
   );
 
+  // a new name for a step, from Enter or clicking away
+  const renameStep = useCallback(
+    (taskId, stepId, name) => {
+      const clean = name.trim();
+      if (!clean) return;
+      setTasks((prev) => {
+        const next = prev.map((t) =>
+          t.id === taskId ? { ...t, steps: (t.steps ?? []).map((x) => (x.id === stepId ? { ...x, name: clean } : x)) } : t,
+        );
+        const step = next.find((t) => t.id === taskId)?.steps.find((x) => x.id === stepId);
+        if (step) writeNow(`step:${stepId}`, () => saveStep(step));
+        return next;
+      });
+    },
+    [setTasks],
+  );
+
   // takes the finished order, because the list reflows live while you drag
   const reorderSteps = useCallback(
     (taskId, orderedIds) => {
@@ -70,5 +87,6 @@ export function useStepActions({ userId, tasks, setTasks }) {
     [setTasks],
   );
 
-  return { addStep, toggleStep, reorderSteps, removeStep };
+  return { addStep,
+    renameStep, toggleStep, reorderSteps, removeStep };
 }

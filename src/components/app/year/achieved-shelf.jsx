@@ -40,7 +40,7 @@ export function AchievedShelf({ vision, rows, statsReady }) {
                 <span className="mt-1 flex size-6 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-sm text-white">
                   ✓
                 </span>
-                <h3 className="min-w-0 flex-1 break-words text-lg leading-snug">{wish.text}</h3>
+                <h3 className="min-w-0 flex-1 [overflow-wrap:anywhere] text-lg leading-snug">{wish.text}</h3>
               </div>
 
               <p className="text-xs text-foreground/50">

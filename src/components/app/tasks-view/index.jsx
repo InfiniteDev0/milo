@@ -1,7 +1,7 @@
 "use client";
 
 /* The Tasks view: a row of days, a column each — Today and ‹ › above, Add a
-   task at the top of every day. The whole year, 1 January to 31 December; it
+   task at the top of every day. This year and next, 1 January to 31 December of the year after; it
    opens on today, and you scroll back as freely as forward.
 
    Only the days on screen (and a few either side) are drawn. A year of columns
@@ -40,6 +40,7 @@ import { LongScrollbar } from "./long-scrollbar";
 import { useDayTasks } from "./use-day-tasks";
 import { dayName, showDayToast } from "./day-toasts";
 import { RunningTimer } from "./running-timer";
+import { LabelFilter } from "./label-menu";
 import { markStep } from "../whats-new/steps";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { celebrateTask } from "../celebrate";
@@ -63,10 +64,11 @@ const nowMs = () => Date.now();
 const NONE = [];
 
 // every day of the year that today is in
+// 1 January of this year to 31 December of next, so December can already plan January
 function daysOfYear(today) {
   const year = new Date(today).getFullYear();
   const days = [];
-  for (let d = new Date(year, 0, 1); d.getFullYear() === year; d.setDate(d.getDate() + 1)) days.push(new Date(d));
+  for (let d = new Date(year, 0, 1); d.getFullYear() <= year + 1; d.setDate(d.getDate() + 1)) days.push(new Date(d));
   return days;
 }
 
@@ -85,6 +87,8 @@ const onServer = () => null;
 export function TasksView() {
   const start = useSyncExternalStore(subscribe, today, onServer);
   const { tasks, setTasks, hydrated, loadFailed, canWrite, hold, release } = useDayTasks();
+  // a label picked in the bar: tasks without it fade
+  const [labelFilter, setLabelFilter] = useState(null);
   const rowRef = useRef(null);
 
   // made once a day, not on every render: a fresh Date would make every column redraw
@@ -209,9 +213,21 @@ export function TasksView() {
   );
   const update = useCallback(
     (key, id, patch) => {
-      setTasks((all) => ({ ...all, [key]: all[key].map((t) => (t.id === id ? { ...t, ...patch } : t)) }));
+      // one clock at a time: starting this one banks and stops any other that's running
+      const at = nowMs();
+      setTasks((all) => {
+        const next = { ...all, [key]: all[key].map((t) => (t.id === id ? { ...t, ...patch } : t)) };
+        if (!patch.startedAt) return next;
+        return Object.fromEntries(
+          Object.entries(next).map(([k, list]) => [
+            k,
+            list.map((t) => (t.id !== id && t.startedAt ? { ...t, actualMs: (t.actualMs ?? 0) + Math.max(0, at - t.startedAt), startedAt: null } : t)),
+          ]),
+        );
+      });
       // the What's new steps these count for
       if (patch.startedAt) markStep("start-timer");
+      if (patch.minutes) markStep("set-estimate");
       if (patch.categoryId) markStep("label-task");
     },
     [setTasks],
@@ -303,7 +319,8 @@ export function TasksView() {
     (key, id, blockId) => {
       const task = (latest.current[key] ?? NONE).find((t) => t.id === id);
       if (!task) return;
-      addTask(blockId, task.title, task.minutes ?? null);
+      // its subtasks and note come with it (a block task has no label or repeat to take)
+      addTask(blockId, task.title, task.minutes ?? null, { steps: task.steps ?? [], note: task.note ?? "" });
       setTasks((all) => ({ ...all, [key]: (all[key] ?? []).filter((t) => t.id !== id) }));
       const block = blocks.find((b) => b.id === blockId);
       // the Blocks view's own toast for a task changing home
@@ -379,21 +396,42 @@ export function TasksView() {
     if (!recurring.length) return byDay;
     for (const day of days) {
       const dayKey = keyOf(day);
-      const here = recurring.filter((r) => repeatsOn(r.task.repeat, r.origin, day, r.task.repeatRule));
+      // a day it was removed from (doneOn: "skip") doesn't show it
+      const here = recurring.filter((r) => repeatsOn(r.task.repeat, r.origin, day, r.task.repeatRule) && (r.task.doneOn ?? {})[dayKey] !== "skip");
       if (!here.length) continue;
       byDay[dayKey] = here.map((r) => {
         const doneOn = r.task.doneOn ?? {};
         return {
           id: `${r.task.id}@${dayKey}`,
           origin: r.origin,
-          task: { ...r.task, id: `${r.task.id}@${dayKey}`, done: Boolean(doneOn[dayKey]) },
-          toggle: () => update(r.key, r.task.id, { doneOn: { ...doneOn, [dayKey]: !doneOn[dayKey] } }),
+          task: { ...r.task, id: `${r.task.id}@${dayKey}`, done: doneOn[dayKey] === true },
+          toggle: () => update(r.key, r.task.id, { doneOn: { ...doneOn, [dayKey]: doneOn[dayKey] !== true } }),
           patch: (p) => update(r.key, r.task.id, p),
+          // just this day: gone from it (the rest of the repeat stays), with a few seconds to bring it back
+          skip: () => {
+            const was = doneOn[dayKey];
+            update(r.key, r.task.id, { doneOn: { ...doneOn, [dayKey]: "skip" } });
+            playTuck();
+            showUndoToast({
+              title: `Removed “${r.task.title}” from this day`,
+              hint: "It still repeats on the other days.",
+              onCommit: () => {},
+              onUndo: () => {
+                const next = { ...doneOn };
+                if (was === undefined) delete next[dayKey];
+                else next[dayKey] = was;
+                update(r.key, r.task.id, { doneOn: next });
+                playTask();
+              },
+            });
+          },
+          // a one-off copy on this day, with everything on it
+          copy: () => add(dayKey, r.task.title),
         };
       });
     }
     return byDay;
-  }, [tasks, days, update]);
+  }, [tasks, days, update, add]);
 
   const scroll = (by) => {
     const row = rowRef.current;
@@ -409,7 +447,10 @@ export function TasksView() {
         onToday={() => scrollToIndex(todayIndex, "smooth")}
         onPrev={() => scroll(-1)}
         onNext={() => scroll(1)}
-      />
+      >
+        {/* fade every task without this label */}
+        <LabelFilter value={labelFilter} onChange={setLabelFilter} />
+      </ViewHeader>
 
       {/* a failed read knows nothing about your days, so it never shows them as empty */}
       {loadFailed && (
@@ -441,6 +482,7 @@ export function TasksView() {
                 tasks={tasks[keyOf(d)] ?? NONE}
                 repeats={repeats[keyOf(d)] ?? NONE}
                 loading={!hydrated}
+                dimLabel={labelFilter}
                 onAdd={add}
                 onToggle={toggle}
                 onPatch={update}

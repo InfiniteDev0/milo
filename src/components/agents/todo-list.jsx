@@ -293,6 +293,7 @@ export function TodoList({
                     key={item.id}
                     // Milo: lets a page style rows by where they are (the What's new list blurs all but the current one)
                     data-status={status}
+                    data-id={item.id}
                     initial={reduce ? { opacity: 1 } : { opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={reduce ? { opacity: 0 } : { opacity: 0, y: -3 }}

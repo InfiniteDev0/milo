@@ -11,7 +11,7 @@
    the real ones have loaded. */
 
 import { useState } from "react";
-import { ChevronRight, FileText, Plus } from "lucide-react";
+import { ChevronRight, FileText, Plus, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tip } from "../tasks-view/tip";
 import { useNotes } from "../notes-provider";
@@ -27,7 +27,7 @@ const TOOLS =
   "flex items-center opacity-0 transition-opacity group-focus-within/cat:opacity-100 group-hover/cat:opacity-100 group-has-[[data-popup-open]]/cat:opacity-100";
 
 // the name, or a box to type it in while renaming
-function Name({ category, renaming, onRenamed, onSelect }) {
+function Name({ category, renaming, onRenamed, onSelect, count }) {
   if (renaming) {
     return (
       <input
@@ -46,8 +46,11 @@ function Name({ category, renaming, onRenamed, onSelect }) {
     );
   }
   return (
-    <button type="button" onClick={onSelect} className="min-w-0 flex-1 cursor-pointer truncate text-left">
-      {category.name || "Untitled"}
+    <button type="button" data-tour="category-name" onClick={onSelect} className="flex min-w-0 flex-1 cursor-pointer items-center gap-1.5 text-left">
+      <span className="truncate">{category.name || "Untitled"}</span>
+      {/* a favourite says so */}
+      {category.favorite && <Star className="size-3 shrink-0 fill-[#f5c542] text-[#f5c542]" aria-label="Favorite" />}
+      {count > 0 && <span className="ms-auto shrink-0 text-[11px] tabular-nums text-muted-foreground">{count}</span>}
     </button>
   );
 }
@@ -125,6 +128,7 @@ export function Categories({ categories, selected, onSelect, onAdd, onOpenNote }
   }
 
   const tops = list.filter((c) => !c.parentId);
+  const siblingsOf = (c) => list.filter((x) => (x.parentId ?? null) === (c.parentId ?? null));
   const tools = (c, isSub) =>
     canWrite && (
       <span className={TOOLS}>
@@ -144,6 +148,9 @@ export function Categories({ categories, selected, onSelect, onAdd, onOpenNote }
           onRename={() => setRenaming(c.id)}
           onMove={(parentId) => categories.move(c.id, parentId)}
           onTrash={() => trash(c)}
+          onShift={(by) => categories.shift(c.id, by)}
+          first={siblingsOf(c)[0]?.id === c.id}
+          last={siblingsOf(c).at(-1)?.id === c.id}
         />
       </span>
     );
@@ -205,7 +212,7 @@ export function Categories({ categories, selected, onSelect, onAdd, onOpenNote }
                         over === s.id && LIT,
                       )}
                     >
-                      <Name category={s} renaming={renaming === s.id} onRenamed={renamed(s)} onSelect={() => onSelect(s.id)} />
+                      <Name category={s} renaming={renaming === s.id} onRenamed={renamed(s)} onSelect={() => onSelect(s.id)} count={notes.filter((n) => n.categoryId === s.id).length} />
                       {tools(s, true)}
                     </li>
                   ))}
@@ -232,6 +239,7 @@ export function Categories({ categories, selected, onSelect, onAdd, onOpenNote }
       {canWrite && (
         <button
           type="button"
+          data-tour="add-category"
           onClick={() => add()}
           className="mt-2 flex h-9 w-full cursor-pointer items-center gap-2 rounded-lg border border-dashed border-foreground/15 px-3 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
         >

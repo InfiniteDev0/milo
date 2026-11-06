@@ -60,7 +60,7 @@ export function TaskSheet({ taskId, onClose, onDismiss, beside = false }) {
             style={{ backgroundColor: ACCENT, color: ACCENT_INK }}
           >
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <DialogPrimitive.Title className="break-words text-lg font-medium">
+              <DialogPrimitive.Title className="[overflow-wrap:anywhere] text-lg font-medium">
                 {task.name}
               </DialogPrimitive.Title>
               <span className="flex items-center text-xs opacity-60">

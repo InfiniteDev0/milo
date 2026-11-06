@@ -11,6 +11,7 @@ function AddNoteButton({ onAdd, label = "Add a new note" }) {
     <button
       type="button"
       onClick={onAdd}
+      data-tour="add-note"
       className="flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-solid px-4 text-sm text-solid-ink transition-colors hover:bg-solid-hover"
     >
       <Plus className="size-4" />

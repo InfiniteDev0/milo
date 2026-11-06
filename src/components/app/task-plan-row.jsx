@@ -32,7 +32,7 @@ export function TaskPlanRow({ task, active, onOpen, drag }) {
       }`}
     >
       <div className="flex items-start gap-2">
-        <span className="min-w-0 flex-1 break-words text-sm">{task.name}</span>
+        <span className="min-w-0 flex-1 [overflow-wrap:anywhere] text-sm">{task.name}</span>
 
         {/* on today or not, said quietly — a task on other days is not missing */}
         <span className="shrink-0 pt-0.5 text-[11px] text-foreground/40">

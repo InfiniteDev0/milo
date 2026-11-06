@@ -78,7 +78,8 @@ export function CategoriesProvider({ children }) {
       const c = { id: crypto.randomUUID(), parentId, name, icon, favorite: false, position: nextPosition(parentId), createdAt: now, editedAt: now };
       setList((all) => [...all, c]);
       save(c);
-      markStep("make-category");
+      // made with a name (from Move to or a label): that's the step; an unnamed one counts once it's named
+      if (name.trim()) markStep("make-category");
       return c;
     },
     // nextPosition reads list
@@ -157,9 +158,29 @@ export function CategoriesProvider({ children }) {
     [canWrite, list, forgetCategories],
   );
 
+  // one place up or down among its siblings: the two swap positions
+  const shift = useCallback(
+    (id, by) => {
+      if (!canWrite) return;
+      const c = list.find((x) => x.id === id);
+      if (!c) return;
+      const siblings = list.filter((x) => (x.parentId ?? null) === (c.parentId ?? null)).sort(byPosition);
+      const other = siblings[siblings.indexOf(c) + by];
+      if (!other) return;
+      const now = Date.now();
+      const a = { ...c, position: other.position, editedAt: now };
+      const b = { ...other, position: c.position === other.position ? c.position + by * -1 : c.position };
+      setList((all) => all.map((x) => (x.id === a.id ? a : x.id === b.id ? b : x)));
+      save(a);
+      save(b);
+    },
+    [canWrite, list, save],
+  );
+
   const value = useMemo(
     () => ({
       list: [...list].sort(byPosition),
+      shift,
       hydrated,
       loadFailed,
       canWrite,
@@ -167,14 +188,17 @@ export function CategoriesProvider({ children }) {
       duplicate,
       move,
       trash,
-      rename: (id, name) => patch(id, { name }, 600),
+      rename: (id, name) => {
+        patch(id, { name }, 600);
+        if (name.trim()) markStep("make-category");
+      },
       setIcon: (id, icon) => patch(id, { icon }),
       toggleFavorite: (id) => {
         const c = list.find((x) => x.id === id);
         if (c) patch(id, { favorite: !c.favorite });
       },
     }),
-    [list, hydrated, loadFailed, canWrite, addCategory, duplicate, move, trash, patch],
+    [list, hydrated, loadFailed, canWrite, addCategory, duplicate, move, trash, patch, shift],
   );
 
   return <CategoriesContext.Provider value={value}>{children}</CategoriesContext.Provider>;

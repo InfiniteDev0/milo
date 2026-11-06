@@ -22,6 +22,8 @@ export function TodayButton() {
   const pathname = usePathname();
   const view = usePreference(VIEW);
   const onTasks = pathname === "/daily" && view === "tasks";
+  // the Notes page has its own, beside New, that filters the notes by date
+  if (pathname === "/notes") return null;
 
   return (
     <>
@@ -38,7 +40,8 @@ export function TodayButton() {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      {onTasks && <DateWheel open={wheel} onOpenChange={setWheel} />}
+      {/* this year and next, as the Tasks view holds */}
+      {onTasks && <DateWheel open={wheel} onOpenChange={setWheel} years={[new Date().getFullYear(), new Date().getFullYear() + 1]} />}
     </>
   );
 }

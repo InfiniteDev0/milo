@@ -19,6 +19,9 @@
 
 import { memo, useCallback, useState } from "react";
 import { Pause, Play, Workflow } from "lucide-react";
+import { toast } from "sonner";
+import { createDayTask } from "@/lib/db/day-tasks";
+import { dayName, showDayToast } from "../tasks-view/day-toasts";
 import { useDraggable } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,6 +29,7 @@ import { useBlocks } from "../blocks-provider";
 import { Strike } from "../strike";
 import { Tick } from "../task-bits";
 import { StepCount, SubtasksSection } from "../tasks-view/card-sections";
+import { InlineName } from "../tasks-view/inline-name";
 import { MoveMenu } from "../tasks-view/move-menu";
 import { minutesLabel } from "@/lib/duration";
 import { TimePicker } from "../tasks-view/time-picker";
@@ -40,7 +44,8 @@ const TOOL = "cursor-pointer transition-colors hover:text-[#2f80ed]";
 // pinned: clicked open, so its tools stay showing without hovering
 const OPEN_NONE = { subtasks: false, pinned: false };
 
-export function BlockTaskCard({ task, blockId, tint, lifted, onToggle, onNote }) {
+// renaming: its name is a box; onRename asks to start (double-click), onRenamed says it ended
+export function BlockTaskCard({ task, blockId, tint, lifted, renaming = false, onRename, onRenamed, onToggle, onNote }) {
   const [open, setOpen] = useState(OPEN_NONE);
   const toggle = useCallback((part) => setOpen((o) => ({ ...o, [part]: !o[part] })), []);
   const any = open.subtasks;
@@ -55,6 +60,9 @@ export function BlockTaskCard({ task, blockId, tint, lifted, onToggle, onNote })
       blockId={blockId}
       tint={tint}
       lifted={lifted}
+      renaming={renaming}
+      onRename={onRename}
+      onRenamed={onRenamed}
       open={open}
       toggle={toggle}
       onToggle={onToggle}
@@ -63,8 +71,15 @@ export function BlockTaskCard({ task, blockId, tint, lifted, onToggle, onNote })
   );
 }
 
-const Body = memo(function Body({ nodeRef, attributes, listeners, task, blockId, tint, lifted, open, toggle, onToggle, onNote }) {
-  const { setTaskMinutes, setTaskStatus, addStep, toggleStep, removeStep, moveTask } = useBlocks();
+const Body = memo(function Body({ nodeRef, attributes, listeners, task, blockId, tint, lifted, renaming, onRename, onRenamed, open, toggle, onToggle, onNote }) {
+  const { setTaskMinutes, setTaskStatus, addStep, toggleStep, renameStep, removeStep, renameTask, moveTask, blocks: allBlocks, start, takeOutTask } = useBlocks();
+  // to a day: a day task with its subtasks and note, and out of the block (kept on record, like a finished once-task)
+  const toDay = async (day) => {
+    const { error } = await createDayTask(day, { title: task.name, minutes: task.minutes ?? null, steps: task.steps ?? [], note: task.note ?? "" });
+    if (error) return toast("Couldn't move it just now. It's still here.");
+    takeOutTask(task.id);
+    showDayToast({ title: "Moved to", day: dayName(day), hint: "It's a day task now, subtasks and all." });
+  };
   const doing = task.status === "doing";
   const done = task.status === "done";
   const steps = task.steps ?? [];
@@ -81,6 +96,7 @@ const Body = memo(function Body({ nodeRef, attributes, listeners, task, blockId,
       const was = before.get(s.id);
       if (!was) addStep(task.id, s.name);
       else if (was.done !== s.done) toggleStep(task.id, s.id);
+      else if (was.name !== s.name) renameStep(task.id, s.id, s.name);
     }
   };
 
@@ -106,9 +122,17 @@ const Body = memo(function Body({ nodeRef, attributes, listeners, task, blockId,
       <TooltipProvider delay={300}>
         <div className="flex items-start gap-2.5">
           <Tick done={done} onToggle={onToggle} className="mt-0.5 size-4" />
-          <span className={cn("min-w-0 flex-1 break-words text-sm", done && "text-foreground/40")}>
+          <InlineName
+            value={task.name}
+            editing={renaming}
+            onEdit={onRename}
+            onSave={(name) => renameTask(task.id, name)}
+            onStop={onRenamed}
+            className={cn("min-w-0 flex-1 [overflow-wrap:anywhere] text-sm", done && "text-foreground/40")}
+            inputClassName="min-w-0 flex-1 text-sm"
+          >
             <Strike id={task.id} done={done} className="align-top">{task.name}</Strike>
-          </span>
+          </InlineName>
           {/* In Progress, from the card: ▶ puts it in progress (inside a running block, that
               starts its clock and what the "time's up" alert counts); ❚❚ puts it back to To Do */}
           {!done && (
@@ -119,6 +143,8 @@ const Body = memo(function Body({ nodeRef, attributes, listeners, task, blockId,
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
+                  // starting a task in a block that isn't running starts the block too, so its clock really moves
+                  if (!doing && allBlocks.find((b) => b.id === blockId)?.status !== "ongoing") start(blockId);
                   setTaskStatus(task.id, doing ? "todo" : "doing");
                 }}
                 className={cn(
@@ -167,7 +193,7 @@ const Body = memo(function Body({ nodeRef, attributes, listeners, task, blockId,
               <Workflow className="size-3.5" />
             </button>
           </Tip>
-          <MoveMenu fromBlock={blockId} onMoveToBlock={(to) => moveTask(task.id, to)} />
+          <MoveMenu fromBlock={blockId} onMoveToBlock={(to) => moveTask(task.id, to)} onMoveToDay={toDay} />
           {/* the far end: its notes (opens the notes sheet), then how far through its subtasks */}
           <span className="ms-auto flex items-center gap-2">
             <button

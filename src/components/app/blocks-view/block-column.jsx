@@ -39,6 +39,8 @@ function DropArea({ blockId, children }) {
 // hidden: the block's tasks that aren't today's, under the "Hidden tasks" button
 export const BlockColumn = memo(function BlockColumn({ block, tasks, hidden, now, anyRunning, dragId, over, onAdd, onToggle, onNote, onDuplicate, onDelete, selected, selecting, onToggleSelect }) {
   const [drafting, setDrafting] = useState(false);
+  // the card whose name is being fixed
+  const [renaming, setRenaming] = useState(null);
   // a finished block folds away to its box and one line; open it to see what was done
   const [showDone, setShowDone] = useState(false);
   const finished = block.status === "done";
@@ -95,7 +97,7 @@ export const BlockColumn = memo(function BlockColumn({ block, tasks, hidden, now
           />
         )}
         {tasks.map((task, i) => (
-          <CardMenu key={task.id} onDuplicate={() => onDuplicate(task)} onDelete={() => onDelete(task.id)}>
+          <CardMenu key={task.id} onRename={() => setRenaming(task.id)} onDuplicate={() => onDuplicate(task)} onDelete={() => onDelete(task.id)}>
             <div data-task className="flex flex-col gap-2">
               {over === i && <DropLine />}
               <BlockTaskCard
@@ -103,6 +105,9 @@ export const BlockColumn = memo(function BlockColumn({ block, tasks, hidden, now
                 blockId={block.id}
                 tint={block.bg}
                 lifted={dragId === task.id}
+                renaming={renaming === task.id}
+                onRename={() => setRenaming(task.id)}
+                onRenamed={() => setRenaming(null)}
                 onToggle={() => onToggle(task)}
                 onNote={onNote}
               />
@@ -114,13 +119,16 @@ export const BlockColumn = memo(function BlockColumn({ block, tasks, hidden, now
         {/* not today's: change a task's Days, or drag it up into today's list */}
         <HiddenTasks count={hidden.length}>
           {hidden.map((task) => (
-            <CardMenu key={task.id} onDuplicate={() => onDuplicate(task)} onDelete={() => onDelete(task.id)}>
+            <CardMenu key={task.id} onRename={() => setRenaming(task.id)} onDuplicate={() => onDuplicate(task)} onDelete={() => onDelete(task.id)}>
               <div className="opacity-70 transition-opacity hover:opacity-100">
                 <BlockTaskCard
                   task={task}
                   blockId={block.id}
                   tint={block.bg}
                   lifted={dragId === task.id}
+                  renaming={renaming === task.id}
+                  onRename={() => setRenaming(task.id)}
+                  onRenamed={() => setRenaming(null)}
                   onToggle={() => onToggle(task)}
                   onNote={onNote}
                 />

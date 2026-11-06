@@ -9,6 +9,7 @@
 import { memo, useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { specialDays } from "@/lib/special-days";
+import { cn } from "@/lib/utils";
 import { AddTask } from "./add-task";
 import { DraftCard, TaskCard } from "./task-card";
 import { CardMenu } from "./card-menu";
@@ -52,11 +53,14 @@ function DropArea({ dayKey, children }) {
 // over: where a dragged task would land in this day (an index), or null.
 // memo: during a drag only the day under the pointer changes, so only it redraws
 // loading: the saved tasks haven't arrived yet, so the day shows placeholders rather than looking empty
-export const DayColumn = memo(function DayColumn({ dayKey, date, isToday, tasks, repeats, loading, dragId, over, onAdd, onToggle, onPatch, onDuplicate, onDelete, onMoveToBlock, onMoveToDay }) {
+// dimLabel: a label picked in the bar — tasks without it fade (not hide, so dragging stays true)
+export const DayColumn = memo(function DayColumn({ dayKey, date, isToday, tasks, repeats, dimLabel, loading, dragId, over, onAdd, onToggle, onPatch, onDuplicate, onDelete, onMoveToBlock, onMoveToDay }) {
   const special = specialDays(date);
   // how many it holds that are done, a repeat's copy included; it only ever counts up
   const doneCount = tasks.filter((t) => t.done).length + repeats.filter((r) => r.task.done).length;
   const [drafting, setDrafting] = useState(false);
+  // the card whose name is being fixed
+  const [renaming, setRenaming] = useState(null);
 
   return (
     <section data-today={isToday || undefined} data-tour={isToday ? "today" : undefined} className="flex min-h-0 w-[18rem] shrink-0 flex-col gap-2">
@@ -81,7 +85,9 @@ export const DayColumn = memo(function DayColumn({ dayKey, date, isToday, tasks,
         </span>
       </header>
 
-      <AddTask onStart={() => setDrafting(true)} />
+      <div data-tour="add-task">
+        <AddTask onStart={() => setDrafting(true)} />
+      </div>
 
       {/* the drop area runs to the bottom of the day, so a drop below the last card still lands */}
       <DropArea dayKey={dayKey}>
@@ -101,19 +107,23 @@ export const DayColumn = memo(function DayColumn({ dayKey, date, isToday, tasks,
           </>
         )}
         {tasks.map((task, i) => (
-          // right-click for Duplicate and Delete
+          // right-click for Rename, Duplicate and Delete
           <CardMenu
             key={task.id}
+            onRename={() => setRenaming(task.id)}
             onDuplicate={() => onDuplicate(dayKey, task.id)}
             onDelete={() => onDelete(dayKey, task.id)}
           >
-          <div data-task className="flex flex-col gap-2">
+          <div data-task className={cn("flex flex-col gap-2", dimLabel && task.categoryId !== dimLabel && "opacity-30")}>
             {over === i && <DropLine />}
             <TaskCard
               task={task}
               origin={date}
               dragFrom={dayKey}
               lifted={dragId === task.id}
+              renaming={renaming === task.id}
+              onRename={() => setRenaming(task.id)}
+              onRenamed={() => setRenaming(null)}
               onToggle={() => onToggle(dayKey, task.id)}
               onPatch={(patch) => onPatch(dayKey, task.id, patch)}
               onMove={{
@@ -126,8 +136,13 @@ export const DayColumn = memo(function DayColumn({ dayKey, date, isToday, tasks,
         ))}
         {over === tasks.length && <DropLine />}
         {/* recurring tasks from an earlier day; ticking one ticks it for this day only */}
+        {/* right-click one: Delete takes it off this day only; Duplicate makes a one-off copy here */}
         {repeats.map((r) => (
-          <TaskCard key={r.id} task={r.task} origin={r.origin} onToggle={r.toggle} onPatch={r.patch} />
+          <CardMenu key={r.id} onDuplicate={r.copy} onDelete={r.skip}>
+            <div data-task className={cn("flex flex-col gap-2", dimLabel && r.task.categoryId !== dimLabel && "opacity-30")}>
+              <TaskCard task={r.task} origin={r.origin} onToggle={r.toggle} onPatch={r.patch} />
+            </div>
+          </CardMenu>
         ))}
       </DropArea>
     </section>

@@ -13,8 +13,9 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
   ArrowUpRight,
+  BookOpen,
+  GraduationCap,
   Bell,
-  Bug,
   ChevronDown,
   CircleHelp,
   Command,
@@ -40,6 +41,7 @@ import { signOut } from "@/lib/auth";
 import { SOUND, playTask } from "@/lib/sound";
 import { MuteMenu } from "./mute-menu";
 import { Photo } from "./photo";
+import { replayTour } from "../whats-new/steps";
 import { MenuStats } from "./stats";
 import { Gap, ICON_CLASS, ROW_CLASS, Row, SoonRow, Switch } from "./rows";
 import { useInstall } from "./use-install";
@@ -148,7 +150,19 @@ export function UserMenu({ user }) {
         ) : (
           <SoonRow icon={Download}>Install Milo</SoonRow>
         )}
-        <SoonRow icon={CircleHelp} end={<Bug className="size-4 text-muted-foreground/50" />}>Help</SoonRow>
+        {/* Help: the tutorial (the What's new steps, replayed from the start) and, later, docs */}
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className={`${ROW_CLASS} data-popup-open:bg-muted [&>svg:last-child]:text-muted-foreground`}>
+            <CircleHelp className={ICON_CLASS} />
+            <span className="flex-1">Help</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent sideOffset={6} className="w-52 rounded-lg border border-foreground/15 bg-popover p-1.5 shadow-xl ring-0 dark:border-border dark:bg-[#161616]">
+            <Row icon={GraduationCap} onClick={replayTour}>
+              Tutorial
+            </Row>
+            <SoonRow icon={BookOpen}>Docs</SoonRow>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
 
 
         <Gap />

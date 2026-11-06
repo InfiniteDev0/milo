@@ -3,7 +3,7 @@
 // Changing tasks: their days, kind, time, note, order and status. A change to a task's shape reaches the database.
 
 import { useCallback, useEffect, useRef } from "react";
-import { createTask, deleteTask, moveTaskRow, saveTask, saveTaskOrder } from "@/lib/db/blocks";
+import { archiveTask, createStep, createTask, deleteTask, moveTaskRow, saveTask, saveTaskOrder } from "@/lib/db/blocks";
 import { queueWrite, writeNow } from "@/lib/db/sync";
 import { closeSessions, openSession, spentOn } from "@/lib/day/intervals";
 import { blockFinished, moreToCome } from "@/lib/day/work";
@@ -87,7 +87,8 @@ export function useTaskActions({
   );
 
   // a task can be added any day; a block cannot — the month decides the containers, the day fills them
-  // extra: { days, kind } when the task is written with its schedule (the Blocks view's Add a task)
+  // extra: { days, kind } when the task is written with its schedule (the Blocks view's Add a task),
+  // and { steps, note } when it comes from somewhere else with them (a day task moved into a block)
   const addTask = useCallback(
     (blockId, name, minutes = null, extra = {}) => {
       const clean = name.trim();
@@ -103,7 +104,8 @@ export function useTaskActions({
         status: "todo",
         kind: extra.kind ?? "routine",
         days: extra.days ?? [],
-        steps: [],
+        note: extra.note ?? "",
+        steps: (extra.steps ?? []).map((s) => ({ id: crypto.randomUUID(), name: s.name, done: Boolean(s.done) })),
       };
 
       // a new task has no days, so it is today's — a finished block reopens
@@ -113,7 +115,16 @@ export function useTaskActions({
 
       if (userId) {
         const at = tasks.filter((t) => t.blockId === blockId).length;
-        writeNow(`task:${task.id}`, () => createTask(userId, task, at));
+        // the task first, then its subtasks (they point at it)
+        writeNow(`task:${task.id}`, async () => {
+          const made = await createTask(userId, task, at);
+          if (made.error) return made;
+          for (const [i, s] of task.steps.entries()) {
+            const r = await createStep(userId, task.id, s, i);
+            if (r.error) return r;
+          }
+          return { error: null };
+        });
       }
     },
     [userId, tasks, reconcile, setTasks],
@@ -285,7 +296,36 @@ export function useTaskActions({
     ],
   );
 
+  // a new name for a task, from Enter or clicking away
+  const renameTask = useCallback(
+    (id, name) => {
+      const clean = name.trim();
+      if (!clean) return;
+      setTasks((prev) => {
+        const next = prev.map((t) => (t.id === id ? { ...t, name: clean } : t));
+        const task = next.find((t) => t.id === id);
+        if (task) queueWrite(`task:${id}`, () => saveTask(task));
+        return next;
+      });
+    },
+    [setTasks],
+  );
+
+  // out of the block without a trace on screen, as a finished once-task leaves: the row is kept
+  // (archived), because past days hold its id. For a task moved to a day, not deleted
+  const takeOutTask = useCallback(
+    (id) => {
+      const next = tasks.filter((t) => t.id !== id);
+      setTasks(next);
+      reconcile(next);
+      writeNow(`task:${id}`, () => archiveTask(id));
+    },
+    [tasks, setTasks, reconcile],
+  );
+
   return {
+    renameTask,
+    takeOutTask,
     setTaskDays,
     setTaskKind,
     setTaskMinutes,

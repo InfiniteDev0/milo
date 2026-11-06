@@ -16,6 +16,7 @@ import { useNow } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import { Tip } from "./tip";
 import { spentMs } from "./task-card";
+import { markStep } from "../whats-new/steps";
 
 // 00:39, 12:05, 1:02:45
 function clockOf(ms) {
@@ -34,9 +35,14 @@ const ROUND = "flex size-8 cursor-pointer items-center justify-center rounded-fu
 // spent(now): the time on it so far. running: its clock is moving
 export function FloatingTimer({ title, running, spent, onPause, onResume, onDone, onStop }) {
   const now = useNow(running, 1000);
+  // using any of its buttons counts for the What's new step
+  const used = (fn) => () => {
+    markStep("use-timer");
+    fn();
+  };
   return (
     // Milo's face's height and corners (size-12, rounded-xl), level with it, and flat like it
-    <div className="group/timer fixed right-[5.5rem] bottom-12 z-40 flex h-12 items-center gap-5 rounded-xl bg-black pr-2 pl-3.5 text-white">
+    <div data-tour="floating-timer" className="group/timer fixed right-[5.5rem] bottom-12 z-40 flex h-12 items-center gap-5 rounded-xl bg-black pr-2 pl-3.5 text-white">
       <div className="flex min-w-0 flex-col">
         <span className={cn("font-mono text-lg leading-none tabular-nums", !running && "text-white/45")}>{clockOf(spent(now))}</span>
         <span className="max-w-40 truncate pt-0.5 text-[11px] font-semibold leading-tight">{title || "Untitled task"}</span>
@@ -45,18 +51,18 @@ export function FloatingTimer({ title, running, spent, onPause, onResume, onDone
         {/* on hover: Done and Stop join Pause / Play */}
         <span className="hidden items-center gap-2 group-focus-within/timer:flex group-hover/timer:flex">
           <Tip label="Done">
-            <button type="button" onClick={onDone} aria-label="Done" className={ROUND}>
+            <button type="button" onClick={used(onDone)} aria-label="Done" className={ROUND}>
               <Check className="size-4 text-[#00b86b]" strokeWidth={3} />
             </button>
           </Tip>
           <Tip label="Stop">
-            <button type="button" onClick={onStop} aria-label="Stop the timer" className={ROUND}>
+            <button type="button" onClick={used(onStop)} aria-label="Stop the timer" className={ROUND}>
               <Square className="size-3.5 fill-[#ef4444] text-[#ef4444]" />
             </button>
           </Tip>
         </span>
         <Tip label={running ? "Pause" : "Resume"}>
-          <button type="button" onClick={running ? onPause : onResume} aria-label={running ? "Pause" : "Resume"} className={ROUND}>
+          <button type="button" onClick={used(running ? onPause : onResume)} aria-label={running ? "Pause" : "Resume"} className={ROUND}>
             {running ? <Pause className="size-3.5 fill-black text-black" /> : <Play className="size-3.5 fill-[#555] text-[#555]" />}
           </button>
         </Tip>

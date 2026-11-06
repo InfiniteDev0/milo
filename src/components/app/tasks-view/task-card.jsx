@@ -22,6 +22,7 @@ import { clock } from "@/lib/duration";
 import { cn } from "@/lib/utils";
 import { useNow } from "@/lib/time";
 import { Strike } from "../strike";
+import { InlineName } from "./inline-name";
 import { Tick } from "../task-bits";
 import { NoteSection, StepCount, SubtasksSection, TimeSection } from "./card-sections";
 import { RepeatMenu, timeLabel } from "./repeat-menu";
@@ -48,9 +49,11 @@ export function TimePill({ ms = 0, active = false, onClick, locked = false }) {
   return (
     <button
       type="button"
+      data-tour="time-pill"
       onClick={(e) => {
         e.stopPropagation();
-        onClick?.();
+        // the event goes along: inside a tooltip, onClick is the tooltip's merged handler, which needs it
+        onClick?.(e);
       }}
       className={cn(
         "shrink-0 cursor-pointer rounded-md px-1.5 py-0.5 text-[11px] tabular-nums transition-colors",
@@ -102,7 +105,8 @@ function Tools({ task, origin, open, toggle, onPatch, onMove, always = false }) 
    pointer move; this outer one takes those redraws and is nearly free. The card
    itself (CardBody) is memoised, so it only redraws when the task changes. */
 // onMove: { toBlock(blockId), toDay(date) }; a repeat's copy has none
-export function TaskCard({ task, origin, dragFrom, lifted = false, onToggle, onPatch, onMove }) {
+// renaming: its name is a box; onRename asks to start (double-click), onRenamed says it ended
+export function TaskCard({ task, origin, dragFrom, lifted = false, renaming = false, onRename, onRenamed, onToggle, onPatch, onMove }) {
   const [open, setOpen] = useState(OPEN_NONE);
   const any = open.time || open.note || open.subtasks;
   const toggle = useCallback((part) => setOpen((o) => ({ ...o, [part]: !o[part] })), []);
@@ -110,7 +114,7 @@ export function TaskCard({ task, origin, dragFrom, lifted = false, onToggle, onP
   const { setNodeRef, attributes, listeners } = useDraggable({
     id: task.id,
     data: { from: dragFrom },
-    disabled: !dragFrom || any,
+    disabled: !dragFrom || any || renaming,
   });
 
   return (
@@ -121,6 +125,9 @@ export function TaskCard({ task, origin, dragFrom, lifted = false, onToggle, onP
       task={task}
       origin={origin}
       lifted={lifted}
+      renaming={renaming}
+      onRename={onRename}
+      onRenamed={onRenamed}
       open={open}
       toggle={toggle}
       onToggle={onToggle}
@@ -133,7 +140,7 @@ export function TaskCard({ task, origin, dragFrom, lifted = false, onToggle, onP
 // pinned: clicked open, so its tools stay showing without hovering
 const OPEN_NONE = { time: false, note: false, subtasks: false, pinned: false };
 
-const CardBody = memo(function CardBody({ nodeRef, attributes, listeners, task, origin, lifted, open, toggle, onToggle, onPatch, onMove }) {
+const CardBody = memo(function CardBody({ nodeRef, attributes, listeners, task, origin, lifted, renaming, onRename, onRenamed, open, toggle, onToggle, onPatch, onMove }) {
   const any = open.time || open.note || open.subtasks;
   const running = Boolean(task.startedAt);
   const now = useNow(running, 1000);
@@ -156,9 +163,17 @@ const CardBody = memo(function CardBody({ nodeRef, attributes, listeners, task, 
     >
       <div className="flex items-start gap-2.5">
         <Tick done={task.done} onToggle={onToggle} className="mt-0.5 size-4" />
-        <span className={cn("min-w-0 flex-1 break-words text-sm", task.done && "text-foreground/40")}>
+        <InlineName
+          value={task.title}
+          editing={renaming}
+          onEdit={onRename}
+          onSave={(title) => onPatch({ title })}
+          onStop={onRenamed}
+          className={cn("min-w-0 flex-1 [overflow-wrap:anywhere] text-sm", task.done && "text-foreground/40")}
+          inputClassName="min-w-0 flex-1 text-sm"
+        >
           <Strike id={task.id} done={task.done} className="align-top">{task.title}</Strike>
-        </span>
+        </InlineName>
         {/* it has a note: said on the card itself, so you don't have to hover to know */}
         <NoteMark count={task.note?.trim() ? 1 : 0} />
         {/* its time of day, so you can see it without hovering (the label lives in the tools row) */}
@@ -210,6 +225,7 @@ export function DraftCard({ onSave, onCancel }) {
         <input
           autoFocus
           aria-label="Task name"
+          data-tour="draft-input"
           placeholder="Task name"
           onBlur={(e) => (e.target.value.trim() ? onSave(e.target.value.trim()) : onCancel())}
           onKeyDown={(e) => {

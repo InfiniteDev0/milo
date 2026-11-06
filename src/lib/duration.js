@@ -11,13 +11,19 @@ export function parseDuration(text) {
   return Math.round((h ? Number(h[1]) * 60 : 0) + (m ? Number(m[1]) : 0));
 }
 
-// minutes → "0h 0m", as the Actual and Estimated columns read
-export const hm = (minutes) => `${Math.floor(minutes / 60)}h ${Math.round(minutes % 60)}m`;
+// minutes → "0h 0m", as the Actual and Estimated columns read. Rounded to the minute first, so 59.6
+// minutes reads "1h 0m", never "0h 60m"
+export const hm = (minutes) => {
+  const total = Math.round(minutes);
+  return `${Math.floor(total / 60)}h ${total % 60}m`;
+};
 
-// ms → "0:00" (h:mm), as the card's pill reads
+// ms → the card's pill: "0:00" while nothing's been timed, then "<1m", "3m", "1h 5m" — rounded the
+// same way as Actual, so the two never disagree (and "0:02" no longer reads as two seconds)
 export function clock(ms) {
-  const total = Math.floor(ms / 60000);
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+  if (!ms) return "0:00";
+  const total = Math.round(ms / 60000);
+  return total === 0 ? "<1m" : minutesLabel(total);
 }
 
 export const PRESETS = [5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240];

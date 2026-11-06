@@ -54,7 +54,7 @@ export function DailyReflection() {
                 <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
                   <Check className="size-3" strokeWidth={3.5} />
                 </span>
-                <span className="min-w-0 flex-1 break-words text-base text-foreground/55">
+                <span className="min-w-0 flex-1 [overflow-wrap:anywhere] text-base text-foreground/55">
                   <Strike done>{t.name}</Strike>
                 </span>
               </li>

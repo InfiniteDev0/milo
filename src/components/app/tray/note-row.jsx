@@ -72,7 +72,7 @@ export function NoteRow({ note, onOpen, query = "", when = "time", since = null,
           <MatchLines found={found} className="pt-1.5" />
         ) : (
           note.text && (
-            <p className="line-clamp-2 break-words pt-1 text-xs leading-relaxed text-foreground/45">
+            <p className="line-clamp-2 [overflow-wrap:anywhere] pt-1 text-xs leading-relaxed text-foreground/45">
               {note.text}
             </p>
           )

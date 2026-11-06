@@ -50,7 +50,7 @@ export function Note({ task, onOpenNote }) {
 
       {earlier && (
         <div className="flex flex-col gap-2 rounded-lg bg-foreground/4 px-3 py-2.5">
-          <p className="line-clamp-4 whitespace-pre-line break-words text-sm text-foreground/65">{task.note}</p>
+          <p className="line-clamp-4 whitespace-pre-line [overflow-wrap:anywhere] text-sm text-foreground/65">{task.note}</p>
           {canWrite && (
             <button
               type="button"

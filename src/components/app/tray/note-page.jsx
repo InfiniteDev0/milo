@@ -80,7 +80,7 @@ export function NotePage({ note, onChange, onBack, full = false, onToggleFull })
       {/* the editor's root is flex-1, and the pane supplies its side padding: a share of the width, so the
           text keeps the same margins as the page grows (the Notes page with a note open, full width) or
           shrinks (a sheet), never less than 1.25rem. The scroll box stays full width, its scrollbar at the edge */}
-      <div className="flex min-h-0 flex-1 flex-col [&_.simple-editor-content]:px-[max(1.25rem,7%)]">
+      <div data-tour="note-editor" className="flex min-h-0 flex-1 flex-col [&_.simple-editor-content]:px-[max(1.25rem,7%)]">
         {/* only the HTML goes up — the provider keeps the plain copy for search */}
         <NoteEditor noteId={note.id} body={note.body} onChange={(html) => onChange({ body: html })} />
       </div>

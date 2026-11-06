@@ -104,7 +104,7 @@ export function celebrateTask({ task, block, doneToday, blockComplete, run, spen
           />
         </span>
         <div className="relative flex flex-col">
-          <span className="text-sm text-chrome-ink">{headline}</span>
+          <span className="text-sm text-chrome-ink [overflow-wrap:anywhere]">{headline}</span>
           {/* the promise, verbatim, and a number that only counts up */}
           <span className="text-xs text-chrome-ink/45">
             You showed up for {doneToday} {doneToday === 1 ? "thing" : "things"} today.

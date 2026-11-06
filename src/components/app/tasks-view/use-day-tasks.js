@@ -10,11 +10,18 @@
    held until the Undo window closes, so it can come back untouched.
 
    Nothing is written until the real tasks have loaded, and a failed read never
-   shows as empty days: the view says it couldn't reach them instead. */
+   shows as empty days: the view says it couldn't reach them instead.
+
+   A clock is only ever counted from what was seen (TIME.md). While one runs the
+   heartbeat beats; a clock found running at load with no recent beat (the tab
+   died, the lid closed) is stopped at the last moment someone was here — never
+   left counting the night. Leaving the view puts a running clock away too, so a
+   day task's clock can't run on beside a block. */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { dayTaskQueue, listDayTasks, trashDayTask } from "@/lib/db/day-tasks";
+import { STALE, beat, lastSeen } from "@/lib/day/intervals";
 import { writeNow } from "@/lib/db/sync";
 
 // everything a saved row holds, as one string: when it changes, the row is saved again
@@ -40,6 +47,17 @@ export function useDayTasks() {
         const byDay = await listDayTasks();
         if (!alive) return;
         for (const [key, list] of Object.entries(byDay)) list.forEach((t, i) => saved.current.set(t.id, shape(t, key, i)));
+        // a clock left running with nobody seen since: stopped at the last moment someone was here.
+        // Changing it here (after saved is filled) means the save effect sends the stopped version
+        const seen = lastSeen();
+        if (Date.now() - seen > STALE) {
+          for (const list of Object.values(byDay)) {
+            list.forEach((t, i) => {
+              if (!t.startedAt) return;
+              list[i] = { ...t, actualMs: (t.actualMs ?? 0) + Math.max(0, Math.min(seen, Date.now()) - t.startedAt), startedAt: null };
+            });
+          }
+        }
         setUserId(user?.id ?? null);
         setTasks(byDay);
       } catch (err) {
@@ -57,6 +75,40 @@ export function useDayTasks() {
 
   const canWrite = hydrated && !loadFailed && userId != null;
 
+  // the heartbeat, while a day task's clock runs, so a tab that dies is trimmed back to when it was seen
+  const running = Object.values(tasks).some((list) => list.some((t) => t.startedAt));
+  useEffect(() => {
+    if (!running) return;
+    beat();
+    const t = setInterval(beat, 15000);
+    return () => clearInterval(t);
+  }, [running]);
+
+  // leaving the view: a running clock is banked and put away, straight to the database
+  const latestTasks = useRef(tasks);
+  const writer = useRef(null);
+  useEffect(() => {
+    latestTasks.current = tasks;
+    writer.current = canWrite ? userId : null;
+  });
+  useEffect(
+    () => () => {
+      const who = writer.current;
+      if (!who) return;
+      for (const [key, list] of Object.entries(latestTasks.current)) {
+        list.forEach((t, i) => {
+          if (!t.startedAt) return;
+          const stopped = { ...t, actualMs: (t.actualMs ?? 0) + Math.max(0, Date.now() - t.startedAt), startedAt: null };
+          dayTaskQueue.save(t.id, [who, stopped, key, i], 0);
+        });
+      }
+    },
+    [],
+  );
+
+  // when this tab last changed something; a reload on coming back waits until it's quiet
+  const lastChange = useRef(0);
+
   useEffect(() => {
     if (!canWrite) return;
     const here = new Set();
@@ -66,6 +118,7 @@ export function useDayTasks() {
         const now = shape(t, key, i);
         if (saved.current.get(t.id) === now) return;
         saved.current.set(t.id, now);
+        lastChange.current = Date.now();
         // typing in a note or a step is a burst of changes: one save once it settles
         dayTaskQueue.save(t.id, [userId, t, key, i]);
       });
@@ -76,6 +129,25 @@ export function useDayTasks() {
       dayTaskQueue.remove(id);
     }
   }, [tasks, canWrite, userId]);
+
+  // another tab may have changed things: coming back to this one reads them again — unless something
+  // was changed here in the last few seconds (still saving) or a delete is waiting on its Undo
+  useEffect(() => {
+    if (!canWrite) return;
+    const onBack = () => {
+      if (document.visibilityState !== "visible") return;
+      if (Date.now() - lastChange.current < 4000 || held.current.size > 0) return;
+      listDayTasks()
+        .then((byDay) => {
+          saved.current = new Map();
+          for (const [key, list] of Object.entries(byDay)) list.forEach((t, i) => saved.current.set(t.id, shape(t, key, i)));
+          setTasks(byDay);
+        })
+        .catch(() => {});
+    };
+    document.addEventListener("visibilitychange", onBack);
+    return () => document.removeEventListener("visibilitychange", onBack);
+  }, [canWrite]);
 
   // a delete with Undo: hold(id) before it leaves the day, then release(id, gone) when the toast settles
   const hold = useCallback((id) => held.current.add(id), []);

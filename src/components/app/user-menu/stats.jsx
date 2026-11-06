@@ -9,13 +9,10 @@
    Both are real counts from your data (db/stats.js), read each time the menu
    opens. A failed read shows a dash, never a zero.
 
-   Your place is a PLACEHOLDER (SAMPLE_PLACE), asked for so the row looks right:
-   it is not computed from anything. It has to be replaced before anyone else
-   uses Milo — a real place needs a server-side function that shares only
-   scores (RLS keeps everyone's data private) and a decision on who's ranked. */
+   The Leaderboard row is marked Soon (6 Nov): there is no points system or
+   ranking yet, so no place is shown — a made-up number would mislead. */
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Gem, Zap } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { readStats } from "@/lib/db/stats";
@@ -24,8 +21,6 @@ import { Tip } from "../tasks-view/tip";
 import { ROW_CLASS } from "./rows";
 import { StarBadge } from "../icons/star-badge";
 
-// not real: see above
-const SAMPLE_PLACE = 1500;
 
 function Count({ icon: Icon, colour, value, label }) {
   return (
@@ -65,13 +60,11 @@ export function MenuStats() {
         <Count icon={Zap} colour="#7c5cff" value={show(stats?.done)} label="Tasks done this week" />
         <Count icon={Gem} colour="#f5a524" value={show(stats?.notes)} label="Notes written" />
       </div>
-      <DropdownMenuItem
-        render={<Link href="/leaderboard" />}
-        className={cn(ROW_CLASS, "bg-muted/60 dark:bg-white/[0.06]")}
-      >
-        <StarBadge className="size-[18px] shrink-0" />
+      {/* the leaderboard is coming: no rank is shown until there's a real one (no points system yet) */}
+      <DropdownMenuItem disabled className={cn(ROW_CLASS, "cursor-default bg-muted/60 text-foreground/50 dark:bg-white/[0.06]")}>
+        <StarBadge className="size-[18px] shrink-0 opacity-60" />
         <span className="min-w-0 flex-1 truncate">Leaderboard</span>
-        <span className="shrink-0 text-sm font-semibold text-muted-foreground tabular-nums">#{SAMPLE_PLACE.toLocaleString()}</span>
+        <span className="shrink-0 rounded-sm bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">Soon</span>
       </DropdownMenuItem>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-// Right-click a task: Duplicate, or Delete — Sunsama's two. The same colour
+// Right-click a task: Rename (when it can be), Duplicate, or Delete. The same colour
 // and border as the task cards, flat with no shadow, round corners, solid icons,
 // the line between the two edge to edge. Opens beside the card, level with its
 // top, and exactly as tall as it — the size of the card, as Sunsama's is.
@@ -22,6 +22,16 @@ function DuplicateIcon() {
   );
 }
 
+// a solid pencil
+function RenameIcon() {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden className="size-4 shrink-0 text-muted-foreground">
+      <path fill="currentColor" d="M11.3 1.7a1.7 1.7 0 0 1 2.4 0l.6.6a1.7 1.7 0 0 1 0 2.4l-1.1 1.1-3-3 1.1-1.1Z" />
+      <path fill="currentColor" d="M9.1 3.9l3 3-6.6 6.6a1.5 1.5 0 0 1-.7.4l-2.9.8a.6.6 0 0 1-.7-.7l.8-2.9a1.5 1.5 0 0 1 .4-.7l6.7-6.5Z" />
+    </svg>
+  );
+}
+
 // a solid bin, its lid and the lines on it cut out
 function DeleteIcon() {
   return (
@@ -36,9 +46,11 @@ function DeleteIcon() {
   );
 }
 
-export function CardMenu({ onDuplicate, onDelete, children }) {
+export function CardMenu({ onRename, onDuplicate, onDelete, children }) {
   const [open, setOpen] = useState(false);
   const anchor = useRef(null);
+  // Rename hands focus to the name box, so the menu mustn't take it back as it closes
+  const renaming = useRef(false);
 
   return (
     <>
@@ -57,8 +69,28 @@ export function CardMenu({ onDuplicate, onDelete, children }) {
           <Menu.Positioner anchor={anchor} side="right" align="start" sideOffset={10} className="z-50 outline-none">
             <Menu.Popup
               onClick={(e) => e.stopPropagation()}
-              className="flex h-(--anchor-height) min-h-20 w-52 origin-(--transform-origin) flex-col overflow-hidden rounded-lg border border-foreground/10 bg-card text-card-foreground outline-none duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95"
+              finalFocus={() => !renaming.current}
+              className={`flex h-(--anchor-height) ${onRename ? "min-h-28" : "min-h-20"} w-52 origin-(--transform-origin) flex-col overflow-hidden rounded-lg border border-foreground/10 bg-card text-card-foreground outline-none duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95`}
             >
+              {onRename && (
+                <>
+                  <Menu.Item
+                    onClick={() => {
+                      renaming.current = true;
+                      // after the menu has gone, so the box keeps the focus
+                      setTimeout(() => {
+                        onRename();
+                        renaming.current = false;
+                      }, 0);
+                    }}
+                    className={ITEM}
+                  >
+                    <RenameIcon />
+                    Rename
+                  </Menu.Item>
+                  <Menu.Separator className="h-px shrink-0 bg-foreground/10" />
+                </>
+              )}
               <Menu.Item onClick={onDuplicate} className={ITEM}>
                 <DuplicateIcon />
                 Duplicate

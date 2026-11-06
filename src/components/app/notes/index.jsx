@@ -13,7 +13,12 @@
    ?shared the Shared page (blank for now).
 
    Every tab shows its count. Recent is the notes you opened today; Trash holds
-   deleted notes until they're restored or deleted for good. */
+   deleted notes until they're restored or deleted for good.
+
+   The calendar beside New opens the date wheel: the day it settles on filters
+   every tab (and a category) to the notes written that day, said by a chip with
+   × to clear. Clicking the calendar again changes the day. The top bar's
+   calendar steps aside on this page. Reminders will follow the same filter. */
 
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -31,6 +36,10 @@ import { ComingSoonArt } from "../icons/coming-soon-art";
 import { useCategories } from "../categories-provider";
 import { TrashView } from "./trash-view";
 import { CategoryTasks } from "./category-tasks";
+import { DateWheel } from "../workspace-menu/date-wheel";
+import { CalendarMark } from "../icons/calendar-mark";
+import { Tip } from "../tasks-view/tip";
+import { X } from "lucide-react";
 
 
 export function NotesView() {
@@ -42,6 +51,9 @@ export function NotesView() {
   const [place, setPlace] = useState(null);
   const [tab, setTab] = useState("all");
   const [query, setQuery] = useState("");
+  // the day the notes are filtered to (null: every day), and whether the wheel is open
+  const [day, setDay] = useState(null);
+  const [wheel, setWheel] = useState(false);
   const categories = useCategories();
   const router = useRouter();
   const pathname = usePathname();
@@ -80,7 +92,9 @@ export function NotesView() {
   // a block picked in the tree narrows every tab to its notes
   const known = new Set([...blocks, ...droppedToday, ...archived].map((b) => b.id));
   const inPlace = (n) => (place == null ? true : place === "day" ? !n.blockId || !known.has(n.blockId) : n.blockId === place);
-  const here = notes.filter(inPlace);
+  // the day picked on the wheel: only the notes written that day
+  const onDay = (n) => !day || new Date(n.createdAt).toDateString() === day.toDateString();
+  const here = notes.filter((n) => inPlace(n) && onDay(n));
   const favorites = here.filter((n) => n.pinned);
 
   // opened today, the latest first; null when today's opens couldn't be read
@@ -95,14 +109,24 @@ export function NotesView() {
   ];
   // a category's notes, and its subcategories' with them
   const inCategoryIds = new Set(category ? [category.id, ...categories.list.filter((c) => c.parentId === category.id).map((c) => c.id)] : []);
-  const inCategory = notes.filter((n) => inCategoryIds.has(n.categoryId));
+  const inCategory = notes.filter((n) => inCategoryIds.has(n.categoryId) && onDay(n));
+  // the wheel's years: from your first note to this year
+  const thisYear = new Date().getFullYear();
+  const firstYear = Math.min(thisYear, ...notes.map((n) => new Date(n.createdAt).getFullYear()));
+  const wheelYears = Array.from({ length: thisYear - firstYear + 1 }, (_, i) => firstYear + i);
   const shown = tab === "favorite" ? favorites : tab === "recent" ? (recent ?? []) : here;
 
   // a New from a picked block is for that block
-  const add = () => setPage({ blockId: tab === "blocks" && place && place !== "day" ? place : null });
+  // New makes a real note and opens it — in the block picked in By block, if there is one
+  const add = () => {
+    const note = addNote({ blockId: tab === "blocks" && place && place !== "day" ? place : null });
+    if (note) navigate({ noteId: note.id, keep: null });
+  };
 
   return (
     <div className="flex h-full min-h-0">
+      {/* the wheel the calendar opens: the day it settles on filters the notes */}
+      <DateWheel open={wheel} onOpenChange={setWheel} onPick={setDay} initial={day} years={wheelYears} />
       {/* an open note takes the whole page, so the side section steps aside */}
       {!open && (
         <SidePanel
@@ -155,6 +179,8 @@ export function NotesView() {
                 // All notes is where the categories show: the What's new spotlight points here from By block
                 data-tour={t.id === "all" ? "notes-all" : undefined}
                 onClick={() => {
+                  // one Trash for everything: its own page, opened on Notes
+                  if (t.id === "trash") return router.push("/trash?tab=notes");
                   setTab(t.id);
                   // leaving By block lets go of the block picked in it; any tab lets go of a category
                   if (t.id !== "blocks") setPlace(null);
@@ -171,11 +197,37 @@ export function NotesView() {
                 {t.count != null && <span className={COUNT}>{t.count}</span>}
               </button>
             ))}
+            {/* the day filter: its chip once one is set, then the calendar that opens the wheel */}
+            <span className="ms-auto flex items-center gap-2">
+              {day && (
+                <span className={cn(BOX, "gap-1.5 border-[#2f80ed]/40 bg-[#2f80ed]/10 pe-1 text-[#2f80ed]")}>
+                  Written {day.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric", year: day.getFullYear() === thisYear ? undefined : "numeric" })}
+                  <button
+                    type="button"
+                    onClick={() => setDay(null)}
+                    aria-label="Clear the date filter"
+                    className="flex size-5 cursor-pointer items-center justify-center rounded-sm transition-colors hover:bg-[#2f80ed]/15"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </span>
+              )}
+              <Tip label={day ? "Change the date" : "Filter by date"}>
+                <button
+                  type="button"
+                  onClick={() => setWheel(true)}
+                  aria-label="Filter by date"
+                  className={cn(BOX, "w-8 cursor-pointer justify-center px-0 transition-colors hover:bg-muted", day && "text-[#2f80ed]")}
+                >
+                  <CalendarMark className="size-4" />
+                </button>
+              </Tip>
+            </span>
             {canWrite && (
               <button
                 type="button"
                 onClick={add}
-                className={cn(BOX, "ms-auto cursor-pointer gap-1.5 font-medium transition-colors hover:bg-muted")}
+                className={cn(BOX, "cursor-pointer gap-1.5 font-medium transition-colors hover:bg-muted")}
               >
                 <CirclePlus className="size-3.5" />
                 New
@@ -229,7 +281,7 @@ export function NotesView() {
                   {inCategory.length} {inCategory.length === 1 ? "note" : "notes"}
                 </span>
               </div>
-              <div className="flex min-h-0 flex-1 flex-col px-3 pt-3">
+              <div data-tour="category-view" className="flex min-h-0 flex-1 flex-col px-3 pt-3">
                 {/* the tasks labelled with it, then its notes */}
                 <CategoryTasks ids={[...inCategoryIds]} />
                 <CardsView

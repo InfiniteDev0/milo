@@ -100,5 +100,16 @@ function deleteDayTask(id) {
 // the queue's own delete is for good: a task that left the day for a block was moved, not deleted
 export const dayTaskQueue = createRowQueue("day task", saveDayTask, deleteDayTask);
 
+// a day task made outside the Tasks view (a block task moved to a day): saved now, at the top of its
+// day, carrying its subtasks and note. The view reads it when it next opens
+export async function createDayTask(day, { title, minutes = null, steps = [], note = "" }) {
+  const {
+    data: { user },
+  } = await createClient().auth.getUser();
+  if (!user) return { error: new Error("not signed in") };
+  const task = { id: crypto.randomUUID(), title, done: false, minutes, note, steps: steps.map((s) => ({ id: crypto.randomUUID(), name: s.name, done: Boolean(s.done) })) };
+  return saveDayTask(user.id, task, day.toDateString(), -1);
+}
+
 // deleted on purpose (after Undo): into Trash
 export const trashDayTask = (id) => trashOrDelete("day_tasks", id);

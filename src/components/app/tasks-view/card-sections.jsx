@@ -9,16 +9,17 @@ import { hm } from "@/lib/duration";
 import { cn } from "@/lib/utils";
 import { Strike } from "../strike";
 import { Tick } from "../task-bits";
+import { InlineName } from "./inline-name";
 import { TimePicker } from "./time-picker";
 
 const SECTION = "-mx-3 border-t border-foreground/10 px-3 pt-2";
 
-function Column({ label, value, strong, onPick }) {
+function Column({ label, value, strong, onPick, tour }) {
   return (
     <TimePicker
       onPick={onPick}
       trigger={
-        <button type="button" className="flex cursor-pointer flex-col items-end rounded-sm px-1.5 py-0.5 hover:bg-muted">
+        <button type="button" data-tour={tour} className="flex cursor-pointer flex-col items-end rounded-sm px-1.5 py-0.5 hover:bg-muted">
           <span className={cn("text-xs", strong ? "text-foreground" : "text-muted-foreground")}>{label}</span>
           <span className={cn("text-xs tabular-nums", strong ? "text-foreground" : "text-muted-foreground")}>{value}</span>
         </button>
@@ -35,6 +36,7 @@ export function TimeSection({ actualMinutes, running, minutes, onPlay, onActual,
         type="button"
         onClick={onPlay}
         aria-label={running ? "Pause the clock" : "Start the clock"}
+        data-tour="timer-play"
         className="flex size-7 cursor-pointer items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
         {running ? <Pause className="size-4" /> : <Play className="size-4" />}
@@ -42,7 +44,7 @@ export function TimeSection({ actualMinutes, running, minutes, onPlay, onActual,
       <span className="flex-1" />
       {/* while the clock runs, the floating timer is counting; Actual comes back once it stops */}
       {!running && <Column label="Actual" value={hm(actualMinutes)} strong={actualMinutes > 0} onPick={onActual} />}
-      <Column label="Estimated" value={hm(minutes ?? 0)} onPick={onEstimate} />
+      <Column label="Estimated" value={hm(minutes ?? 0)} onPick={onEstimate} tour="estimate" />
     </div>
   );
 }
@@ -65,6 +67,8 @@ export function StepCount({ steps }) {
 // under them; Done puts that away again and leaves the list where it is.
 export function SubtasksSection({ steps, onChange, adding = true, onDone }) {
   const [draft, setDraft] = useState("");
+  // the step whose name is being fixed (double-click it)
+  const [editing, setEditing] = useState(null);
 
   return (
     <div className={cn(SECTION, "flex flex-col gap-1")}>
@@ -75,9 +79,17 @@ export function SubtasksSection({ steps, onChange, adding = true, onDone }) {
             onToggle={() => onChange(steps.map((s) => (s.id === step.id ? { ...s, done: !s.done } : s)))}
             className="size-3.5"
           />
-          <span className={cn("min-w-0 flex-1 text-xs", step.done && "text-foreground/35")}>
+          <InlineName
+            value={step.name}
+            editing={editing === step.id}
+            onEdit={() => setEditing(step.id)}
+            onSave={(name) => onChange(steps.map((s) => (s.id === step.id ? { ...s, name } : s)))}
+            onStop={() => setEditing(null)}
+            className={cn("min-w-0 flex-1 text-xs [overflow-wrap:anywhere]", step.done && "text-foreground/35")}
+            inputClassName="min-w-0 flex-1 text-xs"
+          >
             <Strike id={step.id} done={step.done}>{step.name}</Strike>
-          </span>
+          </InlineName>
           <button
             type="button"
             onClick={() => onChange(steps.filter((s) => s.id !== step.id))}

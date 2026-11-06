@@ -206,7 +206,9 @@ export function BlocksView() {
               <p className="py-6 text-sm text-muted-foreground">No blocks yet. Add them in Settings › Blocks.</p>
             )
           )}
-          {hydrated && !loadFailed && blocks.map((b) => (
+          {/* finished blocks go to the end, in the order they were finished (the board's drag only ever
+              starts a block, never reorders the row, so this order is free) */}
+          {hydrated && !loadFailed && [...blocks.filter((b) => b.status !== "done"), ...blocks.filter((b) => b.status === "done").sort((a, b) => (a.completedAt ?? 0) - (b.completedAt ?? 0))].map((b) => (
             <BlockColumn
               key={b.id}
               block={b}

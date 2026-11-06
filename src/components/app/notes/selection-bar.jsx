@@ -108,6 +108,10 @@ export function SelectionBar({ count, total, onSelectAll, onMove, onDelete, onCl
             {onFile && (
               <div className="flex min-w-0 flex-col gap-1 ps-2">
                 <span className={HEAD}>Categories</span>
+                {/* out of any category */}
+                <button type="button" onClick={() => file(null)} className={`${CHOICE} text-muted-foreground`}>
+                  No category
+                </button>
                 {tops.map((c) => (
                   <div key={c.id} className="flex flex-col gap-1">
                     <button type="button" onClick={() => file(c)} className={CHOICE}>

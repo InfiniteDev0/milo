@@ -43,7 +43,7 @@ export function Page({ side, number, children }) {
 export function PageWords({ side, text, head = false, foot = false }) {
   return (
     <div
-      className={`${bookHand.className} absolute overflow-hidden break-words whitespace-pre-wrap`}
+      className={`${bookHand.className} absolute overflow-hidden [overflow-wrap:anywhere] whitespace-pre-wrap`}
       style={textBox(side, { head, foot })}
     >
       {text}

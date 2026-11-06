@@ -11,15 +11,15 @@
 
 import { createClient } from "@/lib/supabase/client";
 
-let probe = null;
-export function hasTrash() {
-  // 42703 is "no such column": 0019 not run. Any other answer means it\x27s there (or the read failed, and so will the rest)
-  probe ??= createClient()
-    .from("tasks")
-    .select("deleted_at")
-    .limit(1)
-    .then(({ error }) => error?.code !== "42703");
-  return probe;
+// only a yes is remembered: a no is asked again next time, so running 0019 while Milo is open counts at
+// once (remembering the no meant a delete straight after the migration still went for good)
+let known = false;
+export async function hasTrash() {
+  if (known) return true;
+  // 42703 is "no such column": 0019 not run. Any other answer means it's there (or the read failed, and so will the rest)
+  const { error } = await createClient().from("tasks").select("deleted_at").limit(1);
+  known = error?.code !== "42703";
+  return known;
 }
 
 // a filter that leaves Trash out, once there is one. It hands back a function, never a query: a

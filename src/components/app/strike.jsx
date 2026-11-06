@@ -27,7 +27,8 @@ export function Strike({ id, done, children, className = "" }) {
   }, [id, done]);
 
   return (
-    <span className={`relative inline-block ${className}`}>
+    // never wider than its line, and a long unbroken name breaks inside it rather than running out of the card
+    <span className={`relative inline-block max-w-full [overflow-wrap:anywhere] ${className}`}>
       {children}
       <motion.svg
         aria-hidden

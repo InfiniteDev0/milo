@@ -26,7 +26,7 @@ function MovedToast({ count, to, noun }) {
         <span className="flex flex-wrap items-center gap-1.5 text-sm text-chrome-ink">
           {one ? "Moved to" : `${count} ${noun}s moved to`}
           <span
-            className={`rounded-md px-1.5 py-0.5 text-xs ${to ? "" : "bg-card text-foreground"}`}
+            className={`max-w-48 truncate rounded-md px-1.5 py-0.5 text-xs ${to ? "" : "bg-card text-foreground"}`}
             style={to ? { backgroundColor: to.bg, color: to.ink } : undefined}
           >
             {name}

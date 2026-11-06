@@ -25,6 +25,10 @@ import { dayTaskExtras } from "@/lib/db/day-tasks";
 import { customLabel, repeatOptions } from "@/lib/repeat";
 import { cn } from "@/lib/utils";
 import { Tip } from "./tip";
+import { TimeScrubber } from "@/components/motion/time-scrubber";
+import { Switch } from "@/components/motion/switch";
+import { usePreference } from "@/hooks/use-preference";
+import { TICK_SOUND } from "@/lib/tick-pref";
 
 const ITEM = "h-9 cursor-pointer gap-2 rounded-sm px-2.5 text-[15px] focus:bg-muted";
 const WAITING = "Custom repeats and times switch on once migration 0020 is run in Supabase.";
@@ -111,19 +115,26 @@ function CustomRepeat({ origin, rule, onSave, onClose }) {
   );
 }
 
-// the time of day, being set
+const toMinutes = (t) => {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+};
+const fromMinutes = (m) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+
+// the time of day, being set: Bencho's time scrubber, a ruler you drag or fling, in 5-minute steps
 function AddTime({ time, onSave, onClose }) {
   const [value, setValue] = useState(time ?? "09:00");
+  // the same tick sound setting as the date wheel
+  const sound = usePreference(TICK_SOUND) === "on";
   return (
     <div className="flex flex-col gap-4">
       <DialogTitle className="text-base font-semibold">Add time</DialogTitle>
-      <input
-        type="time"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        aria-label="Time of day"
-        className="h-10 rounded-sm border border-border bg-transparent px-3 text-base tabular-nums outline-none focus:ring-1 focus:ring-[#2f80ed]"
-      />
+      <div className="flex justify-center">
+        <TimeScrubber start={toMinutes(value)} step="5" momentum={50} format="12h" corner={16} onChange={(m) => setValue(fromMinutes(m))} sound={sound} />
+      </div>
+      <div className="flex justify-center">
+        <Switch checked={sound} onCheckedChange={(on) => TICK_SOUND.set(on ? "on" : "off")} label="Tick sound" className="origin-left scale-[0.85] [&_label]:text-sm" />
+      </div>
       <div className="flex items-center justify-between gap-2">
         {time ? (
           <button type="button" onClick={() => onSave(null)} className={cn(BUTTON, "text-[#ef4444] hover:bg-[#ef4444]/10")}>
@@ -151,6 +162,14 @@ export function RepeatMenu({ origin, value = "none", rule, time, onChange, class
   // which little window is open: "custom", "time", or none
   const [panel, setPanel] = useState(null);
   const open = (which) => (dayTaskExtras() ? setPanel(which) : toast(WAITING));
+  // how far to push the menu: from the icon to just past the card's right edge, and up to the card's top
+  const [offset, setOffset] = useState({ side: 8, align: 0 });
+  const place = (trigger) => {
+    const card = trigger.closest("[data-task-card]")?.getBoundingClientRect();
+    if (!card) return;
+    const icon = trigger.getBoundingClientRect();
+    setOffset({ side: Math.max(8, card.right - icon.right + 8), align: card.top - icon.top });
+  };
 
   return (
     <>
@@ -158,16 +177,23 @@ export function RepeatMenu({ origin, value = "none", rule, time, onChange, class
         <Tip label={on ? (value === "custom" ? customLabel(rule) : "Repeats") : "Make it repeat"}>
           <DropdownMenuTrigger
             aria-label="Make task recurring"
+            // measured as it's pressed: how far the card reaches past the icon, so the menu opens beside the card
+            onPointerDown={(e) => place(e.currentTarget)}
+            onKeyDown={(e) => place(e.currentTarget)}
             onClick={(e) => e.stopPropagation()}
             className={cn("cursor-pointer transition-colors hover:text-[#2f80ed]", on && "text-[#2f80ed]", className)}
           >
             <Repeat className="size-3.5" />
           </DropdownMenuTrigger>
         </Tip>
+        {/* beside the card (past its right edge, level with its top), not over it or the cards under it */}
         <DropdownMenuContent
+          side="right"
           align="start"
-          sideOffset={6}
+          sideOffset={offset.side}
+          alignOffset={offset.align}
           onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
           className="w-80 rounded-sm border border-border bg-popover p-1.5 shadow-xl ring-0 dark:bg-[#161616]"
         >
           {/* a label has to sit in a group, or the menu throws when it opens */}
@@ -205,7 +231,14 @@ export function RepeatMenu({ origin, value = "none", rule, time, onChange, class
       </DropdownMenu>
 
       <Dialog open={panel != null} onOpenChange={(next) => !next && setPanel(null)}>
-        <DialogContent showCloseButton={false} onClick={(e) => e.stopPropagation()} className="rounded-sm sm:max-w-sm">
+        {/* drawn over the page but living inside the card: a press here must never reach the card,
+            or dragging the time scrubber drags the task behind it */}
+        <DialogContent
+          showCloseButton={false}
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="rounded-sm sm:max-w-sm"
+        >
           {panel === "custom" && (
             <CustomRepeat
               origin={origin}

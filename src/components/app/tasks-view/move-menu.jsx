@@ -19,7 +19,8 @@ export function MoveMenu({ origin, fromBlock, onMoveToBlock, onMoveToDay, classN
   const [open, setOpen] = useState(false);
   const { blocks: all } = useBlocks();
   const blocks = all.filter((b) => b.id !== fromBlock);
-  const year = (origin ?? new Date()).getFullYear();
+  // this year and next, as the Tasks view holds
+  const year = new Date().getFullYear();
 
   const pick = (run) => (value) => {
     setOpen(false);
@@ -64,14 +65,14 @@ export function MoveMenu({ origin, fromBlock, onMoveToBlock, onMoveToDay, classN
           <>
         <div className="mx-2.5 my-1.5 h-px bg-foreground/10" />
         <p className={LABEL}>Move to a day</p>
-        {/* this year only: the Tasks view runs 1 January to 31 December */}
+        {/* this year and next: the Tasks view runs 1 January to 31 December of the year after */}
         <Calendar
           mode="single"
           selected={origin}
-          defaultMonth={origin}
+          defaultMonth={origin ?? new Date()}
           startMonth={new Date(year, 0)}
-          endMonth={new Date(year, 11)}
-          disabled={(d) => d.getFullYear() !== year || d.toDateString() === origin.toDateString()}
+          endMonth={new Date(year + 1, 11)}
+          disabled={(d) => d.getFullYear() < year || d.getFullYear() > year + 1 || (origin && d.toDateString() === origin.toDateString())}
           onSelect={(d) => d && pick(onMoveToDay)(d)}
           className="mx-auto bg-transparent"
         />

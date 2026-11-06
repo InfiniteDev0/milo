@@ -43,6 +43,57 @@ export function LabelChip({ categoryId }) {
   );
 }
 
+// the bar's Label filter: pick a category and every task without it fades; pick it again (or ×) to stop
+export function LabelFilter({ value, onChange }) {
+  const { list, hydrated, loadFailed } = useCategories();
+  const [open, setOpen] = useState(false);
+  const current = value ? list.find((c) => c.id === value) : null;
+  if (!hydrated || loadFailed || list.length === 0) return null;
+  return (
+    <span className="flex items-center gap-1.5">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger
+          className={cn(
+            "flex h-7 max-w-44 cursor-pointer items-center gap-1.5 truncate rounded-sm border px-2.5 text-[13px] transition-colors hover:bg-muted",
+            current ? "border-transparent" : "border-foreground/20 text-muted-foreground dark:border-border",
+          )}
+          style={current ? chipStyle(current.id) : undefined}
+        >
+          {current ? current.name || "Untitled" : "Label"}
+        </PopoverTrigger>
+        <PopoverContent align="end" sideOffset={6} className="max-h-80 w-56 gap-0.5 overflow-y-auto rounded-sm p-1.5">
+          <span className="px-2.5 pt-1 pb-1.5 text-xs font-medium text-muted-foreground">Show only a label</span>
+          {list.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => {
+                onChange(value === c.id ? null : c.id);
+                setOpen(false);
+              }}
+              className={cn(ROW, c.parentId && "ps-6")}
+            >
+              <span className="size-2.5 shrink-0 rounded-full" style={{ background: labelColour(c.id) }} />
+              <span className="min-w-0 flex-1 truncate">{c.name || "Untitled"}</span>
+              {value === c.id && <Check className="size-3.5" />}
+            </button>
+          ))}
+        </PopoverContent>
+      </Popover>
+      {current && (
+        <button
+          type="button"
+          onClick={() => onChange(null)}
+          aria-label="Show every task"
+          className="flex size-6 cursor-pointer items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <X className="size-3.5" />
+        </button>
+      )}
+    </span>
+  );
+}
+
 export function LabelMenu({ value, onChange }) {
   const categories = useCategories();
   const [open, setOpen] = useState(false);
@@ -75,6 +126,7 @@ export function LabelMenu({ value, onChange }) {
     >
       <Tip label={current ? "Label" : "Label it with a category"}>
         <PopoverTrigger
+          data-tour="label-button"
           onClick={(e) => e.stopPropagation()}
           style={current ? chipStyle(current.id) : undefined}
           className={cn(
@@ -89,7 +141,7 @@ export function LabelMenu({ value, onChange }) {
           )}
         </PopoverTrigger>
       </Tip>
-      <PopoverContent align="start" sideOffset={6} onClick={(e) => e.stopPropagation()} className="max-h-80 w-60 gap-0.5 overflow-y-auto rounded-sm p-1.5">
+      <PopoverContent align="start" sideOffset={6} onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()} className="max-h-80 w-60 gap-0.5 overflow-y-auto rounded-sm p-1.5">
         <span className="px-2.5 pt-1 pb-1.5 text-xs font-medium text-muted-foreground">Label</span>
         {current && (
           <button type="button" onClick={() => pick(null)} className={cn(ROW, "text-muted-foreground")}>

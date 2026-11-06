@@ -9,7 +9,8 @@ import { createClient } from "@/lib/supabase/client";
 const BASE = "id, title, body, plain, colour, starred, block_id, task_id, show_on, created_at, updated_at";
 // newer columns, newest first: category_id comes with migration 0014, deleted_at and cover with 0015.
 // Until one is applied, notes still load without it (and without anything newer)
-const TRIES = [`${BASE}, category_id, deleted_at, cover`, `${BASE}, category_id`, BASE];
+// covers are left out of the list (each can be tens of KB): listCovers() brings them after
+const TRIES = [`${BASE}, category_id, deleted_at`, `${BASE}, category_id`, BASE];
 
 const fromRow = (r) => ({
   id: r.id,
@@ -43,6 +44,13 @@ export function toPlain(html) {
   const el = document.createElement("div");
   el.innerHTML = html;
   return (el.textContent ?? "").replace(/\s+/g, " ").trim();
+}
+
+// every cover, read after the notes so the list arrives fast: note id -> its picture
+export async function listCovers() {
+  const { data, error } = await createClient().from("notes").select("id, cover").not("cover", "is", null);
+  if (error) throw error;
+  return Object.fromEntries(data.map((r) => [r.id, r.cover]));
 }
 
 // which of the newer columns the database has, learned by the last listNotes()
