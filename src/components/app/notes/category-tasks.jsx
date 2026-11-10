@@ -13,9 +13,11 @@ import { VIEW } from "@/lib/view";
 import { cn } from "@/lib/utils";
 import { ROW } from "./category-panel";
 
-// ids: the category and its subcategories. null while it loads, false if it couldn't, else the tasks
+// ids: the category and its subcategories. [tasks, reload]: tasks is null while it loads, false if it couldn't
 export function useCategoryTasks(ids) {
   const [byDay, setByDay] = useState(null);
+  // bumped to read them again (after a task is added here)
+  const [round, setRound] = useState(0);
   const key = ids.join(",");
   useEffect(() => {
     let alive = true;
@@ -25,12 +27,41 @@ export function useCategoryTasks(ids) {
     return () => {
       alive = false;
     };
-  }, [key]);
-  if (!byDay) return byDay;
+  }, [key, round]);
+  const reload = () => setRound((r) => r + 1);
+  if (!byDay) return [byDay, reload];
   const wanted = new Set(ids);
-  return Object.entries(byDay)
+  const tasks = Object.entries(byDay)
     .flatMap(([day, list]) => list.filter((t) => wanted.has(t.categoryId)).map((t) => ({ ...t, day: new Date(day) })))
     .sort((a, b) => b.day - a.day);
+  return [tasks, reload];
+}
+
+// a new task being typed, at the top of the card: Enter adds it to today, Escape (or leaving it empty) lets go
+export function TaskDraft({ onAdd, onDone }) {
+  const [title, setTitle] = useState("");
+  const finish = () => {
+    const clean = title.trim();
+    if (clean) onAdd(clean);
+    onDone();
+  };
+  return (
+    <li>
+      <input
+        autoFocus
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") finish();
+          if (e.key === "Escape") onDone();
+        }}
+        onBlur={finish}
+        placeholder="A task for today, then Enter"
+        aria-label="New task"
+        className={cn(ROW, "cursor-text outline-none ring-1 ring-[#2f80ed]")}
+      />
+    </li>
+  );
 }
 
 // done: a filled green tick; not yet: an empty ring

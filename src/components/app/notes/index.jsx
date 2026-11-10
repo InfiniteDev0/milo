@@ -109,7 +109,8 @@ export function NotesView() {
   ];
   // a category's notes, and its subcategories' with them
   const inCategoryIds = new Set(category ? [category.id, ...categories.list.filter((c) => c.parentId === category.id).map((c) => c.id)] : []);
-  const inCategory = notes.filter((n) => inCategoryIds.has(n.categoryId) && onDay(n));
+  // a category is its own page with no date filter on it, so it shows all its notes
+  const inCategory = notes.filter((n) => inCategoryIds.has(n.categoryId));
   // the wheel's years: from your first note to this year
   const thisYear = new Date().getFullYear();
   const firstYear = Math.min(thisYear, ...notes.map((n) => new Date(n.createdAt).getFullYear()));
@@ -159,7 +160,8 @@ export function NotesView() {
         {/* tabs along the top, as the reference has them, and New at the end */}
         {/* one line for everything: the tabs fill the bar's height with their underline on its edge,
             and the boxes sit centred on the same line */}
-        {!open && (
+        {/* a category is a page of its own, with its own bar */}
+        {!open && !(category && !page) && (
           <div className="flex h-11 shrink-0 items-center gap-5 border-b border-border px-5">
             {/* the blank new page needs a way back (an open note hides this row and has its own) */}
             {page && (
@@ -279,6 +281,10 @@ export function NotesView() {
               query={query}
               onOpen={(n) => setPage({ noteId: n.id })}
               onAdd={canWrite ? () => addToCategory(category.id) : undefined}
+              onBack={() => {
+                setTab("all");
+                navigate({ keep: null });
+              }}
             />
           ) : tab === "trash" ? (
             <TrashView notes={trashed} ready={trashReady} onRestore={restoreNotes} onDelete={deleteForever} />

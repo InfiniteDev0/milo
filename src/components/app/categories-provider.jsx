@@ -196,6 +196,14 @@ export function CategoriesProvider({ children }) {
         patch(id, { icon });
         if (icon) markStep("category-icon");
       },
+      // a banner picture for its page (a data URI), or null to take it away
+      // a new picture starts centred
+      setCover: (id, cover) => {
+        patch(id, { cover, coverY: 50 });
+        if (cover) markStep("category-cover");
+      },
+      // where the picture sits in the band, from Reposition
+      setCoverY: (id, coverY) => patch(id, { coverY }),
       toggleFavorite: (id) => {
         const c = list.find((x) => x.id === id);
         if (c) patch(id, { favorite: !c.favorite });

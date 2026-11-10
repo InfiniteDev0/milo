@@ -101,13 +101,14 @@ function deleteDayTask(id) {
 export const dayTaskQueue = createRowQueue("day task", saveDayTask, deleteDayTask);
 
 // a day task made outside the Tasks view (a block task moved to a day): saved now, at the top of its
-// day, carrying its subtasks and note. The view reads it when it next opens
-export async function createDayTask(day, { title, minutes = null, steps = [], note = "" }) {
+// day, carrying its subtasks and note (and a label, once 0016 is in). The view reads it when it next opens
+export async function createDayTask(day, { title, minutes = null, steps = [], note = "", categoryId }) {
   const {
     data: { user },
   } = await createClient().auth.getUser();
   if (!user) return { error: new Error("not signed in") };
   const task = { id: crypto.randomUUID(), title, done: false, minutes, note, steps: steps.map((s) => ({ id: crypto.randomUUID(), name: s.name, done: Boolean(s.done) })) };
+  if (categoryId && labels) task.categoryId = categoryId;
   return saveDayTask(user.id, task, day.toDateString(), -1);
 }
 

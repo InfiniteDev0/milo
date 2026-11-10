@@ -5,7 +5,7 @@
 // or ended it never shows again. To show a new update's steps, change VERSION and the STEPS — it shows
 // once more for everyone. That's how every update is introduced from now on.
 
-export const VERSION = "nov-10-2026";
+export const VERSION = "nov-11-2026";
 
 // targets: the places the spotlight keeps clear for this step, tried in order — a data-tour name, or a
 // selector — so a step on another page first points at the way there (Home or Notes in the sidebar,
@@ -31,6 +31,13 @@ export const STEPS = [
     hint: "In Notes, click a category's name, then the icon beside it, and pick an emoji, an icon or a picture.",
     targets: ["category-icon", "categories", ...WAY_TO_NOTES],
     point: ["category-icon", "category-name", ...WAY_TO_NOTES],
+  },
+  {
+    id: "category-cover",
+    title: "Give a category a cover",
+    hint: "Open a category in Notes and click Add cover at the top, then pick a picture.",
+    targets: ["category-view", "categories", ...WAY_TO_NOTES],
+    point: ["category-cover", "category-name", ...WAY_TO_NOTES],
   },
 ];
 
