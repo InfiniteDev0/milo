@@ -1,9 +1,8 @@
 "use client";
 
 /* A category's tasks: the Tasks-view tasks labelled with it (or with one of its
-   subcategories), newest day first, as one list with lines between the rows.
-   A click opens the Tasks view on that task's day. A failed read says so rather
-   than looking empty. */
+   subcategories), newest day first, as rows in its Tasks card. A click opens the
+   Tasks view on that task's day. A failed read says so rather than looking empty. */
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -12,6 +11,7 @@ import { listDayTasks } from "@/lib/db/day-tasks";
 import { jumpToDayLater } from "@/lib/jump-to-day";
 import { VIEW } from "@/lib/view";
 import { cn } from "@/lib/utils";
+import { ROW } from "./category-panel";
 
 // ids: the category and its subcategories. null while it loads, false if it couldn't, else the tasks
 export function useCategoryTasks(ids) {
@@ -44,30 +44,22 @@ function Status({ done }) {
   );
 }
 
-export function CategoryTasks({ tasks }) {
+export function CategoryTaskRows({ tasks }) {
   const router = useRouter();
   const open = (day) => {
     VIEW.set("tasks");
     jumpToDayLater(day);
     router.push("/daily");
   };
-  return (
-    <ul className="scrollbar-pill max-h-60 divide-y divide-foreground/8 overflow-y-auto rounded-lg border border-foreground/10">
-      {tasks.map((t) => (
-        <li key={t.id}>
-          <button
-            type="button"
-            onClick={() => open(t.day)}
-            className="flex h-10 w-full cursor-pointer items-center gap-3 px-3 text-left text-sm transition-colors hover:bg-foreground/4"
-          >
-            <Status done={t.done} />
-            <span className={cn("min-w-0 flex-1 truncate", t.done && "text-muted-foreground line-through")}>{t.title || "Untitled task"}</span>
-            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-              {t.day.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}
-            </span>
-          </button>
-        </li>
-      ))}
-    </ul>
-  );
+  return tasks.map((t) => (
+    <li key={t.id}>
+      <button type="button" onClick={() => open(t.day)} title="Open its day in Tasks" className={ROW}>
+        <Status done={t.done} />
+        <span className={cn("min-w-0 flex-1 truncate", t.done && "text-muted-foreground line-through")}>{t.title || "Untitled task"}</span>
+        <span className="shrink-0 text-[11px] tabular-nums text-foreground/35">
+          {t.day.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}
+        </span>
+      </button>
+    </li>
+  ));
 }
