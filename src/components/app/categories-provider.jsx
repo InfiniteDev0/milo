@@ -192,7 +192,10 @@ export function CategoriesProvider({ children }) {
         patch(id, { name }, 600);
         if (name.trim()) markStep("make-category");
       },
-      setIcon: (id, icon) => patch(id, { icon }),
+      setIcon: (id, icon) => {
+        patch(id, { icon });
+        if (icon) markStep("category-icon");
+      },
       toggleFavorite: (id) => {
         const c = list.find((x) => x.id === id);
         if (c) patch(id, { favorite: !c.favorite });

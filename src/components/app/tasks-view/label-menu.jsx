@@ -2,7 +2,7 @@
 
 /* A day task's label: one of your categories (the same ones notes live in), so a
    category holds its notes and its tasks. "Select label" until one is picked,
-   then its name (categories have no icons). The list has every category with its subcategories
+   then its name, in its colour. The list has every category with its subcategories
    under it, No label, and New category to name one right there and pick it.
    Before migration 0016 there's nowhere to keep a label, and it says so. */
 

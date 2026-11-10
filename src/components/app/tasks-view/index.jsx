@@ -229,6 +229,7 @@ export function TasksView() {
       if (patch.startedAt) markStep("start-timer");
       if (patch.minutes) markStep("set-estimate");
       if (patch.categoryId) markStep("label-task");
+      if (patch.title) markStep("rename-task");
     },
     [setTasks],
   );

@@ -12,6 +12,7 @@ import { celebrateTask } from "../celebrate";
 import { showMovedToast } from "../moved-toast";
 import { TASK_MOVED } from "../notes/use-follow-tasks";
 import { showUndoToast } from "../undo-toast";
+import { markStep } from "../whats-new/steps";
 
 export function useTaskActions({
   userId,
@@ -307,6 +308,7 @@ export function useTaskActions({
         if (task) queueWrite(`task:${id}`, () => saveTask(task));
         return next;
       });
+      markStep("rename-task");
     },
     [setTasks],
   );

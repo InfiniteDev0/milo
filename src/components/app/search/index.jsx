@@ -47,6 +47,7 @@ import { useNotes } from "../notes-provider";
 import { dayLabel, readDay } from "./days";
 import { markStep } from "../whats-new/steps";
 import { cn } from "@/lib/utils";
+import { PickedIcon } from "../icon-picker/picked-icon";
 import { UserGroup } from "../icons/user-group";
 import { matchRanges, matchScore, normalize, queryWords, SLIP_SCORE } from "./match";
 import { KIND_LABELS, SCOPES, useSearchEntries } from "./use-search-entries";
@@ -97,7 +98,7 @@ function ResultIcon({ entry, active }) {
       return <Mask file="/pencil.svg" active={active} />;
     case "category":
     case "subcategory":
-      return <Folder className={tint("text-[#f5a524]")} />;
+      return entry.icon ? <PickedIcon icon={entry.icon} size={18} /> : <Folder className={tint("text-[#f5a524]")} />;
     case "entry":
       return <Mask file="/notes.svg" gradient={PINK} active={active} />;
     case "voice":

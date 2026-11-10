@@ -7,6 +7,7 @@ import { useState } from "react";
 import { CheckCheck, FolderInput, FolderPlus, Trash2, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useBlocks } from "../blocks-provider";
+import { PickedIcon } from "../icon-picker/picked-icon";
 import { cn } from "@/lib/utils";
 
 const CHOICE = "flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs hover:bg-foreground/5";
@@ -115,6 +116,7 @@ export function SelectionBar({ count, total, onSelectAll, onMove, onDelete, onCl
                 {tops.map((c) => (
                   <div key={c.id} className="flex flex-col gap-1">
                     <button type="button" onClick={() => file(c)} className={CHOICE}>
+                      <PickedIcon icon={c.icon} size={13} />
                       <span className="truncate">{c.name || "Untitled"}</span>
                     </button>
                     {categories.list
