@@ -34,14 +34,17 @@ export function CardsView({ notes, onOpen, empty, onAdd, addLabel, search, sort 
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
-      <div className="flex shrink-0 flex-col gap-2">
-        {search === undefined && <Filters query={query} onQuery={setQuery} />}
-        {summary && summary.hits > 0 && (
-          <p className="text-xs text-foreground/45">
-            <MatchSummary {...summary} />
-          </p>
-        )}
-      </div>
+      {/* only when there is something to show, so an empty row adds no gap */}
+      {(search === undefined || summary?.hits > 0) && (
+        <div className="flex shrink-0 flex-col gap-2">
+          {search === undefined && <Filters query={query} onQuery={setQuery} />}
+          {summary && summary.hits > 0 && (
+            <p className="text-xs text-foreground/45">
+              <MatchSummary {...summary} />
+            </p>
+          )}
+        </div>
+      )}
 
       {selected.size > 0 && (
         <div className="shrink-0">

@@ -35,8 +35,7 @@ import { SidePanel } from "./side-panel";
 import { ComingSoonArt } from "../icons/coming-soon-art";
 import { useCategories } from "../categories-provider";
 import { TrashView } from "./trash-view";
-import { CategoryTasks } from "./category-tasks";
-import { IconPicker, PickedIcon } from "../icon-picker";
+import { CategoryPage } from "./category-page";
 import { DateWheel } from "../workspace-menu/date-wheel";
 import { CalendarMark } from "../icons/calendar-mark";
 import { Tip } from "../tasks-view/tip";
@@ -271,41 +270,16 @@ export function NotesView() {
             // Shared: a blank page for now
             <div className="flex-1" />
           ) : category ? (
-            // one category: its name, how many notes are in it (its subcategories' too), then the notes
-            <>
-              <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-5 text-sm">
-                {/* the icon: click it for emoji, icons or a picture of your own */}
-                <IconPicker value={category.icon} onChange={(icon) => categories.setIcon(category.id, icon)}>
-                  <button
-                    type="button"
-                    data-tour="category-icon"
-                    aria-label="Change icon"
-                    className="-ms-1 flex size-7 cursor-pointer items-center justify-center rounded-sm transition-colors hover:bg-foreground/10 data-popup-open:bg-foreground/10"
-                  >
-                    <PickedIcon icon={category.icon} size={16} />
-                  </button>
-                </IconPicker>
-                <span className="min-w-0 flex-1 truncate font-medium">
-                  {parent && <span className="font-normal text-muted-foreground">{parent.name || "Untitled"} / </span>}
-                  {category.name || "Untitled"}
-                </span>
-                <span className="shrink-0 text-muted-foreground">
-                  {inCategory.length} {inCategory.length === 1 ? "note" : "notes"}
-                </span>
-              </div>
-              <div data-tour="category-view" className="flex min-h-0 flex-1 flex-col px-3 pt-3">
-                {/* the tasks labelled with it, then its notes */}
-                <CategoryTasks ids={[...inCategoryIds]} />
-                <CardsView
-                  notes={inCategory}
-                  search={query}
-                  onOpen={(n) => setPage({ noteId: n.id })}
-                  onAdd={canWrite ? () => addToCategory(category.id) : undefined}
-                  addLabel={`Add a note to ${category.name || "Untitled"}`}
-                  empty={`Nothing in ${category.name || "Untitled"} yet.`}
-                />
-              </div>
-            </>
+            // one category: its icon, name and counts, then its tasks and its notes
+            <CategoryPage
+              category={category}
+              parent={parent}
+              ids={[...inCategoryIds]}
+              notes={inCategory}
+              query={query}
+              onOpen={(n) => setPage({ noteId: n.id })}
+              onAdd={canWrite ? () => addToCategory(category.id) : undefined}
+            />
           ) : tab === "trash" ? (
             <TrashView notes={trashed} ready={trashReady} onRestore={restoreNotes} onDelete={deleteForever} />
           ) : tab === "recent" && recent == null ? (
