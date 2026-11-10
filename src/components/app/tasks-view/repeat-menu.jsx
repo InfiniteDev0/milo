@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { dayTaskExtras } from "@/lib/db/day-tasks";
+import { checkExtras, dayTaskExtras } from "@/lib/db/day-tasks";
 import { customLabel, repeatOptions } from "@/lib/repeat";
 import { cn } from "@/lib/utils";
 import { Tip } from "./tip";
@@ -161,7 +161,7 @@ export function RepeatMenu({ origin, value = "none", rule, time, onChange, class
   const on = value !== "none";
   // which little window is open: "custom", "time", or none
   const [panel, setPanel] = useState(null);
-  const open = (which) => (dayTaskExtras() ? setPanel(which) : toast(WAITING));
+  const open = (which) => (dayTaskExtras() ? setPanel(which) : checkExtras().then((on) => (on ? setPanel(which) : toast(WAITING))));
   // how far to push the menu: from the icon to just past the card's right edge, and up to the card's top
   const [offset, setOffset] = useState({ side: 8, align: 0 });
   const place = (trigger) => {

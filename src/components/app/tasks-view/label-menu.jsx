@@ -10,7 +10,7 @@ import { useState } from "react";
 import { Check, FolderPlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { dayTaskLabels } from "@/lib/db/day-tasks";
+import { checkLabels, dayTaskLabels } from "@/lib/db/day-tasks";
 import { cn } from "@/lib/utils";
 import { useCategories } from "../categories-provider";
 import { Tip } from "./tip";
@@ -119,7 +119,10 @@ export function LabelMenu({ value, onChange }) {
       open={open}
       onOpenChange={(next) => {
         // nowhere to keep a label until the database has the column
-        if (next && !dayTaskLabels()) return toast("Labels switch on once migration 0016 is run in Supabase.");
+        if (next && !dayTaskLabels()) {
+          checkLabels().then((on) => (on ? setOpen(true) : toast("Labels switch on once migration 0016 is run in Supabase.")));
+          return;
+        }
         setOpen(next);
         if (!next) setNaming(null);
       }}

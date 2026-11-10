@@ -2,12 +2,12 @@
 
 /* The banner across the top of a category's page. None yet: a soft band that
    says Add cover. A picture: it fills the band, and on hover one bar at its top
-   right: Change, Reposition, Download, and × to take it away. Reposition: drag
+   right: Change, Reposition, and × to take it away. Reposition: drag
    the picture up or down, then Save position (or Cancel). Pictures are shrunk to
    1600px WebP first; before migration 0021 Add cover says it isn't on yet. */
 
 import { useRef, useState } from "react";
-import { Download, ImagePlus, X } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { checkCovers } from "@/lib/db/categories";
 import { shrinkImage } from "@/lib/shrink-image";
@@ -53,7 +53,7 @@ export function useCoverPicker(onCover) {
 }
 
 // y: where the picture sits (0 top, 100 bottom). onPick / onRemove / onMove: left out when you can't change it
-export function CategoryCover({ cover, y = 50, name, onPick, onRemove, onMove }) {
+export function CategoryCover({ cover, y = 50, onPick, onRemove, onMove }) {
   // while repositioning: where it sits now, and where the drag began
   const [moving, setMoving] = useState(null);
   const drag = useRef(null);
@@ -84,7 +84,6 @@ export function CategoryCover({ cover, y = 50, name, onPick, onRemove, onMove })
     if (!el?.naturalWidth) return 0;
     return (el.naturalHeight / el.naturalWidth) * el.clientWidth - el.clientHeight;
   };
-  const ext = cover.slice(cover.indexOf("/") + 1, cover.indexOf(";")) || "webp";
 
   return (
     <div className="group/cover relative h-52 shrink-0 overflow-hidden">
@@ -149,9 +148,6 @@ export function CategoryCover({ cover, y = 50, name, onPick, onRemove, onMove })
               <button type="button" onClick={() => setMoving(y)} className={PART}>
                 Reposition
               </button>
-              <a href={cover} download={`${name || "cover"}.${ext}`} aria-label="Download cover" title="Download" className={PART}>
-                <Download className="size-3.5" />
-              </a>
               <button type="button" onClick={onRemove} aria-label="Remove cover" title="Remove" className={PART}>
                 <X className="size-3.5" />
               </button>

@@ -15,7 +15,8 @@ import { InlineName } from "../tasks-view/inline-name";
 import { CategoryCover, useCoverPicker } from "./category-cover";
 import { CategoryNoteRows } from "./category-notes";
 import { AddButton, CategoryPanel } from "./category-panel";
-import { CategoryTaskRows, TaskDraft, useCategoryTasks } from "./category-tasks";
+import { CategoryTaskRows, useCategoryTasks } from "./category-tasks";
+import { NewTaskDialog } from "./new-task-dialog";
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
@@ -31,12 +32,17 @@ export function CategoryPage({ category, parent, ids, notes, query, onOpen, onAd
   const searched = Boolean(query?.trim());
   const shown = notes.filter((n) => matchesSearch(n, query));
 
-  // a task for today, labelled with this category; the Tasks view reads it when it next opens
-  const addTask = async (title) => {
-    const { error } = await createDayTask(new Date(), { title, categoryId: category.id });
-    if (error) return toast("Couldn’t add that task. Try again in a moment.");
-    toast("Added to today in Tasks.");
+  // a task from the dialog, onto its day; the Tasks view reads it when it next opens. true once saved
+  const addTask = async ({ day, ...task }) => {
+    const { error } = await createDayTask(day, task);
+    if (error) {
+      toast("Couldn’t add that task. Try again in a moment.");
+      return false;
+    }
+    const today = day.toDateString() === new Date().toDateString();
+    toast(`Added to ${today ? "today" : day.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })} in Tasks.`);
     reload();
+    return true;
   };
 
   return (
@@ -45,7 +51,6 @@ export function CategoryPage({ category, parent, ids, notes, query, onOpen, onAd
       <CategoryCover
         cover={category.cover}
         y={category.coverY}
-        name={name}
         onPick={canWrite ? pick : undefined}
         onRemove={() => categories.setCover(category.id, null)}
         onMove={(y) => categories.setCoverY(category.id, y)}
@@ -99,8 +104,7 @@ export function CategoryPage({ category, parent, ids, notes, query, onOpen, onAd
             sub={`Tasks labelled ${name}`}
             count={Array.isArray(tasks) ? tasks.length : null}
             unit="task"
-            action={canWrite && <AddButton label="Add a task for today" onClick={() => setDrafting(true)} />}
-            top={drafting && <TaskDraft onAdd={addTask} onDone={() => setDrafting(false)} />}
+            action={canWrite && <AddButton label="New task" onClick={() => setDrafting(true)} />}
             empty={
               tasks === false
                 ? "Couldn’t reach this category’s tasks."
@@ -124,6 +128,8 @@ export function CategoryPage({ category, parent, ids, notes, query, onOpen, onAd
           </CategoryPanel>
         </div>
       </div>
+
+      <NewTaskDialog open={drafting} onOpenChange={setDrafting} categoryId={category.id} onCreate={addTask} />
     </div>
   );
 }

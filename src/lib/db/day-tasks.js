@@ -49,6 +49,17 @@ let labels = false;
 let extras = false;
 export const dayTaskLabels = () => labels;
 export const dayTaskExtras = () => extras;
+// asks the database again when the answer so far is no (it may have been run since, or nothing has
+// read the tasks yet); a yes is kept
+const probe = (columns) => createClient().from("day_tasks").select(columns).limit(1).then(({ error }) => !error);
+export async function checkLabels() {
+  if (!labels) labels = await probe("category_id");
+  return labels;
+}
+export async function checkExtras() {
+  if (!extras) extras = await probe("repeat_rule, at_time");
+  return extras;
+}
 
 // every day task, grouped by the day it sits in and in its order there: { [dayKey]: task[] }
 export async function listDayTasks() {
@@ -101,14 +112,15 @@ function deleteDayTask(id) {
 export const dayTaskQueue = createRowQueue("day task", saveDayTask, deleteDayTask);
 
 // a day task made outside the Tasks view (a block task moved to a day): saved now, at the top of its
-// day, carrying its subtasks and note (and a label, once 0016 is in). The view reads it when it next opens
-export async function createDayTask(day, { title, minutes = null, steps = [], note = "", categoryId }) {
+// day, carrying its subtasks and note (and a label once 0016 is in, a time once 0020 is). The view reads it when it next opens
+export async function createDayTask(day, { title, minutes = null, steps = [], note = "", categoryId, atTime }) {
   const {
     data: { user },
   } = await createClient().auth.getUser();
   if (!user) return { error: new Error("not signed in") };
   const task = { id: crypto.randomUUID(), title, done: false, minutes, note, steps: steps.map((s) => ({ id: crypto.randomUUID(), name: s.name, done: Boolean(s.done) })) };
-  if (categoryId && labels) task.categoryId = categoryId;
+  if (categoryId && (await checkLabels())) task.categoryId = categoryId;
+  if (atTime && (await checkExtras())) task.atTime = atTime;
   return saveDayTask(user.id, task, day.toDateString(), -1);
 }
 

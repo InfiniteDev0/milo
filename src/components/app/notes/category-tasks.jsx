@@ -37,33 +37,6 @@ export function useCategoryTasks(ids) {
   return [tasks, reload];
 }
 
-// a new task being typed, at the top of the card: Enter adds it to today, Escape (or leaving it empty) lets go
-export function TaskDraft({ onAdd, onDone }) {
-  const [title, setTitle] = useState("");
-  const finish = () => {
-    const clean = title.trim();
-    if (clean) onAdd(clean);
-    onDone();
-  };
-  return (
-    <li>
-      <input
-        autoFocus
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") finish();
-          if (e.key === "Escape") onDone();
-        }}
-        onBlur={finish}
-        placeholder="A task for today, then Enter"
-        aria-label="New task"
-        className={cn(ROW, "cursor-text outline-none ring-1 ring-[#2f80ed]")}
-      />
-    </li>
-  );
-}
-
 // done: a filled green tick; not yet: an empty ring
 function Status({ done }) {
   return done ? (
