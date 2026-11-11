@@ -48,16 +48,17 @@ export function SidebarToggle() {
         notes && open ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100",
       )}
     >
-    <div className="flex min-h-0 flex-col gap-3 overflow-hidden pt-2 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
+    {/* clipped top to bottom only, so the rounded tile keeps its sides */}
+    <div className="flex min-h-0 flex-col gap-3 overflow-x-visible overflow-y-clip pt-2 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
       <button
         type="button"
         onClick={press}
         aria-label={open ? `Collapse ${what}` : `Open ${what}`}
         title={notes ? (open ? `Close ${what}` : `Open ${what}`) : undefined}
         aria-expanded={open}
-        className="flex h-10 w-full cursor-pointer items-center gap-3 rounded-md px-3 text-start text-base font-semibold text-sidebar-foreground transition-colors hover:bg-(--rail-hover) group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:px-0"
+        className="group/toggle flex h-10 w-full cursor-pointer items-center gap-3 rounded-md px-3 text-start text-base font-semibold text-sidebar-foreground transition-colors hover:bg-(--rail-hover) group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:px-0"
       >
-        <Icon className="size-5 shrink-0" strokeWidth={2.5} />
+        <Icon className="size-5 shrink-0 transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover/toggle:scale-115" strokeWidth={2.5} />
         <span className="truncate text-sm group-data-[collapsible=icon]:hidden">Collapse</span>
       </button>
       <span aria-hidden className="h-0.5 w-full rounded-full bg-sidebar-foreground/10 group-data-[collapsible=icon]:w-6" />

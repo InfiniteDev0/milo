@@ -21,14 +21,16 @@ export const NAV_MAIN = [
 
 export const NAV_BOTTOM = [{ href: "/settings", label: "Settings", icon: "/seetings.svg" }];
 
-// the svg is a mask, so colour comes from state: grey at rest, yellow→pink on hover, yellow→green when active
+// the svg is a mask, so colour comes from state (the --rail-icon tokens): grey, yellow→pink on hover, yellow→green
+// when active; on a coloured rail white, then black
 function NavIcon({ src }) {
   return (
-    <span className="flex shrink-0 items-center justify-center group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:group-hover/menu-button:bg-(--rail-hover) group-data-[collapsible=icon]:group-data-active/menu-button:bg-(--rail-tile)!">
+    <span className="flex shrink-0 items-center justify-center transition-colors duration-200 group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:group-hover/menu-button:bg-(--rail-hover) group-data-[collapsible=icon]:group-data-active/menu-button:bg-(--rail-tile)!">
       <span
         aria-hidden
         style={maskStyle(src)}
-        className="size-5 shrink-0 bg-(--rail-icon) group-hover/menu-button:bg-(image:--rail-icon-hover) group-data-active/menu-button:bg-(image:--rail-icon-active)!"
+        // a springy lift under the pointer
+        className="size-5 shrink-0 bg-(--rail-icon) transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover/menu-button:scale-115 group-hover/menu-button:-rotate-6 group-hover/menu-button:bg-(image:--rail-icon-hover) group-data-active/menu-button:bg-(image:--rail-icon-active)!"
       />
     </span>
   );
