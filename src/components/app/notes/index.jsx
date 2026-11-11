@@ -40,6 +40,7 @@ import { TrashView } from "./trash-view";
 import { CategoryPage } from "./category-page";
 import { DateWheel } from "../workspace-menu/date-wheel";
 import { CalendarMark } from "../icons/calendar-mark";
+import { StylusNote } from "../icons/stylus-note";
 import { Tip } from "../tasks-view/tip";
 import { X } from "lucide-react";
 
@@ -258,7 +259,7 @@ export function NotesView() {
                 // the page's one solid button: dark in light mode, white in dark (or the theme colour), no edge
                 className="flex h-7 cursor-pointer items-center gap-1.5 rounded-md bg-solid px-3 text-[13px] font-medium text-solid-ink transition-colors hover:bg-solid-hover"
               >
-                <CirclePlus className="size-3.5" />
+                <StylusNote className="size-4" />
                 New
               </button>
             )}
