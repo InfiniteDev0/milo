@@ -11,27 +11,61 @@ import { Check, FolderPlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { checkLabels, dayTaskLabels } from "@/lib/db/day-tasks";
+import { checkColors } from "@/lib/db/categories";
 import { cn } from "@/lib/utils";
 import { useCategories } from "../categories-provider";
 import { Tip } from "./tip";
 
 const ROW = "flex w-full cursor-pointer items-center gap-2 rounded-sm px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-muted";
 
-// a label's colour: one of eight, picked from its category's id, so it's always the same one
+// a label's colour: the one picked for its category, or else one of eight from its id, so it's
+// always the same one
 const COLOURS = ["#2f80ed", "#00b86b", "#9a6dd7", "#e07c39", "#e255a1", "#06b6d4", "#dfab01", "#e5534b"];
-export function labelColour(id) {
+export function labelColour(category) {
+  if (category.color) return category.color;
   let h = 0;
-  for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  for (const ch of category.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return COLOURS[h % COLOURS.length];
 }
 // the chip's look in that colour: a soft fill, the colour itself for the words
-const chipStyle = (id) => {
-  const c = labelColour(id);
+const chipStyle = (category) => {
+  const c = labelColour(category);
   return { background: `color-mix(in srgb, ${c} 18%, transparent)`, color: `color-mix(in srgb, ${c} 85%, var(--foreground))` };
 };
+
+// the colours to pick from, just above New category: the selected label's, ringed
+function ColourRow({ category }) {
+  const categories = useCategories();
+  const now = labelColour(category);
+  const pick = async (colour) => {
+    if (!(await checkColors())) return toast("Label colours switch on once migration 0023 is run in Supabase.");
+    categories.setColor(category.id, colour);
+  };
+  return (
+    <div className="mt-0.5 flex flex-col gap-1.5 border-t border-foreground/10 px-2.5 pt-2 pb-1">
+      <span className="text-xs font-medium text-muted-foreground">Colour</span>
+      <div className="flex items-center justify-between">
+        {COLOURS.map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => pick(c)}
+            aria-label={`Colour ${c}`}
+            aria-pressed={now === c}
+            style={{ background: c }}
+            className={cn(
+              "size-5 cursor-pointer rounded-full transition-transform hover:scale-110",
+              now === c && "ring-2 ring-foreground/70 ring-offset-2 ring-offset-popover",
+            )}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 const CHIP = "flex max-w-32 shrink-0 items-center rounded-sm px-1.5 py-0.5 text-[11px] font-medium";
 // big: the size of a dialog's other choices (No time), for the New task dialog
-const BIG = "flex h-8 max-w-56 shrink-0 items-center rounded-md px-3 text-sm font-medium";
+const BIG = "flex h-8 max-w-56 shrink-0 items-center justify-center rounded-md px-3 text-sm leading-none font-medium";
 
 // the label on a card, small, beside its name
 export function LabelChip({ categoryId }) {
@@ -39,7 +73,7 @@ export function LabelChip({ categoryId }) {
   const c = categoryId ? list.find((x) => x.id === categoryId) : null;
   if (!c) return null;
   return (
-    <span className={CHIP} style={chipStyle(c.id)}>
+    <span className={CHIP} style={chipStyle(c)}>
       <span className="truncate">{c.name || "Untitled"}</span>
     </span>
   );
@@ -59,7 +93,7 @@ export function LabelFilter({ value, onChange }) {
             "flex h-7 max-w-44 cursor-pointer items-center gap-1.5 truncate rounded-sm border px-2.5 text-[13px] transition-colors hover:bg-muted",
             current ? "border-transparent" : "border-foreground/20 text-muted-foreground dark:border-border",
           )}
-          style={current ? chipStyle(current.id) : undefined}
+          style={current ? chipStyle(current) : undefined}
         >
           {current ? current.name || "Untitled" : "Label"}
         </PopoverTrigger>
@@ -75,7 +109,7 @@ export function LabelFilter({ value, onChange }) {
               }}
               className={cn(ROW, c.parentId && "ps-6")}
             >
-              <span className="size-2.5 shrink-0 rounded-full" style={{ background: labelColour(c.id) }} />
+              <span className="size-2.5 shrink-0 rounded-full" style={{ background: labelColour(c) }} />
               <span className="min-w-0 flex-1 truncate">{c.name || "Untitled"}</span>
               {value === c.id && <Check className="size-3.5" />}
             </button>
@@ -133,7 +167,7 @@ export function LabelMenu({ value, onChange, big = false }) {
         <PopoverTrigger
           data-tour="label-button"
           onClick={(e) => e.stopPropagation()}
-          style={current ? chipStyle(current.id) : undefined}
+          style={current ? chipStyle(current) : undefined}
           className={cn(
             "cursor-pointer transition-[color,opacity]",
             // Select label is blue from the start, not only under the pointer
@@ -181,6 +215,8 @@ export function LabelMenu({ value, onChange, big = false }) {
             </div>
           ))
         )}
+        {/* the picked label's colour, just above New category */}
+        {categories.canWrite && current && <ColourRow category={current} />}
         {categories.canWrite &&
           (naming == null ? (
             <button type="button" onClick={() => setNaming("")} className={cn(ROW, "mt-0.5 border-t border-foreground/10 pt-2 text-muted-foreground")}>

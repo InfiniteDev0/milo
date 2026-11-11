@@ -7,14 +7,27 @@ import { createClient } from "@/lib/supabase/client";
 import { createRowQueue } from "./row-queue";
 
 const COLUMNS = "id, parent_id, name, icon, favorite, position, created_at, updated_at";
-// newer columns, newest first: covers with 0021, the dragged order of its notes and tasks with 0022.
-// Until one is applied, categories load (and save) without it and anything newer
-const TRIES = [`${COLUMNS}, cover, cover_y, item_order`, `${COLUMNS}, cover, cover_y`, COLUMNS];
+// newer columns, newest first: covers with 0021, the dragged order of its notes and tasks with 0022,
+// a picked label colour with 0023. Until one is applied, categories load (and save) without it and
+// anything newer
+const TRIES = [
+  `${COLUMNS}, cover, cover_y, item_order, color`,
+  `${COLUMNS}, cover, cover_y, item_order`,
+  `${COLUMNS}, cover, cover_y`,
+  COLUMNS,
+];
 // whether the database has covers yet (0021) and orders (0022), learned by the last listCategories()
 let covers = false;
 let orders = false;
+let colors = false;
 export const categoryCovers = () => covers;
 // asks again before saying no, as checkCovers does
+export async function checkColors() {
+  if (colors) return true;
+  const { error } = await createClient().from("categories").select("color").limit(1);
+  colors = !error;
+  return colors;
+}
 export async function checkOrders() {
   if (orders) return true;
   const { error } = await createClient().from("categories").select("item_order").limit(1);
@@ -29,11 +42,14 @@ export async function checkCovers() {
   return covers;
 }
 
+// a category's name always starts with a capital: "projects" reads "Projects"
+export const capital = (name) => (name ? name.charAt(0).toUpperCase() + name.slice(1) : name);
+
 const fromRow = (r) => ({
   id: r.id,
   // set for a subcategory: the category it sits in
   parentId: r.parent_id ?? null,
-  name: r.name,
+  name: capital(r.name),
   icon: r.icon ?? null,
   // its page's banner picture; undefined before 0021
   cover: "cover" in r ? (r.cover ?? null) : undefined,
@@ -41,6 +57,8 @@ const fromRow = (r) => ({
   coverY: r.cover_y ?? 50,
   // the order its notes and tasks were dragged into: { notes: [ids], tasks: [ids] }
   itemOrder: r.item_order ?? {},
+  // the colour picked for its label; null for the one it gets on its own
+  color: r.color ?? null,
   favorite: r.favorite,
   position: r.position,
   createdAt: Date.parse(r.created_at),
@@ -58,6 +76,7 @@ export async function listCategories() {
     if (error?.code !== "42703") {
       covers = columns.includes("cover");
       orders = columns.includes("item_order");
+      colors = columns.includes("color");
       break;
     }
   }
@@ -71,12 +90,13 @@ function saveCategory(userId, c) {
     id: c.id,
     user_id: userId,
     parent_id: c.parentId ?? null,
-    name: c.name ?? "",
+    name: capital(c.name ?? ""),
     icon: c.icon ?? null,
     favorite: c.favorite ?? false,
     position: c.position ?? 0,
     ...(covers && { cover: c.cover ?? null, cover_y: Math.round(c.coverY ?? 50) }),
     ...(orders && { item_order: c.itemOrder ?? {} }),
+    ...(colors && { color: c.color ?? null }),
   });
 }
 

@@ -10,7 +10,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { categoryQueue, listCategories } from "@/lib/db/categories";
+import { capital, categoryQueue, listCategories } from "@/lib/db/categories";
 import { playTask, playTuck } from "@/lib/sound";
 import { useNotes } from "./notes-provider";
 import { showUndoToast } from "./undo-toast";
@@ -75,7 +75,7 @@ export function CategoriesProvider({ children }) {
     ({ name = "", parentId = null, icon = null } = {}) => {
       if (!canWrite) return null;
       const now = Date.now();
-      const c = { id: crypto.randomUUID(), parentId, name, icon, favorite: false, position: nextPosition(parentId), createdAt: now, editedAt: now };
+      const c = { id: crypto.randomUUID(), parentId, name: capital(name), icon, favorite: false, position: nextPosition(parentId), createdAt: now, editedAt: now };
       setList((all) => [...all, c]);
       save(c);
       // made with a name (from Move to or a label): that's the step; an unnamed one counts once it's named
@@ -189,7 +189,7 @@ export function CategoriesProvider({ children }) {
       move,
       trash,
       rename: (id, name) => {
-        patch(id, { name }, 600);
+        patch(id, { name: capital(name) }, 600);
         if (name.trim()) markStep("make-category");
       },
       setIcon: (id, icon) => {
@@ -202,6 +202,8 @@ export function CategoriesProvider({ children }) {
         patch(id, { cover, coverY: 50 });
         if (cover) markStep("category-cover");
       },
+      // the colour picked for its label (a hex), or null for its own
+      setColor: (id, color) => patch(id, { color }),
       // where the picture sits in the band, from Reposition
       setCoverY: (id, coverY) => patch(id, { coverY }),
       // the order its notes or tasks were dragged into on its page. kind: "notes" | "tasks"
