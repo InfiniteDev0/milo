@@ -55,7 +55,7 @@ export function SidebarToggle() {
         aria-label={open ? `Collapse ${what}` : `Open ${what}`}
         title={notes ? (open ? `Close ${what}` : `Open ${what}`) : undefined}
         aria-expanded={open}
-        className="flex h-10 w-full cursor-pointer items-center gap-3 rounded-md px-3 text-start text-base font-semibold text-sidebar-foreground transition-colors hover:bg-white/10 group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:px-0"
+        className="flex h-10 w-full cursor-pointer items-center gap-3 rounded-md px-3 text-start text-base font-semibold text-sidebar-foreground transition-colors hover:bg-(--rail-hover) group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:px-0"
       >
         <Icon className="size-5 shrink-0" strokeWidth={2.5} />
         <span className="truncate text-sm group-data-[collapsible=icon]:hidden">Collapse</span>

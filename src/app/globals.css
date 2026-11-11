@@ -576,6 +576,10 @@ a{
   --theme-accent: #2f80ed;
   /* the sidebar: black, or a deep shade of the picked colour */
   --rail: #000000;
+  /* its tiles (picked, under the pointer) and its icons at rest */
+  --rail-tile: rgb(255 255 255 / 0.2);
+  --rail-hover: rgb(255 255 255 / 0.1);
+  --rail-icon: rgb(255 255 255 / 0.5);
 }
 :root[data-accent="purple"] { --theme-colour: #7b68ee; }
 :root[data-accent="blue"] { --theme-colour: #1090e0; }
@@ -593,4 +597,8 @@ a{
   --solid-lift: color-mix(in srgb, var(--theme-colour) 65%, black);
   --theme-accent: var(--theme-colour, #2f80ed);
   --rail: color-mix(in srgb, var(--theme-colour, #000) 78%, black);
+  /* on a coloured rail: darker shades of it, and icons tinted with it */
+  --rail-tile: color-mix(in srgb, var(--rail) 62%, black);
+  --rail-hover: color-mix(in srgb, var(--rail) 80%, black);
+  --rail-icon: color-mix(in srgb, var(--theme-colour, #fff) 35%, white);
 }
