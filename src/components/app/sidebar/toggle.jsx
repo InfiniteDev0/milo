@@ -48,8 +48,8 @@ export function SidebarToggle() {
         notes && open ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100",
       )}
     >
-    {/* clipped top to bottom only, so the rounded tile keeps its sides */}
-    <div className="flex min-h-0 flex-col gap-3 overflow-x-visible overflow-y-clip pt-2 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
+    {/* clipped top to bottom only; folded, it spans the whole rail so the tile centres like the pages' */}
+    <div className="flex min-h-0 flex-col gap-3 overflow-x-visible overflow-y-clip pt-2 group-data-[collapsible=icon]:-mx-2 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
       <button
         type="button"
         onClick={press}
