@@ -47,7 +47,7 @@ export function FloatingTimer({ title, running, spent, onPause, onResume, onDone
   };
   return (
     // Milo's face's height and corners (size-12, rounded-xl), level with it, and flat like it
-    <div data-tour="floating-timer" className="group/timer fixed right-[5.5rem] bottom-12 z-40 flex h-12 items-center gap-5 rounded-xl bg-black pr-2 pl-3.5 text-white">
+    <div data-tour="floating-timer" className="group/timer fixed right-[5.5rem] bottom-12 z-40 flex max-md:right-4 max-md:bottom-[calc(env(safe-area-inset-bottom)+5.75rem)] h-12 items-center gap-5 rounded-xl bg-black pr-2 pl-3.5 text-white">
       <div className="flex min-w-0 flex-col">
         <span className={cn("font-mono text-lg leading-none tabular-nums", !running && "text-white/45")}>{clockOf(spent(now))}</span>
         <span className="max-w-40 truncate pt-0.5 text-[11px] font-semibold leading-tight">{title || "Untitled task"}</span>

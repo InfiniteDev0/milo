@@ -73,6 +73,14 @@ function daysOfYear(today) {
 }
 
 const rootPx = () => parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+// a column's width in px: 18rem, or on a phone the screen less the row's padding (one day a screen)
+const columnPx = () =>
+  window.matchMedia("(max-width: 767px)").matches ? window.innerWidth - 2 * rootPx() : COLUMN_REM * rootPx();
+const onResize = (fn) => {
+  window.addEventListener("resize", fn);
+  return () => window.removeEventListener("resize", fn);
+};
+const columnOnServer = () => COLUMN_REM * 16;
 
 // the dates are the browser's, so the server renders none rather than guess
 const subscribe = () => () => {};
@@ -97,7 +105,8 @@ export function TasksView() {
 
   // which days are drawn: [first, last]
   const [range, setRange] = useState([0, -1]);
-  const stepPx = useCallback(() => (COLUMN_REM + GAP_REM) * rootPx(), []);
+  const colPx = useSyncExternalStore(onResize, columnPx, columnOnServer);
+  const stepPx = useCallback(() => colPx + GAP_REM * rootPx(), [colPx]);
 
   const measure = useCallback(() => {
     const row = rowRef.current;
@@ -465,14 +474,16 @@ export function TasksView() {
           ref={rowRef}
           // its own scrollbar is hidden: the long one below drives it
           // sideways only: each day scrolls its own tasks, under its pinned header
-          className="scrollbar-none min-h-0 flex-1 overflow-x-auto overflow-y-hidden bg-muted/30 px-4 pt-2"
+          // phones: one day a screen, snapping into place as you swipe
+          className="scrollbar-none min-h-0 flex-1 overflow-x-auto overflow-y-hidden bg-muted/30 px-4 pt-2 max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4"
         >
           {/* the whole year's width; the days before the drawn ones are padding */}
           <div
             className="flex h-full gap-6"
             style={{
-              width: `${days.length * (COLUMN_REM + GAP_REM) - GAP_REM}rem`,
-              paddingLeft: `${first * (COLUMN_REM + GAP_REM)}rem`,
+              "--day-col": `${colPx}px`,
+              width: `calc(${days.length} * (${colPx}px + ${GAP_REM}rem) - ${GAP_REM}rem)`,
+              paddingLeft: `calc(${first} * (${colPx}px + ${GAP_REM}rem))`,
             }}
           >
             {shown.map((d) => (
@@ -508,7 +519,10 @@ export function TasksView() {
           )}
         </DragOverlay>
       </DndContext>
-      <LongScrollbar targetRef={rowRef} />
+      {/* phones swipe a day at a time instead */}
+      <div className="max-md:hidden">
+        <LongScrollbar targetRef={rowRef} />
+      </div>
       {/* the clock that's running, at the bottom right */}
       <TooltipProvider delay={300}>
         <RunningTimer tasks={tasks} onPatch={update} onDone={toggle} />

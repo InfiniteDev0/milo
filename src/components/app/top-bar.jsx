@@ -3,7 +3,7 @@
 // The bar across the top, as Manasik's: no line under it. Your workspace and
 // today at the start, as ClickUp's; light or dark (beui's rectangle switch: the new
 // theme wipes up the page), search, Tasks or Blocks, your pinned tools and you at the
-// end. Phones get a button for the sidebar sheet.
+// end. Phones don't get it: mobile/header.jsx and the tab bar take its place.
 
 import { MenuIcon } from "lucide-react";
 import { WorkspaceMenu } from "./workspace-menu";
@@ -19,7 +19,8 @@ export function TopBar({ user }) {
   const { toggleSidebar } = useSidebar();
 
   return (
-    <div className="relative flex h-11 shrink-0 items-center gap-2 px-2 py-1.5">
+    // phones have their own header and tab bar (mobile/)
+    <div className="relative flex h-11 shrink-0 items-center gap-2 px-2 py-1.5 max-md:hidden">
       <button
         type="button"
         onClick={toggleSidebar}

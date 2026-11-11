@@ -167,7 +167,8 @@ export function WhatsNew() {
 .whats-new li svg { color: #00b86b !important; }`}</style>
     )}
     {/* above Milo's face (bottom-12, 3rem tall), its right edge level with it, and above the blur */}
-    <div className="fixed right-6 bottom-[6.75rem] z-[45] w-72 max-w-[calc(100vw-2rem)]">
+    {/* phones: above the tab bar instead */}
+    <div className="fixed right-6 bottom-[6.75rem] z-[45] w-72 max-w-[calc(100vw-2rem)] max-md:right-4 max-md:bottom-[calc(env(safe-area-inset-bottom)+5.75rem)]">
       {/* its own grey in light mode (the page is white), the popover colour in dark; a firm edge, no shadow */}
       <div className="relative rounded-2xl border border-foreground/15 bg-muted dark:border-border dark:bg-popover">
         <TodoList

@@ -19,6 +19,9 @@ export const metadata = {
     "Design the shape of your month. Milo runs the day — one block at a time, and nothing ever goes overdue.",
 };
 
+// phones: full width, and the page may run under the notch and home bar (safe areas pad it back)
+export const viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
+
 // Fonts, globals, html/body only. Navbar and footer live in (marketing)/layout.js
 // so auth and app routes can render without them.
 export default function RootLayout({ children }) {

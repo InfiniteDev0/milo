@@ -6,10 +6,11 @@
    half, below it if you're on its bottom half. The dragging itself is dnd-kit,
    run from index.jsx. */
 
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { specialDays } from "@/lib/special-days";
 import { cn } from "@/lib/utils";
+import { clearDraft, onDraft, peekDraft } from "@/lib/day-draft";
 import { AddTask } from "./add-task";
 import { DraftCard, TaskCard } from "./task-card";
 import { CardMenu } from "./card-menu";
@@ -60,12 +61,21 @@ export const DayColumn = memo(function DayColumn({ dayKey, date, isToday, tasks,
   const doneCount = tasks.filter((t) => t.done).length + repeats.filter((r) => r.task.done).length;
   // how many it holds in all; shown on its own, never as "1 of 3"
   const total = tasks.length + repeats.length;
-  const [drafting, setDrafting] = useState(false);
+  // "New task" from the phone's + opens today's draft, whether this column was up yet or not
+  const [drafting, setDrafting] = useState(() => isToday && peekDraft());
+  useEffect(() => {
+    if (!isToday) return;
+    clearDraft();
+    return onDraft(() => {
+      clearDraft();
+      setDrafting(true);
+    });
+  }, [isToday]);
   // the card whose name is being fixed
   const [renaming, setRenaming] = useState(null);
 
   return (
-    <section data-today={isToday || undefined} data-tour={isToday ? "today" : undefined} className="flex min-h-0 w-[18rem] shrink-0 flex-col gap-2">
+    <section data-today={isToday || undefined} data-tour={isToday ? "today" : undefined} className="flex min-h-0 w-[var(--day-col,18rem)] shrink-0 snap-start flex-col gap-2">
       <header className="flex h-10 items-center gap-2">
         <h2 className="text-lg font-semibold">
           {/* today says so by its weekday in the theme colour, no word beside it */}

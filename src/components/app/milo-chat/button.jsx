@@ -27,7 +27,8 @@ export function MiloButton({ open, onOpen }) {
               type="button"
               onClick={onOpen}
               aria-label="Ask Milo"
-              className="fixed bottom-12 right-6 z-40 flex size-12 cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-chip shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-transform hover:scale-105"
+              // phones: Milo sits in the header instead, clear of the tab bar
+              className="fixed bottom-12 right-6 z-40 flex size-12 max-md:hidden cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-chip shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-transform hover:scale-105"
             >
               <ShellFace className="size-12 touch-none select-none" />
             </button>

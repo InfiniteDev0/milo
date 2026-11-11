@@ -46,7 +46,7 @@ export function SidePanel({
   const shelved = archived.filter((b) => notes.some((n) => n.blockId === b.id));
 
   return (
-    <aside className="flex w-[17rem] shrink-0 flex-col gap-4 border-r border-border px-3 pb-3 pt-3">
+    <aside className="flex w-[17rem] shrink-0 flex-col max-md:w-full gap-4 border-r border-border px-3 pb-3 pt-3">
       <SideHeader title={section === "reminders" ? "Reminders" : "Notes"} query={query} onQuery={onQuery} onClose={onClose} />
 
       {/* Reminders shows none of the notes side yet: only the search and the tabs */}

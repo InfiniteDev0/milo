@@ -34,6 +34,8 @@ import { NotePage } from "../tray/note-page";
 import { SidePanel } from "./side-panel";
 import { usePreference } from "@/hooks/use-preference";
 import { NOTES_SIDEBAR, SIDEBAR_KEY } from "@/lib/notes-sidebar";
+import { usePhone } from "@/hooks/use-phone";
+import { PanelLeft } from "lucide-react";
 import { ComingSoonArt } from "../icons/coming-soon-art";
 import { useCategories } from "../categories-provider";
 import { TrashView } from "./trash-view";
@@ -69,6 +71,13 @@ export function NotesView() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+  // phones: the side is a drawer over the page, shut until opened, and shut again once you pick
+  const phone = usePhone();
+  const [drawer, setDrawer] = useState(false);
+  const picked = (fn) => (...args) => {
+    setDrawer(false);
+    fn(...args);
+  };
   const categories = useCategories();
   const router = useRouter();
   const pathname = usePathname();
@@ -145,13 +154,22 @@ export function NotesView() {
       <DateWheel open={wheel} onOpenChange={setWheel} onPick={setDay} initial={day} years={wheelYears} />
       {/* an open note takes the whole page, so the side section steps aside */}
       {/* folded with « or the rail's »: it slides shut and open like an accordion */}
+      {/* phones: a tap beside the drawer shuts it */}
+      {!open && phone && drawer && <button type="button" aria-label="Close" onClick={() => setDrawer(false)} className="fixed inset-0 z-40 bg-black/30 md:hidden" />}
       {!open && (
         <div
-          inert={!side}
-          className={cn("flex shrink-0 overflow-hidden transition-[width,opacity] duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)]", side ? "w-[17rem] opacity-100" : "w-0 opacity-0")}
+          inert={phone ? !drawer : !side}
+          className={cn(
+            "flex shrink-0 overflow-hidden transition-[width,opacity,translate] duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)]",
+            side ? "md:w-[17rem] md:opacity-100" : "md:w-0 md:opacity-0",
+            // phones: slides in from the left over the page
+            "max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:w-[min(20rem,85vw)] max-md:bg-card max-md:pt-[env(safe-area-inset-top)] max-md:shadow-2xl",
+            drawer ? "max-md:translate-x-0" : "max-md:-translate-x-full",
+          )}
         >
         <SidePanel
           onClose={() => {
+            if (phone) return setDrawer(false);
             // a hidden search would still filter: let it go with the section
             setQuery("");
             toggleSide();
@@ -166,17 +184,17 @@ export function NotesView() {
           query={query}
           onQuery={setQuery}
           place={place}
-          onPlace={(p) => {
+          onPlace={picked((p) => {
             setPlace(p);
             if (page) setPage(null);
-          }}
+          })}
           categories={categories}
           category={category?.id ?? null}
-          onCategory={setCategory}
-          onCategoryAdd={canWrite ? addToCategory : undefined}
-          onOpenNote={(n, id) => navigate({ noteId: n.id, keep: id })}
+          onCategory={picked(setCategory)}
+          onCategoryAdd={canWrite ? picked(addToCategory) : undefined}
+          onOpenNote={picked((n, id) => navigate({ noteId: n.id, keep: id }))}
           shared={shared}
-          onShared={() => navigate({ shared: true, keep: null })}
+          onShared={picked(() => navigate({ shared: true, keep: null }))}
         />
         </div>
       )}
@@ -188,7 +206,11 @@ export function NotesView() {
             and the boxes sit centred on the same line */}
         {/* a category is a page of its own, with its own bar */}
         {!open && !(category && !page) && (
-          <div className="flex h-11 shrink-0 items-center gap-5 border-b border-border px-5">
+          // phones: the row scrolls sideways, and starts with the way to the drawer
+          <div className="flex h-11 shrink-0 items-center gap-5 scrollbar-none border-b border-border px-5 max-md:gap-4 max-md:overflow-x-auto max-md:px-3">
+            <button type="button" onClick={() => setDrawer(true)} aria-label="Open the notes sidebar" className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground md:hidden">
+              <PanelLeft className="size-5" />
+            </button>
             {/* the blank new page needs a way back (an open note hides this row and has its own) */}
             {page && (
               <button

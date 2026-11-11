@@ -51,6 +51,13 @@ export function MiloChat() {
   const router = useRouter();
   const onNotesPage = usePathname().startsWith("/notes");
 
+  // the phone header's face opens it
+  useEffect(() => {
+    const show = () => setOpen(true);
+    window.addEventListener("milo:chat", show);
+    return () => window.removeEventListener("milo:chat", show);
+  }, []);
+
   // Ctrl+J (⌘J on a Mac) shows and hides it from anywhere, as Notion's
   useEffect(() => {
     const onKey = (e) => {

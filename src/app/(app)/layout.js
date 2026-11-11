@@ -20,6 +20,8 @@ import { ViewOnly } from "@/components/app/view-only";
 import { StopBlocksInTasksView } from "@/components/app/tasks-view/stop-blocks";
 import { UserProvider } from "@/components/app/user-provider";
 import { WhatsNew } from "@/components/app/whats-new";
+import { MobileHeader } from "@/components/app/mobile/header";
+import { MobileTabBar } from "@/components/app/mobile/tab-bar";
 import { ThemeColourSync } from "@/components/app/theme-colour-sync";
 import { requireUser } from "@/lib/session";
 
@@ -65,8 +67,11 @@ export default async function AppLayout({ children }) {
         <div className="flex min-h-0 flex-1">
           {/* below the top bar (h-11), not over it */}
           <AppSidebar variant="inset" className="top-11 bottom-0 h-auto pt-0" />
-          <SidebarInset className="min-h-0 overflow-hidden bg-card max-md:m-2 max-md:mt-0 max-md:rounded-sm md:mt-0! md:rounded-sm!">
-            {children}
+          {/* phones: the whole screen, its header on top, the page under it with room for the floating bar */}
+          <SidebarInset className="min-h-0 overflow-hidden bg-card max-md:fixed max-md:inset-0 max-md:m-0 max-md:rounded-none md:mt-0! md:rounded-sm!">
+            <MobileHeader user={me} />
+            <div className="flex min-h-0 flex-1 flex-col max-md:pb-[calc(env(safe-area-inset-bottom)+5.25rem)]">{children}</div>
+            <MobileTabBar />
           </SidebarInset>
         </div>
       </SidebarProvider>
