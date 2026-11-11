@@ -69,18 +69,18 @@ export function MiloChat() {
     window.setTimeout(run, 120);
   };
 
-  // mood: the face Milo makes while you're on it
+  // mood: the face Milo makes while you're on it — only the warm ones (focused reads as cross, peek as lost)
   const STARTERS = [
-    { icon: Search, label: "Search for anything", mood: "peek", run: () => window.dispatchEvent(new Event("milo:search")) },
-    { icon: Sunrise, label: "Plan my day", mood: "focused", run: () => window.dispatchEvent(new CustomEvent("milo:day-ahead", { detail: "today" })) },
+    { icon: Search, label: "Search for anything", mood: "happy", run: () => window.dispatchEvent(new Event("milo:search")) },
+    { icon: Sunrise, label: "Plan my day", mood: "cheer", run: () => window.dispatchEvent(new CustomEvent("milo:day-ahead", { detail: "today" })) },
     {
       icon: NotebookPen,
       label: "Write a note",
-      mood: "happy",
+      mood: "proud",
       // the Notes page has its own sheet, so the tray isn't there to open
       run: () => (onNotesPage ? router.push("/notes") : window.dispatchEvent(new Event("milo:open-notes"))),
     },
-    { icon: BookOpen, label: "Write in my journal", mood: "proud", run: () => router.push("/journal") },
+    { icon: BookOpen, label: "Write in my journal", mood: "happy", run: () => router.push("/journal") },
   ];
 
   const send = (text) =>
