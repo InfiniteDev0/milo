@@ -30,7 +30,12 @@ function clockOf(ms) {
 // the time now, read when a button is pressed (never while drawing)
 const nowMs = () => Date.now();
 
-const ROUND = "flex size-8 cursor-pointer items-center justify-center rounded-full bg-white transition-transform hover:scale-105";
+const ROUND = "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white transition-transform hover:scale-105";
+// the accordion's ease, a touch slower so the opening reads
+const EASE = "duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)]";
+// a hover button arriving: from small and clear to its size (and back as the pointer leaves)
+const REVEAL =
+  "scale-75 opacity-0 transition-[scale,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-focus-within/timer:scale-100 group-focus-within/timer:opacity-100 group-hover/timer:scale-100 group-hover/timer:opacity-100 hover:scale-105";
 
 // spent(now): the time on it so far. running: its clock is moving
 export function FloatingTimer({ title, running, spent, onPause, onResume, onDone, onStop }) {
@@ -47,19 +52,22 @@ export function FloatingTimer({ title, running, spent, onPause, onResume, onDone
         <span className={cn("font-mono text-lg leading-none tabular-nums", !running && "text-white/45")}>{clockOf(spent(now))}</span>
         <span className="max-w-40 truncate pt-0.5 text-[11px] font-semibold leading-tight">{title || "Untitled task"}</span>
       </div>
-      <div className="flex items-center gap-2">
-        {/* on hover: Done and Stop join Pause / Play */}
-        <span className="hidden items-center gap-2 group-focus-within/timer:flex group-hover/timer:flex">
-          <Tip label="Done">
-            <button type="button" onClick={used(onDone)} aria-label="Done" className={ROUND}>
-              <Check className="size-4 text-[#00b86b]" strokeWidth={3} />
-            </button>
-          </Tip>
-          <Tip label="Stop">
-            <button type="button" onClick={used(onStop)} aria-label="Stop the timer" className={ROUND}>
-              <Square className="size-3.5 fill-[#ef4444] text-[#ef4444]" />
-            </button>
-          </Tip>
+      <div className="flex items-center">
+        {/* on hover: Done and Stop slide open beside Pause / Play — the column eases from nothing
+            to its width (the accordion's ease), and each button fades and grows in after it */}
+        <span className={cn("grid grid-cols-[0fr] opacity-0 transition-[grid-template-columns,opacity]", EASE, "group-focus-within/timer:grid-cols-[1fr] group-focus-within/timer:opacity-100 group-hover/timer:grid-cols-[1fr] group-hover/timer:opacity-100")}>
+          <span className="flex min-w-0 items-center gap-2 overflow-hidden py-1 ps-0.5 pe-2">
+            <Tip label="Done">
+              <button type="button" onClick={used(onDone)} aria-label="Done" className={cn(ROUND, REVEAL, "delay-75")}>
+                <Check className="size-4 text-[#00b86b]" strokeWidth={3} />
+              </button>
+            </Tip>
+            <Tip label="Stop">
+              <button type="button" onClick={used(onStop)} aria-label="Stop the timer" className={cn(ROUND, REVEAL, "delay-150")}>
+                <Square className="size-3.5 fill-[#ef4444] text-[#ef4444]" />
+              </button>
+            </Tip>
+          </span>
         </span>
         <Tip label={running ? "Pause" : "Resume"}>
           <button type="button" onClick={used(running ? onPause : onResume)} aria-label={running ? "Pause" : "Resume"} className={ROUND}>

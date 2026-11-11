@@ -12,6 +12,38 @@ const PT = [
 const CLOSED = new Set(["sclera_L", "sclera_R", "pupil_L", "pupil_R", "mouth", "tongue"]);
 
 const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+/* ---------- the turn: the face is drawn on a ball (after Bencho's Eye tracker) ----------
+   The easy version slides the pupils toward the pointer and it reads as stickers. Here every
+   point of the face sits on a sphere and the sphere turns toward you: the eye heading for the
+   rim travels less and narrows while the other swings wide. That foreshortening is what makes a
+   flat face read as round. The pupils still look inside their eyes on top of it.
+   FACE: the sphere's centre and radius in viewBox units (the features span x 148..1962,
+   y 50..1610). TURN: the furthest it turns, as a fraction of the radius (~17 degrees): any more
+   and the face slides out of Milo's square. */
+const FACE = { x: 1055, y: 860, r: 1300 };
+const TURN = 0.3;
+/* how far toward the pointer it turns (0..1), and the spring's bounce (0..1) */
+const FOLLOW = 0.6;
+const BOUNCE = 0.3;
+
+/** A point mover for one turn: (x, y) on the face, to where it shows once the ball has turned. */
+function turner(tx, ty) {
+  const yaw = Math.asin(clamp(tx, -0.92, 0.92));
+  const pitch = -Math.asin(clamp(ty, -0.92, 0.92));
+  const cy = Math.cos(yaw), sy = Math.sin(yaw);
+  const cp = Math.cos(pitch), sp = Math.sin(pitch);
+  return (x, y) => {
+    const x0 = (x - FACE.x) / FACE.r, y0 = (y - FACE.y) / FACE.r;
+    const z0 = Math.sqrt(Math.max(0.02, 1 - x0 * x0 - y0 * y0));
+    // yaw about the vertical, then pitch about the horizontal
+    const x1 = x0 * cy + z0 * sy;
+    const z1 = -x0 * sy + z0 * cy;
+    const y2 = y0 * cp - z1 * sp;
+    return [FACE.x + x1 * FACE.r, FACE.y + y2 * FACE.r];
+  };
+}
 
 /** Bounds of a point list: [minX, maxX, minY, maxY]. */
 function bounds(p){let a=1e9,b=-1e9,c=1e9,d=-1e9;
@@ -107,7 +139,7 @@ export default function MiloFace({
   const hover = useRef(false);
   const lastActive = useRef(Date.now());
 
-  const g = useRef({ x: 0, y: 0, tx: 0, ty: 0 });   // gaze current / target
+  const g = useRef({ x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0 });   // the turn: where, how fast, heading for
   const blinkRef = useRef({ start: -1, next: 0 });
 
   // A driven mood is read through a ref so changing it morphs from wherever the
@@ -147,6 +179,10 @@ export default function MiloFace({
         if (!e[k]) return;
       }
       const gx = g.current.x, gy = g.current.y;
+      const turn = turner(gx, gy);
+      const on = (pts) => pts.map(([x, y]) => turn(x, y));
+      // the pupils look the whole way inside their eyes while the head turns only part of it
+      const lx = clamp(gx / TURN, -1, 1), ly = clamp(gy / TURN, -1, 1);
 
       // blink: squash the eye vertically about its own centre
       let k = 1;
@@ -159,34 +195,36 @@ export default function MiloFace({
       for (const s of ["L", "R"]) {
         // travel is recomputed from the live shapes, so the pupil can never
         // slide off an eye that has changed size in the current pose
-        const [px, py, cy] = fit(cur["sclera_" + s], cur["pupil_" + s], gx, gy, 34);
+        const [px, py, cy] = fit(cur["sclera_" + s], cur["pupil_" + s], lx, ly, 34);
 
         const sc = cur["sclera_" + s].map(([x, y]) => [x, cy + (y - cy) * k]);
         const pu = cur["pupil_" + s].map(([x, y]) => [x + px, cy + (y + py - cy) * k]);
-        e["s" + s].setAttribute("d", toPath(sc, true));
+        e["s" + s].setAttribute("d", toPath(on(sc), true));
         e["s" + s].setAttribute("fill", cur.sf);
-        e["p" + s].setAttribute("d", toPath(pu, true));
+        e["p" + s].setAttribute("d", toPath(on(pu), true));
 
-        // brows drift with the gaze — small, but it sells it
-        const bw = cur["brow_" + s].map(([x, y]) => [x + gx * 40, y + gy * 26]);
-        e["w" + s].setAttribute("d", toPath(bw, false));
+        // the brows ride the ball with the eyes
+        e["w" + s].setAttribute("d", toPath(on(cur["brow_" + s]), false));
 
         const b = cur["blush_" + s];
         const bl = e["b" + s];
-        bl.setAttribute("cx", b.c[0].toFixed(1));
-        bl.setAttribute("cy", b.c[1].toFixed(1));
-        bl.setAttribute("rx", Math.max(b.rx, 0.1).toFixed(1));
+        // the cheek's centre moves with the ball; its width narrows as the ball turns it away
+        const [bx, by] = turn(b.c[0], b.c[1]);
+        const wide = (turn(b.c[0] + b.rx, b.c[1])[0] - turn(b.c[0] - b.rx, b.c[1])[0]) / 2;
+        bl.setAttribute("cx", bx.toFixed(1));
+        bl.setAttribute("cy", by.toFixed(1));
+        bl.setAttribute("rx", Math.max(wide, 0.1).toFixed(1));
         bl.setAttribute("ry", Math.max(b.ry, 0.1).toFixed(1));
         bl.setAttribute("fill", cur.bf);
         bl.setAttribute(
           "transform",
-          `rotate(${b.a.toFixed(1)} ${b.c[0].toFixed(1)} ${b.c[1].toFixed(1)})`
+          `rotate(${b.a.toFixed(1)} ${bx.toFixed(1)} ${by.toFixed(1)})`
         );
       }
 
-      e.mo.setAttribute("d", toPath(cur.mouth, true));
+      e.mo.setAttribute("d", toPath(on(cur.mouth), true));
       e.mo.setAttribute("fill-opacity", cur.mf.toFixed(2));
-      e.tg.setAttribute("d", toPath(cur.tongue, true));
+      e.tg.setAttribute("d", toPath(on(cur.tongue), true));
       e.tg.setAttribute("opacity", cur.ta.toFixed(2));
     };
 
@@ -198,13 +236,20 @@ export default function MiloFace({
       const want = POSES[resolve()] || POSES.idle;
       const moving = ease(cur, want, reduce ? 1 : 1 - Math.pow(0.0002, dt));
 
+      // one spring on the turn, in sixtieths of a second, so a dropped frame settles the same
       let gazeMoving = false;
       if (gaze && !reduce) {
-        const ga = 1 - Math.pow(0.0005, dt);
-        const nx = lerp(g.current.x, g.current.tx, ga);
-        const ny = lerp(g.current.y, g.current.ty, ga);
-        gazeMoving = Math.abs(nx - g.current.x) > 1e-4 || Math.abs(ny - g.current.y) > 1e-4;
-        g.current.x = nx; g.current.y = ny;
+        const t = g.current;
+        const f = Math.min(2.5, dt * 60);
+        const k = 0.06;
+        const d = 0.34 - BOUNCE * 0.22;
+        t.vx += ((t.tx - t.x) * k - t.vx * d) * f;
+        t.vy += ((t.ty - t.y) * k - t.vy * d) * f;
+        t.x += t.vx * f;
+        t.y += t.vy * f;
+        gazeMoving = Math.abs(t.vx) > 1e-5 || Math.abs(t.vy) > 1e-5 || Math.abs(t.tx - t.x) > 1e-4 || Math.abs(t.ty - t.y) > 1e-4;
+        // settled: snap, so the loop stops repainting
+        if (!gazeMoving) { t.x = t.tx; t.y = t.ty; t.vx = 0; t.vy = 0; }
       }
 
       if (blink && !reduce && now > blinkRef.current.next) {
@@ -224,12 +269,18 @@ export default function MiloFace({
       lastActive.current = Date.now();
       if (!gaze || reduce || !svgRef.current) return;
       const r = svgRef.current.getBoundingClientRect();
-      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-      // saturate over roughly a third of the viewport, so it tracks near AND far
-      const span = Math.max(window.innerWidth, window.innerHeight) / 3;
-      g.current.tx = Math.max(-1, Math.min(1, (ev.clientX - cx) / span));
-      g.current.ty = Math.max(-1, Math.min(1, (ev.clientY - cy) / span));
+      const dx = ev.clientX - (r.left + r.width / 2);
+      const dy = ev.clientY - (r.top + r.height / 2);
+      const dist = Math.hypot(dx, dy) || 1;
+      // the face goes where you are: dead ahead when you're on it, turned toward a far corner
+      // the further off you are, easing out as it reaches the most it turns
+      const reach = Math.max(60, Math.min(window.innerWidth, window.innerHeight) * 0.28);
+      const far = Math.min(TURN, Math.tanh(dist / reach) * FOLLOW * 1.5 * TURN);
+      g.current.tx = (dx / dist) * far;
+      g.current.ty = (dy / dist) * far;
     };
+    // the pointer left the window: back to facing you
+    const onLeave = () => { g.current.tx = 0; g.current.ty = 0; };
 
     let lastY = window.scrollY;
     let peekCool = 0;
@@ -259,6 +310,7 @@ export default function MiloFace({
     };
 
     window.addEventListener("pointermove", onMove, { passive: true });
+    document.documentElement.addEventListener("pointerleave", onLeave);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("keydown", () => (lastActive.current = Date.now()));
     onScroll();
@@ -267,6 +319,7 @@ export default function MiloFace({
       cancelAnimationFrame(raf);
       clearTimeout(scrollEnd);
       window.removeEventListener("pointermove", onMove);
+      document.documentElement.removeEventListener("pointerleave", onLeave);
       window.removeEventListener("scroll", onScroll);
     };
   }, [gaze, blink, reactToScroll, idleAfter, instant]);

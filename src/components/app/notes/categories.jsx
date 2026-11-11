@@ -204,7 +204,7 @@ export function Categories({ categories, selected, onSelect, onAdd, onOpenNote }
               <div className="min-h-0 overflow-hidden">
                 <ul
                   className={cn(
-                    "mb-1 ms-[1.1rem] border-s border-foreground/15 transition-[translate,filter]",
+                    "mt-1 mb-1.5 ms-[1.1rem] flex flex-col gap-0.5 border-s border-foreground/15 transition-[translate,filter]",
                     EASE,
                     isOpen ? "translate-y-0 blur-none" : "-translate-y-1.5 blur-[2px]",
                   )}

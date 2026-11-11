@@ -162,8 +162,19 @@ function Form({ categoryId, onCreate, onCancel }) {
           </div>
           <div className={FIELD}>
             <span className={LABEL}>Label</span>
-            <div className="flex h-8 items-center text-sm">
-              <LabelMenu value={label} onChange={setLabel} />
+            {/* as big as No time; on hover, a grey × takes the label off */}
+            <div className="group/label flex items-center gap-1.5">
+              <LabelMenu value={label} onChange={setLabel} big />
+              {label && (
+                <button
+                  type="button"
+                  onClick={() => setLabel(null)}
+                  aria-label="Remove the label"
+                  className="flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity group-hover/label:opacity-100 hover:bg-foreground/8 hover:text-foreground focus-visible:opacity-100"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
             </div>
           </div>
         </div>

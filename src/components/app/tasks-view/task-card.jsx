@@ -5,7 +5,8 @@
    under the pointer as a drag began. The round tick, the name, the time. Under the
    name sit its tools, shown on hover — Sunsama's card:
 
-     0:00 pill   opens the time: play, Actual, Estimated
+     0:00 pill   opens the time while you set it: play and Estimated; once started,
+                 a play / pause sits beside it instead
      note        opens a note on the card
      subtasks    opens its subtasks, with Add subtask
      repeat      makes it recurring
@@ -17,7 +18,7 @@
 
 import { memo, useCallback, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { NotebookPen, Workflow } from "lucide-react";
+import { NotebookPen, Pause, Play, Workflow } from "lucide-react";
 import { clock } from "@/lib/duration";
 import { cn } from "@/lib/utils";
 import { useNow } from "@/lib/time";
@@ -147,8 +148,13 @@ const CardBody = memo(function CardBody({ nodeRef, attributes, listeners, task, 
   const ms = spentMs(task, now);
   const steps = task.steps ?? [];
 
-  const play = () =>
+  // starting closes the time panel: it's only for setting the time
+  const play = () => {
+    if (!running && open.time) toggle("time");
     onPatch(running ? { actualMs: spentMs(task, Date.now()), startedAt: null } : { startedAt: Date.now() });
+  };
+  // started at some point: pause and play live beside its time from then on
+  const started = !task.done && (running || (task.actualMs ?? 0) > 0);
 
   return (
     <div
@@ -184,6 +190,21 @@ const CardBody = memo(function CardBody({ nodeRef, attributes, listeners, task, 
           <Tip label={running ? "Time · the clock is running" : "Time: track it, or estimate it"}>
             <TimePill ms={ms} active={open.time || running} onClick={() => toggle("time")} locked={task.done} />
           </Tip>
+          {started && (
+            <Tip label={running ? "Pause" : "Carry on"}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  play();
+                }}
+                aria-label={running ? "Pause the clock" : "Start the clock again"}
+                className="-ms-1 flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                {running ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
+              </button>
+            </Tip>
+          )}
         </TooltipProvider>
       </div>
 
@@ -194,11 +215,9 @@ const CardBody = memo(function CardBody({ nodeRef, attributes, listeners, task, 
         <div onClick={(e) => e.stopPropagation()} className="flex cursor-default flex-col gap-2 pt-2">
           {open.time && (
             <TimeSection
-              actualMinutes={ms / 60000}
               running={running}
               minutes={task.minutes}
               onPlay={play}
-              onActual={(m) => onPatch({ actualMs: m * 60000, startedAt: running ? Date.now() : null })}
               onEstimate={(m) => onPatch({ minutes: m })}
             />
           )}

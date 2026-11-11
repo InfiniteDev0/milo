@@ -1,11 +1,11 @@
 "use client";
 
-// What a task card opens into, as Sunsama's cards do: the time (a play button,
-// Actual and Estimated), its subtasks, and a note. Each sits under a thin line.
+// What a task card opens into: the time (a play button and Estimated), its subtasks, and a note.
+// Each sits under a thin line.
 
 import { useState } from "react";
 import { Pause, Play, Plus, X } from "lucide-react";
-import { hm } from "@/lib/duration";
+import { presetLabel } from "@/lib/duration";
 import { cn } from "@/lib/utils";
 import { Strike } from "../strike";
 import { Tick } from "../task-bits";
@@ -29,7 +29,9 @@ function Column({ label, value, strong, onPick, tour }) {
 }
 
 // play starts the clock on this task; Actual is the time on it, Estimated your guess
-export function TimeSection({ actualMinutes, running, minutes, onPlay, onActual, onEstimate }) {
+// only open while you're setting the time: starting the clock closes it, and the card's own
+// play / pause beside its time takes over from there. The estimate reads "5 min", never "0h 5m"
+export function TimeSection({ running, minutes, onPlay, onEstimate }) {
   return (
     <div className={cn(SECTION, "flex items-center gap-2")}>
       <button
@@ -42,9 +44,7 @@ export function TimeSection({ actualMinutes, running, minutes, onPlay, onActual,
         {running ? <Pause className="size-4" /> : <Play className="size-4" />}
       </button>
       <span className="flex-1" />
-      {/* while the clock runs, the floating timer is counting; Actual comes back once it stops */}
-      {!running && <Column label="Actual" value={hm(actualMinutes)} strong={actualMinutes > 0} onPick={onActual} />}
-      <Column label="Estimated" value={hm(minutes ?? 0)} onPick={onEstimate} tour="estimate" />
+      <Column label="Estimated" value={minutes ? presetLabel(minutes) : "None"} strong={Boolean(minutes)} onPick={onEstimate} tour="estimate" />
     </div>
   );
 }

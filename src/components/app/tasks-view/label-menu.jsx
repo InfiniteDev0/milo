@@ -30,6 +30,8 @@ const chipStyle = (id) => {
   return { background: `color-mix(in srgb, ${c} 18%, transparent)`, color: `color-mix(in srgb, ${c} 85%, var(--foreground))` };
 };
 const CHIP = "flex max-w-32 shrink-0 items-center rounded-sm px-1.5 py-0.5 text-[11px] font-medium";
+// big: the size of a dialog's other choices (No time), for the New task dialog
+const BIG = "flex h-8 max-w-56 shrink-0 items-center rounded-md px-3 text-sm font-medium";
 
 // the label on a card, small, beside its name
 export function LabelChip({ categoryId }) {
@@ -94,7 +96,7 @@ export function LabelFilter({ value, onChange }) {
   );
 }
 
-export function LabelMenu({ value, onChange }) {
+export function LabelMenu({ value, onChange, big = false }) {
   const categories = useCategories();
   const [open, setOpen] = useState(false);
   // the new category's name, while it's typed
@@ -135,7 +137,11 @@ export function LabelMenu({ value, onChange }) {
           className={cn(
             "cursor-pointer transition-[color,opacity]",
             // Select label is blue from the start, not only under the pointer
-            current ? cn(CHIP, "hover:opacity-80") : "flex items-center text-[#2f80ed] hover:opacity-80",
+            current
+              ? cn(big ? BIG : CHIP, "hover:opacity-80")
+              : big
+                ? cn(BIG, "border border-[#2f80ed]/40 text-[#2f80ed] hover:bg-[#2f80ed]/10")
+                : "flex items-center text-[#2f80ed] hover:opacity-80",
           )}
         >
           {current ? (
