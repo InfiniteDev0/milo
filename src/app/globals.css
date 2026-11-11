@@ -568,3 +568,29 @@ a{
 @keyframes tms-blur-a { from { filter: blur(2px); } to { filter: blur(0); } }
 
 @keyframes tms-blur-b { from { filter: blur(2px); } to { filter: blur(0); } }
+
+/* Theme colour (Themes in the account menu): paints the strong buttons in light and dark alike.
+   It also takes over the accent (selections, Today, focus rings): blue until a colour is picked.
+   Black is the app as it ships, so it sets nothing. */
+:root {
+  --theme-accent: #2f80ed;
+  /* the sidebar: black, or a deep shade of the picked colour */
+  --rail: #000000;
+}
+:root[data-accent="purple"] { --theme-colour: #7b68ee; }
+:root[data-accent="blue"] { --theme-colour: #1090e0; }
+:root[data-accent="pink"] { --theme-colour: #ee5e99; }
+:root[data-accent="violet"] { --theme-colour: #b660e0; }
+:root[data-accent="indigo"] { --theme-colour: #6985ff; }
+:root[data-accent="orange"] { --theme-colour: #e16b16; }
+:root[data-accent="teal"] { --theme-colour: #0f9d9f; }
+:root[data-accent="bronze"] { --theme-colour: #aa8d80; }
+:root[data-accent="mint"] { --theme-colour: #3db88b; }
+:root[data-accent] {
+  --solid: var(--theme-colour, var(--foreground));
+  --solid-ink: #ffffff;
+  --solid-hover: color-mix(in srgb, var(--theme-colour) 88%, white);
+  --solid-lift: color-mix(in srgb, var(--theme-colour) 65%, black);
+  --theme-accent: var(--theme-colour, #2f80ed);
+  --rail: color-mix(in srgb, var(--theme-colour, #000) 78%, black);
+}

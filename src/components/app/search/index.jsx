@@ -91,7 +91,7 @@ function ResultIcon({ entry, active }) {
     case "block":
       return <span aria-hidden className="size-4 shrink-0 rounded-sm" style={{ background: entry.colour }} />;
     case "task":
-      return <SquareCheck className={tint("text-[#2f80ed]")} />;
+      return <SquareCheck className={tint("text-(--theme-accent)")} />;
     case "dayTask":
       return <CalendarCheck className={tint(entry.done ? "text-[#00b86b]" : "text-[#06b6d4]")} />;
     case "note":
@@ -110,7 +110,7 @@ function ResultIcon({ entry, active }) {
     case "newCategory":
       return <FolderPlus className={tint("text-[#f5a524]")} />;
     case "newTask":
-      return <CalendarPlus className={tint("text-[#2f80ed]")} />;
+      return <CalendarPlus className={tint("text-(--theme-accent)")} />;
     default:
       return null;
   }

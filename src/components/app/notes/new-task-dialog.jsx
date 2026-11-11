@@ -29,7 +29,7 @@ import { TimeField } from "./time-field";
 const ESTIMATES = [15, 30, 45, 60, 90, 120];
 // a box to type in: a border (not a ring), so the scrolling column never clips it
 const BOX =
-  "w-full rounded-lg border border-foreground/12 bg-foreground/4 px-3 outline-none transition-colors placeholder:text-muted-foreground focus:border-[#2f80ed]";
+  "w-full rounded-lg border border-foreground/12 bg-foreground/4 px-3 outline-none transition-colors placeholder:text-muted-foreground focus:border-(--theme-accent)";
 const at = (offset) => {
   const d = new Date();
   d.setHours(0, 0, 0, 0);

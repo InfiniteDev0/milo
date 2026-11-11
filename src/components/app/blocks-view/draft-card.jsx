@@ -26,7 +26,7 @@ export function BlockDraftCard({ onSave, onCancel }) {
       ref={card}
       // leaving the card (not just the name field) is what ends it
       onBlur={(e) => !card.current?.contains(e.relatedTarget) && save()}
-      className="flex flex-col gap-2.5 rounded-lg border border-[#2f80ed]/40 bg-card px-3 py-2.5"
+      className="flex flex-col gap-2.5 rounded-lg border border-(--theme-accent)/40 bg-card px-3 py-2.5"
     >
       <div className="flex items-center gap-2.5">
         <input

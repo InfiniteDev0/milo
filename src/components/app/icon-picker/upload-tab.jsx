@@ -78,7 +78,7 @@ export function UploadTab({ onPick, onCancel }) {
           onClick={() => onPick({ type: "image", src })}
           className={cn(
             "h-8 rounded-md px-3.5 text-sm font-medium text-white transition-colors",
-            src ? "cursor-pointer bg-[#2f80ed] hover:bg-[#2f80ed]/90" : "bg-[#2f80ed]/40",
+            src ? "cursor-pointer bg-(--theme-accent) hover:bg-(--theme-accent)/90" : "bg-(--theme-accent)/40",
           )}
         >
           Save

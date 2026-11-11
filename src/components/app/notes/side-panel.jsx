@@ -64,7 +64,7 @@ export function SidePanel({
             className={cn(
               ITEM,
               place == null && !category && !shared
-                ? "bg-[#2f80ed]/10 font-medium text-[#2f80ed]"
+                ? "bg-(--theme-accent)/10 font-medium text-(--theme-accent)"
                 : "text-foreground/80 hover:bg-foreground/[0.04]",
             )}
           >
@@ -77,7 +77,7 @@ export function SidePanel({
           <button
             type="button"
             onClick={onShared}
-            className={cn(ITEM, "-mt-3", shared ? "bg-[#2f80ed]/10 font-medium text-[#2f80ed]" : "text-foreground/80 hover:bg-foreground/[0.04]")}
+            className={cn(ITEM, "-mt-3", shared ? "bg-(--theme-accent)/10 font-medium text-(--theme-accent)" : "text-foreground/80 hover:bg-foreground/[0.04]")}
           >
             <UserGroup className="size-4 shrink-0" />
             <span className="flex-1">Shared</span>

@@ -39,8 +39,8 @@ import { Reveal } from "../tasks-view/reveal";
 import { useTaskNoteCount } from "../task-note-count";
 
 const CARD =
-  "group/card flex flex-col rounded-lg border border-foreground/10 bg-card px-3 py-2.5 group-data-[menu-open]/menu:border-[#2f80ed]/40";
-const TOOL = "cursor-pointer transition-colors hover:text-[#2f80ed]";
+  "group/card flex flex-col rounded-lg border border-foreground/10 bg-card px-3 py-2.5 group-data-[menu-open]/menu:border-(--theme-accent)/40";
+const TOOL = "cursor-pointer transition-colors hover:text-(--theme-accent)";
 // pinned: clicked open, so its tools stay showing without hovering
 const OPEN_NONE = { subtasks: false, pinned: false };
 
@@ -149,7 +149,7 @@ const Body = memo(function Body({ nodeRef, attributes, listeners, task, blockId,
                 }}
                 className={cn(
                   "flex size-[22px] shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors",
-                  doing ? "bg-[#2f80ed] text-white" : "text-muted-foreground hover:bg-foreground/10 hover:text-[#2f80ed]",
+                  doing ? "bg-(--theme-accent) text-white" : "text-muted-foreground hover:bg-foreground/10 hover:text-(--theme-accent)",
                 )}
               >
                 {doing ? <Pause className="size-3" fill="currentColor" /> : <Play className="size-3" fill="currentColor" />}
@@ -168,7 +168,7 @@ const Body = memo(function Body({ nodeRef, attributes, listeners, task, blockId,
               trigger={
                 <button
                   type="button"
-                  className="cursor-pointer rounded-md bg-muted px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground transition-colors hover:text-[#2f80ed]"
+                  className="cursor-pointer rounded-md bg-muted px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground transition-colors hover:text-(--theme-accent)"
                 >
                   {task.minutes ? minutesLabel(task.minutes) : "0:00"}
                 </button>
@@ -188,7 +188,7 @@ const Body = memo(function Body({ nodeRef, attributes, listeners, task, blockId,
               type="button"
               aria-label="Subtasks"
               onClick={() => toggle("subtasks")}
-              className={cn(TOOL, (open.subtasks || steps.length > 0) && "text-[#2f80ed]")}
+              className={cn(TOOL, (open.subtasks || steps.length > 0) && "text-(--theme-accent)")}
             >
               <Workflow className="size-3.5" />
             </button>
@@ -199,7 +199,7 @@ const Body = memo(function Body({ nodeRef, attributes, listeners, task, blockId,
             <button
               type="button"
               onClick={() => onNote(task)}
-              className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-[#2f80ed]"
+              className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-(--theme-accent)"
             >
               Notes
               <span className="rounded-sm bg-white px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-black dark:bg-black dark:text-white">

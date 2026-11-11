@@ -33,7 +33,7 @@ export function MoveMenu({ origin, fromBlock, onMoveToBlock, onMoveToDay, classN
         <PopoverTrigger
           aria-label="Move to"
           onClick={(e) => e.stopPropagation()}
-          className={cn("cursor-pointer transition-colors hover:text-[#2f80ed]", open && "text-[#2f80ed]", className)}
+          className={cn("cursor-pointer transition-colors hover:text-(--theme-accent)", open && "text-(--theme-accent)", className)}
         >
           <ArrowRightToLine className="size-3.5" />
         </PopoverTrigger>

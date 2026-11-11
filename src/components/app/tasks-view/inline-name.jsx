@@ -37,7 +37,7 @@ function NameInput({ value, onSave, onStop, className }) {
       onDoubleClick={keep}
       aria-label="Name"
       className={cn(
-        "field-sizing-content block w-full resize-none rounded-sm bg-background px-1 outline-none ring-1 ring-[#2f80ed] [overflow-wrap:anywhere]",
+        "field-sizing-content block w-full resize-none rounded-sm bg-background px-1 outline-none ring-1 ring-(--theme-accent) [overflow-wrap:anywhere]",
         className,
       )}
     />

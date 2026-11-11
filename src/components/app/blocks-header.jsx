@@ -32,7 +32,7 @@ export function BlocksHeader() {
       label={
         date ? (
           <>
-            <span className="font-medium text-[#2f80ed]">{weekday}</span>
+            <span className="font-medium text-(--theme-accent)">{weekday}</span>
             <span className="text-muted-foreground">&nbsp;:&nbsp;</span>
             {date}
           </>

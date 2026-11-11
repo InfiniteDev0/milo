@@ -55,7 +55,7 @@ export function DayButton() {
         className={cn(
           BOX,
           "cursor-pointer gap-1.5 font-medium transition-colors disabled:cursor-default disabled:opacity-40",
-          state === "pause" ? "border-transparent bg-[#2f80ed] text-white hover:bg-[#2f80ed]/90" : "hover:bg-muted",
+          state === "pause" ? "border-transparent bg-(--theme-accent) text-white hover:bg-(--theme-accent)/90" : "hover:bg-muted",
         )}
       >
         <Icon className="size-3.5" fill="currentColor" />

@@ -42,7 +42,7 @@ function Name({ category, renaming, onRenamed, onSelect, count }) {
           if (e.key === "Enter") e.currentTarget.blur();
           if (e.key === "Escape") onRenamed(null);
         }}
-        className="min-w-0 flex-1 rounded-sm bg-background px-1.5 py-0.5 outline-none ring-1 ring-[#2f80ed]"
+        className="min-w-0 flex-1 rounded-sm bg-background px-1.5 py-0.5 outline-none ring-1 ring-(--theme-accent)"
       />
     );
   }
@@ -86,7 +86,7 @@ export function Categories({ categories, selected, onSelect, onAdd, onOpenNote }
         fileNotes(JSON.parse(ids), c);
       },
     };
-  const LIT = "bg-[#2f80ed]/15 ring-1 ring-[#2f80ed]/60";
+  const LIT = "bg-(--theme-accent)/15 ring-1 ring-(--theme-accent)/60";
 
   const toggle = (id, to) =>
     setOpen((prev) => {

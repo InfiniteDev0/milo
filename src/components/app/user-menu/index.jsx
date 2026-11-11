@@ -10,7 +10,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
 import {
   ArrowUpRight,
   BookOpen,
@@ -29,8 +28,6 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -45,33 +42,15 @@ import { replayTour } from "../whats-new/steps";
 import { MenuStats } from "./stats";
 import { Gap, ICON_CLASS, ROW_CLASS, Row, SoonRow, Switch } from "./rows";
 import { useInstall } from "./use-install";
-
-function ThemeMenu() {
-  const { theme, setTheme } = useTheme();
-  return (
-    <DropdownMenuSub>
-      <DropdownMenuSubTrigger className={`${ROW_CLASS} data-popup-open:bg-muted [&>svg:last-child]:text-muted-foreground`}>
-        <PaintRoller className={ICON_CLASS} />
-        <span className="flex-1">Themes</span>
-      </DropdownMenuSubTrigger>
-      <DropdownMenuSubContent sideOffset={6} className="w-44 rounded-lg border border-foreground/15 bg-popover p-1.5 shadow-xl ring-0 dark:border-border dark:bg-[#161616]">
-        <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
-          {[["light", "Light"], ["dark", "Dark"], ["system", "Same as device"]].map(([v, text]) => (
-            <DropdownMenuRadioItem key={v} value={v} closeOnClick={false} className="h-8 cursor-pointer rounded-sm pl-2.5 text-sm focus:bg-muted">
-              {text}
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-      </DropdownMenuSubContent>
-    </DropdownMenuSub>
-  );
-}
+import { ThemesDialog } from "./themes-dialog";
 
 export function UserMenu({ user }) {
   const router = useRouter();
   const install = useInstall();
   const sound = usePreference(SOUND) === "on";
   const [leaving, setLeaving] = useState(false);
+  // Themes opens a dialog of its own, over the page once the menu has closed
+  const [themes, setThemes] = useState(false);
 
   const logOut = async () => {
     setLeaving(true);
@@ -86,6 +65,7 @@ export function UserMenu({ user }) {
   };
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="Your account"
@@ -98,8 +78,8 @@ export function UserMenu({ user }) {
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        // a firm edge and a real shadow: in light mode it's white over white cards, and without them it reads as part of the page
-        className="scrollbar-pill w-[22rem] max-w-[calc(100vw-1rem)] rounded-lg border border-foreground/15 bg-popover p-1.5 shadow-[0_16px_48px_-8px_rgba(0,0,0,0.28),0_2px_8px_rgba(0,0,0,0.08)] ring-0 dark:border-border dark:bg-[#161616] dark:shadow-xl"
+        // no border, a real shadow: in light mode that's what lifts it off white cards
+        className="scrollbar-pill w-[18rem] max-w-[calc(100vw-1rem)] rounded-lg bg-popover p-1.5 shadow-[0_16px_48px_-8px_rgba(0,0,0,0.28),0_2px_8px_rgba(0,0,0,0.08)] ring-0 dark:bg-[#161616] dark:shadow-xl"
       >
         {/* you, in a card, with Profile at the end */}
         <div className="flex items-center gap-3 rounded-sm bg-muted/60 p-2.5 dark:bg-white/[0.06]">
@@ -141,7 +121,7 @@ export function UserMenu({ user }) {
         <Gap />
         <Row icon={Settings} href="/settings">Settings</Row>
         <Row icon={Bell} href="/settings?tab=interruptions">Notifications</Row>
-        <ThemeMenu />
+        <Row icon={PaintRoller} onClick={() => setThemes(true)}>Themes</Row>
         <Row icon={Command} href="/settings?tab=shortcuts">Keyboard shortcuts</Row>
         {install ? (
           <Row icon={Download} onClick={install} end={<ArrowUpRight className="size-4 text-muted-foreground" />}>
@@ -156,7 +136,7 @@ export function UserMenu({ user }) {
             <CircleHelp className={ICON_CLASS} />
             <span className="flex-1">Help</span>
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent sideOffset={6} className="w-52 rounded-lg border border-foreground/15 bg-popover p-1.5 shadow-xl ring-0 dark:border-border dark:bg-[#161616]">
+          <DropdownMenuSubContent sideOffset={6} className="w-52 rounded-lg bg-popover p-1.5 shadow-xl ring-0 dark:bg-[#161616]">
             <Row icon={GraduationCap} onClick={replayTour}>
               Tutorial
             </Row>
@@ -172,5 +152,7 @@ export function UserMenu({ user }) {
         </Row>
       </DropdownMenuContent>
     </DropdownMenu>
+    <ThemesDialog open={themes} onOpenChange={setThemes} />
+    </>
   );
 }

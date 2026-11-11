@@ -65,7 +65,7 @@ function CustomRepeat({ origin, rule, onSave, onClose }) {
           value={every}
           onChange={(e) => setEvery(e.target.value)}
           aria-label="How many"
-          className="h-9 w-16 rounded-sm border border-border bg-transparent px-2.5 text-sm tabular-nums outline-none focus:ring-1 focus:ring-[#2f80ed]"
+          className="h-9 w-16 rounded-sm border border-border bg-transparent px-2.5 text-sm tabular-nums outline-none focus:ring-1 focus:ring-(--theme-accent)"
         />
         <div className="flex flex-1 gap-1 rounded-sm bg-muted p-1">
           {UNITS.map((u) => (
@@ -93,7 +93,7 @@ function CustomRepeat({ origin, rule, onSave, onClose }) {
                   aria-pressed={on}
                   // at least one day stays picked
                   onClick={() => setDays((now) => (on ? (now.length > 1 ? now.filter((x) => x !== i) : now) : [...now, i]))}
-                  className={cn("size-9 cursor-pointer rounded-full text-sm font-medium transition-colors", on ? "bg-[#2f80ed] text-white" : "bg-muted text-muted-foreground hover:text-foreground")}
+                  className={cn("size-9 cursor-pointer rounded-full text-sm font-medium transition-colors", on ? "bg-(--theme-accent) text-white" : "bg-muted text-muted-foreground hover:text-foreground")}
                 >
                   {d}
                 </button>
@@ -181,7 +181,7 @@ export function RepeatMenu({ origin, value = "none", rule, time, onChange, class
             onPointerDown={(e) => place(e.currentTarget)}
             onKeyDown={(e) => place(e.currentTarget)}
             onClick={(e) => e.stopPropagation()}
-            className={cn("cursor-pointer transition-colors hover:text-[#2f80ed]", on && "text-[#2f80ed]", className)}
+            className={cn("cursor-pointer transition-colors hover:text-(--theme-accent)", on && "text-(--theme-accent)", className)}
           >
             <Repeat className="size-3.5" />
           </DropdownMenuTrigger>

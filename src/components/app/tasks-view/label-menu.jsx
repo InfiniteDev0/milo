@@ -176,8 +176,8 @@ export function LabelMenu({ value, onChange, big = false }) {
             current
               ? cn(big ? BIG : CHIP, "hover:opacity-80")
               : big
-                ? cn(BIG, "border border-[#2f80ed]/40 text-[#2f80ed] hover:bg-[#2f80ed]/10")
-                : "flex items-center text-[#2f80ed] hover:opacity-80",
+                ? cn(BIG, "border border-(--theme-accent)/40 text-(--theme-accent) hover:bg-(--theme-accent)/10")
+                : "flex items-center text-(--theme-accent) hover:opacity-80",
           )}
         >
           {current ? (
@@ -237,7 +237,7 @@ export function LabelMenu({ value, onChange, big = false }) {
               onBlur={create}
               placeholder="Name it, then Enter"
               aria-label="New category name"
-              className="mx-1 mt-1 rounded-md bg-background px-2 py-1.5 text-sm outline-none ring-1 ring-[#2f80ed]"
+              className="mx-1 mt-1 rounded-md bg-background px-2 py-1.5 text-sm outline-none ring-1 ring-(--theme-accent)"
             />
           ))}
       </PopoverContent>

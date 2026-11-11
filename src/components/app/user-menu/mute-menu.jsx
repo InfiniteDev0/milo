@@ -70,7 +70,7 @@ export function MuteMenu() {
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent
         sideOffset={6}
-        className="w-60 rounded-lg border border-foreground/15 bg-popover p-1.5 shadow-xl ring-0 dark:border-border dark:bg-[#161616]"
+        className="w-60 rounded-lg bg-popover p-1.5 shadow-xl ring-0 dark:bg-[#161616]"
       >
         <Choices label="Check in while a block runs" value={checkInMinutes} options={CHECK_INS} onChange={setCheckInMinutes} />
         <Gap />

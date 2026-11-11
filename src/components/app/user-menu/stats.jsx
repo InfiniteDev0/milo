@@ -56,7 +56,8 @@ export function MenuStats() {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="grid grid-cols-2 divide-x divide-border rounded-sm border border-border">
+      {/* two tiles, filled like the card above them: no lines */}
+      <div className="grid grid-cols-2 gap-1.5 *:rounded-sm *:bg-muted/60 dark:*:bg-white/[0.06]">
         <Count icon={Zap} colour="#7c5cff" value={show(stats?.done)} label="Tasks done this week" />
         <Count icon={Gem} colour="#f5a524" value={show(stats?.notes)} label="Notes written" />
       </div>

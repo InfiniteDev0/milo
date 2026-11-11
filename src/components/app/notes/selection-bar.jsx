@@ -170,7 +170,7 @@ export function SelectionBar({ count, total, onSelectAll, onMove, onDelete, onCl
                       onBlur={create}
                       placeholder="Name it, then Enter"
                       aria-label="New category name"
-                      className="mx-1 rounded-md bg-background px-2 py-1.5 text-xs outline-none ring-1 ring-[#2f80ed]"
+                      className="mx-1 rounded-md bg-background px-2 py-1.5 text-xs outline-none ring-1 ring-(--theme-accent)"
                     />
                   ))}
               </div>

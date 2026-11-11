@@ -9,7 +9,7 @@ export const SQUARE =
 
 export function FilterBox({ value, onChange }) {
   return (
-    <label className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-md border border-foreground/15 px-2.5 focus-within:border-[#2f80ed] focus-within:ring-1 focus-within:ring-[#2f80ed]">
+    <label className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-md border border-foreground/15 px-2.5 focus-within:border-(--theme-accent) focus-within:ring-1 focus-within:ring-(--theme-accent)">
       <Search className="size-4 shrink-0 text-muted-foreground" />
       <input
         autoFocus

@@ -28,7 +28,7 @@ export const STEPS = [
   {
     id: "notes-sidebar",
     title: "Fold the Notes sidebar",
-    hint: "In Notes, press « at the top of the left side (or Ctrl+\). » on the rail brings it back.",
+    hint: "In Notes, press « at the top of the left side (or Ctrl+\\). » at the top of the rail opens it again.",
     targets: ["notes-sidebar", ...WAY_TO_NOTES],
     point: ["notes-sidebar", ...WAY_TO_NOTES],
   },

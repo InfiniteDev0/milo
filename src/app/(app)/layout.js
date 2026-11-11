@@ -20,6 +20,7 @@ import { ViewOnly } from "@/components/app/view-only";
 import { StopBlocksInTasksView } from "@/components/app/tasks-view/stop-blocks";
 import { UserProvider } from "@/components/app/user-provider";
 import { WhatsNew } from "@/components/app/whats-new";
+import { ThemeColourSync } from "@/components/app/theme-colour-sync";
 import { requireUser } from "@/lib/session";
 
 /* The workspace shell, laid out as Manasik: three layers, no lines.
@@ -44,6 +45,8 @@ export default async function AppLayout({ children }) {
 
   return (
     <UserProvider user={me}>
+    {/* the theme colour picked in Themes */}
+    <ThemeColourSync />
     <BlocksProvider>
       {/* notes sit inside blocks: a note can belong to a block */}
       <NotesProvider>
@@ -62,7 +65,7 @@ export default async function AppLayout({ children }) {
         <div className="flex min-h-0 flex-1">
           {/* below the top bar (h-11), not over it */}
           <AppSidebar variant="inset" className="top-11 bottom-0 h-auto pt-0" />
-          <SidebarInset className="min-h-0 overflow-hidden border border-border bg-card max-md:m-2 max-md:mt-0 max-md:rounded-sm md:mt-0! md:rounded-sm!">
+          <SidebarInset className="min-h-0 overflow-hidden bg-card max-md:m-2 max-md:mt-0 max-md:rounded-sm md:mt-0! md:rounded-sm!">
             {children}
           </SidebarInset>
         </div>

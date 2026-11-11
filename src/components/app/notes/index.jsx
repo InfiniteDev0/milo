@@ -56,7 +56,8 @@ export function NotesView() {
   // the day the notes are filtered to (null: every day), and whether the wheel is open
   const [day, setDay] = useState(null);
   const [wheel, setWheel] = useState(false);
-  // the left section, folded with « or Ctrl+  const side = usePreference(NOTES_SIDEBAR) === "open";
+  // the left section, folded with « or Ctrl and backslash
+  const side = usePreference(NOTES_SIDEBAR) === "open";
   const toggleSide = () => NOTES_SIDEBAR.set(NOTES_SIDEBAR.get() === "open" ? "closed" : "open");
   useEffect(() => {
     const onKey = (e) => {
@@ -142,7 +143,12 @@ export function NotesView() {
       {/* the wheel the calendar opens: the day it settles on filters the notes */}
       <DateWheel open={wheel} onOpenChange={setWheel} onPick={setDay} initial={day} years={wheelYears} />
       {/* an open note takes the whole page, so the side section steps aside */}
-      {!open && side && (
+      {/* folded with « or the rail's »: it slides shut and open like an accordion */}
+      {!open && (
+        <div
+          inert={!side}
+          className={cn("flex shrink-0 overflow-hidden transition-[width,opacity] duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)]", side ? "w-[17rem] opacity-100" : "w-0 opacity-0")}
+        >
         <SidePanel
           onClose={() => {
             // a hidden search would still filter: let it go with the section
@@ -171,6 +177,7 @@ export function NotesView() {
           shared={shared}
           onShared={() => navigate({ shared: true, keep: null })}
         />
+        </div>
       )}
 
       <section className="flex min-w-0 flex-1 flex-col">
@@ -220,13 +227,13 @@ export function NotesView() {
             {/* the day filter: its chip once one is set, then the calendar that opens the wheel */}
             <span className="ms-auto flex items-center gap-2">
               {day && (
-                <span className={cn(BOX, "gap-1.5 border-[#2f80ed]/40 bg-[#2f80ed]/10 pe-1 text-[#2f80ed]")}>
+                <span className={cn(BOX, "gap-1.5 border-(--theme-accent)/40 bg-(--theme-accent)/10 pe-1 text-(--theme-accent)")}>
                   Written {day.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric", year: day.getFullYear() === thisYear ? undefined : "numeric" })}
                   <button
                     type="button"
                     onClick={() => setDay(null)}
                     aria-label="Clear the date filter"
-                    className="flex size-5 cursor-pointer items-center justify-center rounded-sm transition-colors hover:bg-[#2f80ed]/15"
+                    className="flex size-5 cursor-pointer items-center justify-center rounded-sm transition-colors hover:bg-(--theme-accent)/15"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -237,7 +244,8 @@ export function NotesView() {
                   type="button"
                   onClick={() => setWheel(true)}
                   aria-label="Filter by date"
-                  className={cn(BOX, "w-8 cursor-pointer justify-center px-0 transition-colors hover:bg-muted", day && "text-[#2f80ed]")}
+                  // a bare icon: no edge, no fill
+                  className={cn("flex size-7 cursor-pointer items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground", day && "text-(--theme-accent)")}
                 >
                   <CalendarMark className="size-4" />
                 </button>
@@ -247,7 +255,8 @@ export function NotesView() {
               <button
                 type="button"
                 onClick={add}
-                className={cn(BOX, "cursor-pointer gap-1.5 font-medium transition-colors hover:bg-muted")}
+                // the page's one solid button: dark in light mode, white in dark (or the theme colour), no edge
+                className="flex h-7 cursor-pointer items-center gap-1.5 rounded-md bg-solid px-3 text-[13px] font-medium text-solid-ink transition-colors hover:bg-solid-hover"
               >
                 <CirclePlus className="size-3.5" />
                 New

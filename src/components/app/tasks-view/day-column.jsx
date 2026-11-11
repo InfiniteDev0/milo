@@ -29,7 +29,7 @@ export function dropIndex(list, y) {
 
 // sits in the 8px gap between cards, so showing it never shifts them
 function DropLine() {
-  return <div className="-my-[5px] h-0.5 shrink-0 rounded-full bg-[#2f80ed]" />;
+  return <div className="-my-[5px] h-0.5 shrink-0 rounded-full bg-(--theme-accent)" />;
 }
 
 // repeats: the recurring tasks that come round on this day, each with its own open/toggle/patch
@@ -69,7 +69,7 @@ export const DayColumn = memo(function DayColumn({ dayKey, date, isToday, tasks,
           {date.toLocaleDateString([], WEEKDAY)}{" "}
           <span className="text-muted-foreground">{date.toLocaleDateString([], MONTHDAY)}</span>
         </h2>
-        {isToday && <span className="text-xs font-semibold text-[#2f80ed]">Today</span>}
+        {isToday && <span className="text-xs font-semibold text-(--theme-accent)">Today</span>}
         {/* the far end: the day's badges, then how many it holds that are done (where Focus used to sit) */}
         <span className="ml-auto flex min-w-0 items-center gap-1.5">
           {special.map((name) => (

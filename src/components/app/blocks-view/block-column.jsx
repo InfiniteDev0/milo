@@ -18,7 +18,7 @@ import { HiddenTasks } from "./hidden-tasks";
 export { dropIndex };
 
 function DropLine() {
-  return <div className="-my-[5px] h-0.5 shrink-0 rounded-full bg-[#2f80ed]" />;
+  return <div className="-my-[5px] h-0.5 shrink-0 rounded-full bg-(--theme-accent)" />;
 }
 
 // the drop target in its own thin wrapper, so drag moves redraw only this

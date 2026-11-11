@@ -1,7 +1,7 @@
 "use client";
 
 /* One note as a card, laid out like the reference: a cover filling the top — the
-   note's own paper, or its cover picture — then its title, its block, and how
+   note's cover picture, or else its own words blurred on its paper — then its title, its block, and how
    long since it was last touched. While searching, the cover shows the lines the
    words turn up in instead, so you can see why it matched.
 
@@ -27,6 +27,10 @@ import { SelectBox } from "./select-box";
 // selecting: some card is selected, so every tick stays showing
 // the drag a card carries onto a category in the side panel: the ids of the notes it moves
 export const NOTES_DRAG = "application/x-milo-notes";
+
+// the blurred cover of a note with nothing in it yet
+const FILLER =
+  "A few lines about the day, what came up and what got done.\nSome of it in order, most of it not.\n\nThe part worth keeping, the part to come back to, and a list:\nthe first thing, the next thing, the one after that.";
 
 // a small dark box over the cover, for its buttons
 const OVER = "flex h-7 cursor-pointer items-center gap-1.5 rounded-md bg-black/80 px-2.5 text-xs font-medium text-white transition-colors hover:bg-black";
@@ -73,7 +77,7 @@ export function NoteCard({ note, query = "", selected = false, selecting = false
       }}
       className={cn(
         "group/note flex h-72 cursor-pointer flex-col overflow-hidden rounded-lg border bg-card text-left transition-colors",
-        selected ? "border-[#2f80ed] ring-2 ring-[#2f80ed]/30" : "border-foreground/10 hover:border-foreground/25",
+        selected ? "border-(--theme-accent) ring-2 ring-(--theme-accent)/30" : "border-foreground/10 hover:border-foreground/25",
       )}
     >
       {/* the cover; plain paper is white in light mode, the same as the footer, so it takes a soft grey there */}
@@ -85,11 +89,14 @@ export function NoteCard({ note, query = "", selected = false, selecting = false
           <div className="absolute inset-0 overflow-hidden p-4 pt-12">
             <MatchLines found={found} />
           </div>
+        ) : note.cover ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={note.cover} alt="" draggable={false} className="absolute inset-0 size-full object-cover" />
         ) : (
-          note.cover && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={note.cover} alt="" draggable={false} className="absolute inset-0 size-full object-cover" />
-          )
+          // no cover: its own words, blurred, as the cover (a page of writing while it's empty)
+          <p aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden p-4 text-[13px] leading-relaxed whitespace-pre-line text-foreground/60 blur-[2.5px] select-none">
+            {note.text?.trim() || FILLER}
+          </p>
         )}
 
         {/* on hover, bottom right: Add cover, or Change cover with a remove beside it */}

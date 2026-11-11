@@ -34,10 +34,10 @@ import { NoteMark, Reveal } from "./reveal";
 import { LabelChip, LabelMenu } from "./label-menu";
 
 const CARD =
-  "group/card flex flex-col rounded-lg border border-foreground/10 bg-card px-3 py-2.5 focus-within:border-[#2f80ed]/40 group-data-[menu-open]/menu:border-[#2f80ed]/40 has-[[data-popup-open]]:border-[#2f80ed]/40";
+  "group/card flex flex-col rounded-lg border border-foreground/10 bg-card px-3 py-2.5 focus-within:border-(--theme-accent)/40 group-data-[menu-open]/menu:border-(--theme-accent)/40 has-[[data-popup-open]]:border-(--theme-accent)/40";
 
 // the Today blue on hover, the same blue a tool keeps once it holds something
-const TOOL = "cursor-pointer transition-colors hover:text-[#2f80ed]";
+const TOOL = "cursor-pointer transition-colors hover:text-(--theme-accent)";
 
 // the time on a task so far, counting the clock if it's running
 export function spentMs(task, now) {
@@ -58,7 +58,7 @@ export function TimePill({ ms = 0, active = false, onClick, locked = false }) {
       }}
       className={cn(
         "shrink-0 cursor-pointer rounded-md px-1.5 py-0.5 text-[11px] tabular-nums transition-colors",
-        active ? "bg-foreground/60 text-background" : "bg-muted text-muted-foreground hover:text-[#2f80ed]",
+        active ? "bg-foreground/60 text-background" : "bg-muted text-muted-foreground hover:text-(--theme-accent)",
       )}
     >
       {clock(ms)}
@@ -77,7 +77,7 @@ function Tools({ task, origin, open, toggle, onPatch, onMove, always = false }) 
       {/* a repeat's copy shares its task's label but can't change it there */}
       {origin ? <LabelMenu value={task.categoryId ?? null} onChange={(categoryId) => onPatch({ categoryId })} /> : <LabelChip categoryId={task.categoryId} />}
       <Tip label={task.note ? "Note" : "Add a note"}>
-        <button type="button" aria-label="Note" onClick={() => toggle("note")} className={cn(TOOL, (open.note || task.note) && "text-[#2f80ed]")}>
+        <button type="button" aria-label="Note" onClick={() => toggle("note")} className={cn(TOOL, (open.note || task.note) && "text-(--theme-accent)")}>
           <NotebookPen className="size-3.5" />
         </button>
       </Tip>
@@ -86,7 +86,7 @@ function Tools({ task, origin, open, toggle, onPatch, onMove, always = false }) 
           type="button"
           aria-label="Subtasks"
           onClick={() => toggle("subtasks")}
-          className={cn(TOOL, (open.subtasks || steps.length > 0) && "text-[#2f80ed]")}
+          className={cn(TOOL, (open.subtasks || steps.length > 0) && "text-(--theme-accent)")}
         >
           <Workflow className="size-3.5" />
         </button>
@@ -184,7 +184,7 @@ const CardBody = memo(function CardBody({ nodeRef, attributes, listeners, task, 
         <NoteMark count={task.note?.trim() ? 1 : 0} />
         {/* its time of day, so you can see it without hovering (the label lives in the tools row) */}
         {task.atTime && (
-          <span className="mt-0.5 shrink-0 rounded-sm bg-[#2f80ed]/12 px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-[#2f80ed]">{timeLabel(task.atTime)}</span>
+          <span className="mt-0.5 shrink-0 rounded-sm bg-(--theme-accent)/12 px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-(--theme-accent)">{timeLabel(task.atTime)}</span>
         )}
         <TooltipProvider delay={300}>
           <Tip label={running ? "Time · the clock is running" : "Time: track it, or estimate it"}>

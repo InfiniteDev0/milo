@@ -45,7 +45,7 @@ export function BlockSelectionBar({ selected, onClear }) {
             }}
             onBlur={rename}
             aria-label="Block name"
-            className="h-8 w-48 rounded-sm bg-background px-2.5 text-sm outline-none ring-1 ring-[#2f80ed]"
+            className="h-8 w-48 rounded-sm bg-background px-2.5 text-sm outline-none ring-1 ring-(--theme-accent)"
           />
         ) : (
           <button type="button" onClick={() => setNaming(one.name)} className={cn(BOX, "cursor-pointer gap-1.5 transition-colors hover:bg-muted")}>
