@@ -35,10 +35,10 @@ function HeaderButton({ label, keys, render, children }) {
   );
 }
 
-function Face({ className }) {
+function Face({ className, mood }) {
   return (
     <span className={cn("flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-chip", className)}>
-      <ShellFace className="size-full touch-none select-none" />
+      <ShellFace mood={mood} className="size-full touch-none select-none" />
     </span>
   );
 }
@@ -46,6 +46,8 @@ function Face({ className }) {
 export function MiloChat() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]);
+  // the choice under the pointer (or focused), whose face Milo makes
+  const [hovered, setHovered] = useState(null);
   const router = useRouter();
   const onNotesPage = usePathname().startsWith("/notes");
 
@@ -67,16 +69,18 @@ export function MiloChat() {
     window.setTimeout(run, 120);
   };
 
+  // mood: the face Milo makes while you're on it
   const STARTERS = [
-    { icon: Search, label: "Search for anything", run: () => window.dispatchEvent(new Event("milo:search")) },
-    { icon: Sunrise, label: "Plan my day", run: () => window.dispatchEvent(new CustomEvent("milo:day-ahead", { detail: "today" })) },
+    { icon: Search, label: "Search for anything", mood: "peek", run: () => window.dispatchEvent(new Event("milo:search")) },
+    { icon: Sunrise, label: "Plan my day", mood: "focused", run: () => window.dispatchEvent(new CustomEvent("milo:day-ahead", { detail: "today" })) },
     {
       icon: NotebookPen,
       label: "Write a note",
+      mood: "happy",
       // the Notes page has its own sheet, so the tray isn't there to open
       run: () => (onNotesPage ? router.push("/notes") : window.dispatchEvent(new Event("milo:open-notes"))),
     },
-    { icon: BookOpen, label: "Write in my journal", run: () => router.push("/journal") },
+    { icon: BookOpen, label: "Write in my journal", mood: "proud", run: () => router.push("/journal") },
   ];
 
   const send = (text) =>
@@ -118,13 +122,17 @@ export function MiloChat() {
           {messages.length === 0 ? (
             // pushed to the bottom, just above the box, as Notion's
             <div className="mt-auto flex flex-col gap-1 pb-2">
-              <Face className="mb-3 size-16" />
+              <Face className="mb-3 size-16" mood={hovered ?? undefined} />
               <h2 className="mb-2 text-lg font-semibold">What do  want to achieve today?</h2>
-              {STARTERS.map(({ icon: Icon, label, run }) => (
+              {STARTERS.map(({ icon: Icon, label, mood, run }) => (
                 <button
                   key={label}
                   type="button"
                   onClick={then(run)}
+                  onPointerEnter={() => setHovered(mood)}
+                  onPointerLeave={() => setHovered(null)}
+                  onFocus={() => setHovered(mood)}
+                  onBlur={() => setHovered(null)}
                   className="-mx-2.5 flex h-10 cursor-pointer items-center gap-3 rounded-[10px] px-2.5 text-left text-[15px] outline-none transition-colors hover:bg-muted focus-visible:bg-muted"
                 >
                   <Icon className="size-[18px] shrink-0 text-muted-foreground" />

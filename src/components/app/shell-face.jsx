@@ -7,7 +7,8 @@
 import MiloFace from "@/components/MiloFace";
 import { useBlocks } from "./blocks-provider";
 
-export function ShellFace({ className }) {
+// mood: a face asked for here (a hovered choice in Milo's panel), over the one the work set
+export function ShellFace({ className, mood }) {
   const { miloMood } = useBlocks();
-  return <MiloFace mood={miloMood} className={className} />;
+  return <MiloFace mood={mood ?? miloMood} className={className} />;
 }
