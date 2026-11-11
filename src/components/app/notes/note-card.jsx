@@ -76,8 +76,9 @@ export function NoteCard({ note, query = "", selected = false, selecting = false
         }
       }}
       className={cn(
-        "group/note flex h-72 cursor-pointer flex-col overflow-hidden rounded-lg border bg-card text-left transition-colors",
-        selected ? "border-(--theme-accent) ring-2 ring-(--theme-accent)/30" : "border-foreground/10 hover:border-foreground/25",
+        // only the footer has an edge at rest; a selected card is ringed
+        "group/note flex h-72 cursor-pointer flex-col overflow-hidden rounded-lg bg-card text-left transition-shadow",
+        selected && "ring-2 ring-(--theme-accent)",
       )}
     >
       {/* the cover; plain paper is white in light mode, the same as the footer, so it takes a soft grey there */}
@@ -145,8 +146,8 @@ export function NoteCard({ note, query = "", selected = false, selecting = false
         </button>
       </div>
 
-      {/* title, block, and when */}
-      <div className="flex shrink-0 flex-col gap-2 px-4 py-3">
+      {/* title, block, and when: the one part with an edge (sides and bottom), so it doesn't melt into the page */}
+      <div className={cn("flex shrink-0 flex-col gap-2 rounded-b-lg border border-t-0 px-4 py-3", selected ? "border-transparent" : "border-foreground/10")}>
         <h3 className="truncate text-base font-medium">{note.title?.trim() ? <Highlight text={note.title} query={query} /> : "Untitled"}</h3>
         <div className="flex items-center justify-between gap-2">
           {block ? (

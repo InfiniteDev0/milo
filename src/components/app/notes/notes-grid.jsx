@@ -1,10 +1,10 @@
 "use client";
 
 // Notes as cards, pinned first then newest. A click opens one; its checkbox selects it.
-// A tile to add a new note closes the grid, so a page with a few notes never looks blank.
+// With none at all, the page is the art and an add button, centred.
 
 import { byPinnedThenNewest } from "@/lib/note-filters";
-import { AddNoteTile, NotesEmpty } from "./add-note";
+import { NotesEmpty } from "./add-note";
 import { NoteCard } from "./note-card";
 
 export function NotesGrid({ sort, notes, query, selected, onToggleSelect, onOpen, onTogglePin, onCover, empty, onAdd, addLabel }) {
@@ -29,7 +29,6 @@ export function NotesGrid({ sort, notes, query, selected, onToggleSelect, onOpen
           dragIds={() => (selected.has(n.id) ? [...selected] : [n.id])}
         />
       ))}
-      {onAdd && <AddNoteTile onAdd={onAdd} label={addLabel} />}
     </div>
   );
 }

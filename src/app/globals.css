@@ -574,7 +574,7 @@ a{
    Black is the app as it ships, so it sets nothing. */
 :root {
   --theme-accent: #2f80ed;
-  /* the sidebar: black, or a deep shade of the picked colour */
+  /* the sidebar: black, or the picked colour */
   --rail: #000000;
   /* its tiles (picked, under the pointer) and its icons at rest */
   --rail-tile: rgb(255 255 255 / 0.2);
@@ -596,9 +596,7 @@ a{
   --solid-hover: color-mix(in srgb, var(--theme-colour) 88%, white);
   --solid-lift: color-mix(in srgb, var(--theme-colour) 65%, black);
   --theme-accent: var(--theme-colour, #2f80ed);
-  --rail: color-mix(in srgb, var(--theme-colour, #000) 78%, black);
-  /* on a coloured rail: darker shades of it, and icons tinted with it */
-  --rail-tile: color-mix(in srgb, var(--rail) 62%, black);
-  --rail-hover: color-mix(in srgb, var(--rail) 80%, black);
-  --rail-icon: color-mix(in srgb, var(--theme-colour, #fff) 35%, white);
+  /* the rail in the colour itself, with white icons */
+  --rail: var(--theme-colour, #000);
+  --rail-icon: #ffffff;
 }
