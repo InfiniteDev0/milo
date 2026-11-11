@@ -1,6 +1,6 @@
 "use client";
 
-// Manasik's sidebar: black (or the theme colour, deep), folds to an icon rail. The open/fold button on top,
+// Manasik's sidebar: black (or the theme colour, deepening downward), folds to an icon rail. The open/fold button on top,
 // then the pages; Settings pinned at the bottom.
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
@@ -10,8 +10,9 @@ import { NAV_BOTTOM, NAV_MAIN, NavMain } from "./nav";
 
 // the sidebar's colour tokens re-pointed for this subtree only, so the page keeps its theme
 const BLACK_SIDEBAR_CLASS = [
-  "[&>[data-sidebar=sidebar]]:bg-(--rail)",
-  "data-[mobile=true]:bg-(--rail)",
+  // --rail is a colour or a gradient, so it goes in as the whole background
+  "[&>[data-sidebar=sidebar]]:[background:var(--rail)]",
+  "data-[mobile=true]:[background:var(--rail)]",
   "text-sidebar-foreground",
   "[--sidebar-foreground:oklch(0.985_0_0)]",
   "[--sidebar-accent:oklch(1_0_0/10%)]",

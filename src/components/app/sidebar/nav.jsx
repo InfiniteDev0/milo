@@ -28,7 +28,7 @@ function NavIcon({ src }) {
       <span
         aria-hidden
         style={maskStyle(src)}
-        className="size-5 shrink-0 bg-(--rail-icon) group-hover/menu-button:bg-[linear-gradient(135deg,#ffd600,#ff007a)] group-data-active/menu-button:bg-[linear-gradient(135deg,#ffd600,#00d078)]!"
+        className="size-5 shrink-0 bg-(--rail-icon) group-hover/menu-button:bg-(image:--rail-icon-hover) group-data-active/menu-button:bg-[linear-gradient(135deg,#ffd600,#00d078)]!"
       />
     </span>
   );

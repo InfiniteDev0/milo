@@ -580,6 +580,7 @@ a{
   --rail-tile: rgb(255 255 255 / 0.2);
   --rail-hover: rgb(255 255 255 / 0.1);
   --rail-icon: rgb(255 255 255 / 0.5);
+  --rail-icon-hover: linear-gradient(135deg, #ffd600, #ff007a);
 }
 :root[data-accent="purple"] { --theme-colour: #7b68ee; }
 :root[data-accent="blue"] { --theme-colour: #1090e0; }
@@ -596,7 +597,12 @@ a{
   --solid-hover: color-mix(in srgb, var(--theme-colour) 88%, white);
   --solid-lift: color-mix(in srgb, var(--theme-colour) 65%, black);
   --theme-accent: var(--theme-colour, #2f80ed);
-  /* the rail in the colour itself, with white icons */
-  --rail: var(--theme-colour, #000);
+  /* the rail in the colour, with white icons that go black under the pointer */
+  /* a touch darker than the colour at the top, deepening as it goes down */
+  --rail: linear-gradient(to bottom, color-mix(in srgb, var(--theme-colour, #000) 82%, black), color-mix(in srgb, var(--theme-colour, #000) 38%, black));
   --rail-icon: #ffffff;
+  --rail-icon-hover: linear-gradient(#000, #000);
+  /* the tabs' pill (Tasks | Blocks, and the rest) and anything else primary */
+  --primary: var(--theme-colour, var(--foreground));
+  --primary-foreground: #ffffff;
 }
