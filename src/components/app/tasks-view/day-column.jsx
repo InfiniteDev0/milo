@@ -68,10 +68,10 @@ export const DayColumn = memo(function DayColumn({ dayKey, date, isToday, tasks,
     <section data-today={isToday || undefined} data-tour={isToday ? "today" : undefined} className="flex min-h-0 w-[18rem] shrink-0 flex-col gap-2">
       <header className="flex h-10 items-center gap-2">
         <h2 className="text-lg font-semibold">
-          {date.toLocaleDateString([], WEEKDAY)}{" "}
+          {/* today says so by its weekday in the theme colour, no word beside it */}
+          <span className={isToday ? "text-(--theme-accent)" : undefined}>{date.toLocaleDateString([], WEEKDAY)}</span>{" "}
           <span className="text-muted-foreground">{date.toLocaleDateString([], MONTHDAY)}</span>
         </h2>
-        {isToday && <span className="text-xs font-semibold text-(--theme-accent)">Today</span>}
         {/* the far end: the day's badges, how many it holds, then how many are done (where Focus used to sit) */}
         <span className="ml-auto flex min-w-0 items-center gap-1.5">
           {special.map((name) => (
