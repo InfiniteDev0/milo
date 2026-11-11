@@ -1,6 +1,6 @@
 "use client";
 
-/* The Notes page's left section. A search, then Notes with its count, then the
+/* The Notes page's left section. Its name with search and close, then Notes with its count, then the
    tree, and at the bottom — where a theme toggle would sit — Notes | Reminders.
    The tree follows the top tabs:
 
@@ -8,7 +8,8 @@
      anything else  your categories and their subcategories (samples for now: the user
                     will say how they work) */
 
-import { NotebookPen, Search } from "lucide-react";
+import { NotebookPen } from "lucide-react";
+import { SideHeader } from "./side-header";
 import { UserGroup } from "../icons/user-group";
 import { Tabs, TabsList, TabsTrigger } from "@/components/motion/tabs";
 import { cn } from "@/lib/utils";
@@ -37,6 +38,7 @@ export function SidePanel({
   onOpenNote,
   shared,
   onShared,
+  onClose,
 }) {
   const { blocks, droppedToday, archived } = useBlocks();
   const all = [...blocks, ...droppedToday, ...archived];
@@ -45,16 +47,7 @@ export function SidePanel({
 
   return (
     <aside className="flex w-[17rem] shrink-0 flex-col gap-4 border-r border-border px-3 pb-3 pt-3">
-      <label className="flex h-9 shrink-0 items-center gap-2 rounded-sm border border-foreground/20 bg-card px-2.5 dark:border-border">
-        <Search className="size-4 shrink-0 text-muted-foreground" />
-        <input
-          value={query}
-          onChange={(e) => onQuery(e.target.value)}
-          placeholder="Search…"
-          aria-label="Search notes"
-          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-        />
-      </label>
+      <SideHeader title={section === "reminders" ? "Reminders" : "Notes"} query={query} onQuery={onQuery} onClose={onClose} />
 
       {/* Reminders shows none of the notes side yet: only the search and the tabs */}
       {section === "reminders" ? (

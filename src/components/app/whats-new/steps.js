@@ -5,7 +5,7 @@
 // or ended it never shows again. To show a new update's steps, change VERSION and the STEPS — it shows
 // once more for everyone. That's how every update is introduced from now on.
 
-export const VERSION = "nov-11-2026";
+export const VERSION = "nov-11b-2026";
 
 // targets: the places the spotlight keeps clear for this step, tried in order — a data-tour name, or a
 // selector — so a step on another page first points at the way there (Home or Notes in the sidebar,
@@ -19,25 +19,18 @@ const WAY_TO_NOTES = ["notes-all", "nav-notes"];
 
 export const STEPS = [
   {
-    id: "rename-task",
-    title: "Fix a task's name",
-    hint: "Double-click a task's name (or right-click it › Rename), type the new one, press Enter.",
+    id: "label-colour",
+    title: "Colour a label",
+    hint: "On a task, open its label, then pick a colour just above New category.",
     targets: [TODAY_CARD, "today", ...WAY_HOME],
-    point: [TODAY_CARD, ...ON_TODAY("add-task"), ...WAY_HOME],
+    point: [...ON_TODAY("label-button"), TODAY_CARD, ...WAY_HOME],
   },
   {
-    id: "category-icon",
-    title: "Give a category an icon",
-    hint: "In Notes, click a category's name, then the icon beside it, and pick an emoji, an icon or a picture.",
-    targets: ["category-icon", "categories", ...WAY_TO_NOTES],
-    point: ["category-icon", "category-name", ...WAY_TO_NOTES],
-  },
-  {
-    id: "category-cover",
-    title: "Give a category a cover",
-    hint: "Open a category in Notes and click Add cover at the top, then pick a picture.",
-    targets: ["category-view", "categories", ...WAY_TO_NOTES],
-    point: ["category-cover", "category-name", ...WAY_TO_NOTES],
+    id: "notes-sidebar",
+    title: "Fold the Notes sidebar",
+    hint: "In Notes, press « at the top of the left side (or Ctrl+\). » on the rail brings it back.",
+    targets: ["notes-sidebar", ...WAY_TO_NOTES],
+    point: ["notes-sidebar", ...WAY_TO_NOTES],
   },
 ];
 

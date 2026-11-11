@@ -20,7 +20,7 @@
    × to clear. Clicking the calendar again changes the day. The top bar's
    calendar steps aside on this page. Reminders will follow the same filter. */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, CirclePlus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,6 +32,8 @@ import { CardsView } from "./cards-view";
 import { NoteCardsSkeleton } from "./skeletons";
 import { NotePage } from "../tray/note-page";
 import { SidePanel } from "./side-panel";
+import { usePreference } from "@/hooks/use-preference";
+import { NOTES_SIDEBAR, SIDEBAR_KEY } from "@/lib/notes-sidebar";
 import { ComingSoonArt } from "../icons/coming-soon-art";
 import { useCategories } from "../categories-provider";
 import { TrashView } from "./trash-view";
@@ -54,6 +56,17 @@ export function NotesView() {
   // the day the notes are filtered to (null: every day), and whether the wheel is open
   const [day, setDay] = useState(null);
   const [wheel, setWheel] = useState(false);
+  // the left section, folded with « or Ctrl+  const side = usePreference(NOTES_SIDEBAR) === "open";
+  const toggleSide = () => NOTES_SIDEBAR.set(NOTES_SIDEBAR.get() === "open" ? "closed" : "open");
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.key !== SIDEBAR_KEY) return;
+      e.preventDefault();
+      toggleSide();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   const categories = useCategories();
   const router = useRouter();
   const pathname = usePathname();
@@ -129,8 +142,13 @@ export function NotesView() {
       {/* the wheel the calendar opens: the day it settles on filters the notes */}
       <DateWheel open={wheel} onOpenChange={setWheel} onPick={setDay} initial={day} years={wheelYears} />
       {/* an open note takes the whole page, so the side section steps aside */}
-      {!open && (
+      {!open && side && (
         <SidePanel
+          onClose={() => {
+            // a hidden search would still filter: let it go with the section
+            setQuery("");
+            toggleSide();
+          }}
           notes={notes}
           showBlocks={tab === "blocks"}
           section={section}

@@ -15,6 +15,7 @@ import { checkColors } from "@/lib/db/categories";
 import { cn } from "@/lib/utils";
 import { useCategories } from "../categories-provider";
 import { Tip } from "./tip";
+import { markStep } from "../whats-new/steps";
 
 const ROW = "flex w-full cursor-pointer items-center gap-2 rounded-sm px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-muted";
 
@@ -40,6 +41,7 @@ function ColourRow({ category }) {
   const pick = async (colour) => {
     if (!(await checkColors())) return toast("Label colours switch on once migration 0023 is run in Supabase.");
     categories.setColor(category.id, colour);
+    markStep("label-colour");
   };
   return (
     <div className="mt-0.5 flex flex-col gap-1.5 border-t border-foreground/10 px-2.5 pt-2 pb-1">

@@ -19,6 +19,10 @@ export const SHORTCUTS = [
     ],
   },
   {
+    group: "On the Notes page",
+    items: [{ keys: ["Mod", "\\"], label: "Fold or open the left side" }],
+  },
+  {
     group: "Writing a note",
     items: [
       { keys: ["/"], label: "Open the command menu (headings, lists, quotes…)" },
