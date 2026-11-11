@@ -58,6 +58,8 @@ export const DayColumn = memo(function DayColumn({ dayKey, date, isToday, tasks,
   const special = specialDays(date);
   // how many it holds that are done, a repeat's copy included; it only ever counts up
   const doneCount = tasks.filter((t) => t.done).length + repeats.filter((r) => r.task.done).length;
+  // how many it holds in all; shown on its own, never as "1 of 3"
+  const total = tasks.length + repeats.length;
   const [drafting, setDrafting] = useState(false);
   // the card whose name is being fixed
   const [renaming, setRenaming] = useState(null);
@@ -70,13 +72,18 @@ export const DayColumn = memo(function DayColumn({ dayKey, date, isToday, tasks,
           <span className="text-muted-foreground">{date.toLocaleDateString([], MONTHDAY)}</span>
         </h2>
         {isToday && <span className="text-xs font-semibold text-(--theme-accent)">Today</span>}
-        {/* the far end: the day's badges, then how many it holds that are done (where Focus used to sit) */}
+        {/* the far end: the day's badges, how many it holds, then how many are done (where Focus used to sit) */}
         <span className="ml-auto flex min-w-0 items-center gap-1.5">
           {special.map((name) => (
             <span key={name} className="truncate rounded-sm bg-[#0b8043] px-2 py-0.5 text-xs font-semibold text-white">
               {name}
             </span>
           ))}
+          {total > 0 && (
+            <span title="Tasks on this day" className="shrink-0 rounded-sm bg-foreground/[0.08] px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-foreground/70">
+              {total} {total === 1 ? "task" : "tasks"}
+            </span>
+          )}
           {doneCount > 0 && (
             <span title="Tasks done on this day" className="shrink-0 rounded-sm bg-[#00b86b]/15 px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-[#00a35f] dark:text-[#3ddc97]">
               {doneCount} done
