@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { VIEW } from "@/lib/view";
 import { askDraft } from "@/lib/day-draft";
 import { useNotes } from "../notes-provider";
+import { ShellFace } from "../shell-face";
 import { BottomSheet } from "./bottom-sheet";
 import { GLASS } from "./glass";
 
@@ -25,8 +26,9 @@ const TABS = [
   { title: "More", href: null },
 ];
 
-// More's pages: an svg (a mask, coloured by state) or a lucide icon
+// More's pages: an svg (a mask, coloured by state) or a lucide icon. Milo first: it opens his panel
 const APPS = [
+  { title: "Ask Milo", milo: true },
   { title: "Calendar", icon: "/calendar.svg", href: "/calendar" },
   { title: "Leaderboard", icon: "/leaderboard.svg", href: "/leaderboard" },
   { title: "Settings", icon: "/seetings.svg", href: "/settings" },
@@ -134,7 +136,24 @@ export function MobileTabBar() {
                 className="overflow-hidden"
               >
                 <div className="grid grid-cols-3 gap-x-2 gap-y-4 px-2.5 pt-4 pb-3">
-                  {APPS.map(({ title, icon, Icon, href }) => {
+                  {APPS.map(({ title, icon, Icon, href, milo }) => {
+                    if (milo)
+                      return (
+                        <button
+                          key="milo"
+                          type="button"
+                          onClick={() => {
+                            setMore(false);
+                            window.dispatchEvent(new Event("milo:chat"));
+                          }}
+                          className="flex touch-manipulation flex-col items-center gap-1.5 active:scale-95"
+                        >
+                          <span className="flex size-16 items-center justify-center overflow-hidden rounded-2xl bg-chip">
+                            <ShellFace className="size-16 touch-none select-none" />
+                          </span>
+                          <span className="w-full truncate text-center text-[13px] text-foreground/70">{title}</span>
+                        </button>
+                      );
                     const on = here(pathname, href);
                     return (
                       <Link key={href} href={href} onClick={() => setMore(false)} aria-current={on ? "page" : undefined} className="flex touch-manipulation flex-col items-center gap-1.5 active:scale-95">

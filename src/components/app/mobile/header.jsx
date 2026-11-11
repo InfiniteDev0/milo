@@ -1,14 +1,12 @@
 "use client";
 
-// Phones only, in place of the top bar and the sidebar (Manasik's strategy): your workspace on
-// the left; Milo (the panel), Tasks | Blocks on Home, search and you on the right. It keeps clear
-// of the notch.
+// Phones only, in place of the top bar and the sidebar (Manasik's strategy): your workspace,
+// and Tasks | Blocks on Home. Search is a pull down from the top (pull-to-search.jsx); Milo,
+// Profile and Settings are under More. It keeps clear of the notch.
 
 import { WorkspaceMenu } from "../workspace-menu";
-import { Search } from "../search";
-import { UserMenu } from "../user-menu";
 import { ViewTabs } from "../view-tabs";
-import { ShellFace } from "../shell-face";
+import { PullToSearch } from "./pull-to-search";
 
 export function MobileHeader({ user }) {
   return (
@@ -17,16 +15,7 @@ export function MobileHeader({ user }) {
         <WorkspaceMenu user={user} />
       </div>
       <ViewTabs />
-      <button
-        type="button"
-        aria-label="Ask Milo"
-        onClick={() => window.dispatchEvent(new Event("milo:chat"))}
-        className="flex size-9 shrink-0 touch-manipulation items-center justify-center overflow-hidden rounded-lg bg-chip"
-      >
-        <ShellFace className="size-9 touch-none select-none" />
-      </button>
-      <Search />
-      <UserMenu user={user} />
+      <PullToSearch />
     </header>
   );
 }
