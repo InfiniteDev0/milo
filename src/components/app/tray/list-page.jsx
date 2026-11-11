@@ -99,7 +99,7 @@ export function ListPage({
       ) : (
         <>
           {selectable && selected.size > 0 && (
-            <div className="shrink-0 px-5 pb-3">
+            <div className="contents">
               <SelectionBar
                 count={selected.size}
                 onMove={(block) => {

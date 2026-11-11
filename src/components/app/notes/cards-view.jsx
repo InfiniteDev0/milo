@@ -47,7 +47,7 @@ export function CardsView({ notes, onOpen, empty, onAdd, addLabel, search, sort 
       )}
 
       {selected.size > 0 && (
-        <div className="shrink-0">
+        <div className="contents">
           <SelectionBar
             count={selected.size}
             total={shown.length}

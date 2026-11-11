@@ -3,19 +3,18 @@
 /* One category as a page of its own (the Notes tabs step aside): a cover across
    the top (or a band that says Add cover), its icon sitting on the cover's edge,
    the title (double-click to rename), then its Tasks and Notes cards side by
-   side, each with its +. The page scrolls. */
+   side, each with its search and +. The page scrolls. */
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { checkOrders } from "@/lib/db/categories";
 import { createDayTask } from "@/lib/db/day-tasks";
-import { matchesSearch } from "@/lib/note-search";
 import { useCategories } from "../categories-provider";
 import { IconPicker, PickedIcon } from "../icon-picker";
 import { InlineName } from "../tasks-view/inline-name";
+import { NotesCard, TasksCard } from "./category-cards";
 import { CategoryCover, useCoverPicker } from "./category-cover";
-import { CategoryNoteRows } from "./category-notes";
-import { AddButton, CategoryPanel } from "./category-panel";
-import { CategoryTaskRows, useCategoryTasks } from "./category-tasks";
+import { useCategoryTasks } from "./category-tasks";
 import { NewTaskDialog } from "./new-task-dialog";
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
@@ -29,8 +28,17 @@ export function CategoryPage({ category, parent, ids, notes, query, onOpen, onAd
   const [renaming, setRenaming] = useState(false);
   const { pick, input } = useCoverPicker((src) => categories.setCover(category.id, src));
   const name = category.name || "Untitled";
-  const searched = Boolean(query?.trim());
-  const shown = notes.filter((n) => matchesSearch(n, query));
+
+  // a dragged order, kept on the category once 0022 is in; false puts the rows back
+  const keepOrder = async (kind, ids) => {
+    if (!canWrite) return false;
+    if (!(await checkOrders())) {
+      toast("Rearranging switches on once migration 0022 is run in Supabase.");
+      return false;
+    }
+    categories.setItemOrder(category.id, kind, ids);
+    return true;
+  };
 
   // a task from the dialog, onto its day; the Tasks view reads it when it next opens. true once saved
   const addTask = async ({ day, ...task }) => {
@@ -99,33 +107,22 @@ export function CategoryPage({ category, parent, ids, notes, query, onOpen, onAd
 
         {/* the two cards, side by side; stacked on a phone */}
         <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <CategoryPanel
-            title="Tasks"
-            sub={`Tasks labelled ${name}`}
-            count={Array.isArray(tasks) ? tasks.length : null}
-            unit="task"
-            action={canWrite && <AddButton label="New task" onClick={() => setDrafting(true)} />}
-            empty={
-              tasks === false
-                ? "Couldn’t reach this category’s tasks."
-                : tasks?.length === 0
-                  ? "No tasks labelled with it yet."
-                  : null
-            }
-          >
-            {Array.isArray(tasks) && <CategoryTaskRows tasks={tasks} />}
-          </CategoryPanel>
-
-          <CategoryPanel
-            title="Notes"
-            sub={searched ? `Notes matching “${query.trim()}”` : `Notes in ${name}`}
-            count={shown.length}
-            unit="note"
-            action={onAdd && <AddButton label={`Add a note to ${name}`} onClick={onAdd} tour="add-note" />}
-            empty={shown.length === 0 ? (searched ? "Nothing matches that." : "No notes here yet.") : null}
-          >
-            <CategoryNoteRows notes={shown} query={query} onOpen={onOpen} />
-          </CategoryPanel>
+          <TasksCard
+            tasks={tasks}
+            name={name}
+            onNew={canWrite ? () => setDrafting(true) : undefined}
+            order={category.itemOrder?.tasks}
+            onOrder={(ids) => keepOrder("tasks", ids)}
+          />
+          <NotesCard
+            notes={notes}
+            name={name}
+            pageQuery={query}
+            onOpen={onOpen}
+            onAdd={onAdd}
+            order={category.itemOrder?.notes}
+            onOrder={(ids) => keepOrder("notes", ids)}
+          />
         </div>
       </div>
 

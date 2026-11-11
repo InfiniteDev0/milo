@@ -134,7 +134,8 @@ export function LabelMenu({ value, onChange }) {
           style={current ? chipStyle(current.id) : undefined}
           className={cn(
             "cursor-pointer transition-[color,opacity]",
-            current ? cn(CHIP, "hover:opacity-80") : "flex items-center hover:text-[#2f80ed] data-popup-open:text-[#2f80ed]",
+            // Select label is blue from the start, not only under the pointer
+            current ? cn(CHIP, "hover:opacity-80") : "flex items-center text-[#2f80ed] hover:opacity-80",
           )}
         >
           {current ? (

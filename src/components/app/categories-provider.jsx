@@ -204,6 +204,11 @@ export function CategoriesProvider({ children }) {
       },
       // where the picture sits in the band, from Reposition
       setCoverY: (id, coverY) => patch(id, { coverY }),
+      // the order its notes or tasks were dragged into on its page. kind: "notes" | "tasks"
+      setItemOrder: (id, kind, ids) => {
+        const c = list.find((x) => x.id === id);
+        if (c) patch(id, { itemOrder: { ...(c.itemOrder ?? {}), [kind]: ids } });
+      },
       toggleFavorite: (id) => {
         const c = list.find((x) => x.id === id);
         if (c) patch(id, { favorite: !c.favorite });

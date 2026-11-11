@@ -2,7 +2,8 @@
 
 /* A category's tasks: the Tasks-view tasks labelled with it (or with one of its
    subcategories), newest day first, as rows in its Tasks card. A click opens the
-   Tasks view on that task's day. A failed read says so rather than looking empty. */
+   Tasks view on that task's day; the grip drags it into a new place. A failed
+   read says so rather than looking empty. */
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -32,7 +33,11 @@ export function useCategoryTasks(ids) {
   if (!byDay) return [byDay, reload];
   const wanted = new Set(ids);
   const tasks = Object.entries(byDay)
-    .flatMap(([day, list]) => list.filter((t) => wanted.has(t.categoryId)).map((t) => ({ ...t, day: new Date(day) })))
+    .flatMap(([day, list]) =>
+      list
+        .filter((t) => wanted.has(t.categoryId))
+        .map((t) => ({ ...t, day: new Date(day) })),
+    )
     .sort((a, b) => b.day - a.day);
   return [tasks, reload];
 }
@@ -48,22 +53,34 @@ function Status({ done }) {
   );
 }
 
-export function CategoryTaskRows({ tasks }) {
+// one task in the card, after its grip: a click opens its day in Tasks
+export function TaskRow({ task: t, grip }) {
   const router = useRouter();
-  const open = (day) => {
+  const open = () => {
     VIEW.set("tasks");
-    jumpToDayLater(day);
+    jumpToDayLater(t.day);
     router.push("/daily");
   };
-  return tasks.map((t) => (
-    <li key={t.id}>
-      <button type="button" onClick={() => open(t.day)} title="Open its day in Tasks" className={ROW}>
-        <Status done={t.done} />
-        <span className={cn("min-w-0 flex-1 truncate", t.done && "text-muted-foreground line-through")}>{t.title || "Untitled task"}</span>
-        <span className="shrink-0 text-[11px] tabular-nums text-foreground/35">
-          {t.day.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}
-        </span>
-      </button>
-    </li>
-  ));
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          open();
+        }
+      }}
+      title="Open its day in Tasks"
+      className={ROW}
+    >
+      {grip}
+      <Status done={t.done} />
+      <span className={cn("min-w-0 flex-1 truncate", t.done && "text-muted-foreground line-through")}>{t.title || "Untitled task"}</span>
+      <span className="shrink-0 text-[11px] tabular-nums text-foreground/35">
+        {t.day.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}
+      </span>
+    </div>
+  );
 }

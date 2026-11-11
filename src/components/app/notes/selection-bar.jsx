@@ -1,9 +1,12 @@
 "use client";
 
-// Appears once a note is ticked: select every note in view, move the ticked notes to a block, to
-// the day or into a category (or a new one, named right there), or delete them.
+// Appears once a note is ticked, floating at the top of the screen (the bar Manasik floats at the
+// foot): how many and ✕, then Select all, Move to (a block, the day, or a category, or a new one
+// named right there) and Delete in red.
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
+import { motion } from "motion/react";
 import { CheckCheck, FolderInput, FolderPlus, Trash2, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useBlocks } from "../blocks-provider";
@@ -12,6 +15,9 @@ import { cn } from "@/lib/utils";
 
 const CHOICE = "flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs hover:bg-foreground/5";
 const HEAD = "px-2.5 pt-1.5 pb-0.5 text-[11px] font-medium text-muted-foreground";
+// an action on the bar: its icon and its name, filled
+const ACTION =
+  "flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-muted px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/70 [&_svg]:size-4";
 
 // total and onSelectAll are optional: given, the bar offers Select all until everything is ticked.
 // categories and onFile are optional too: given, Move to lists them and can make a new one
@@ -20,7 +26,7 @@ export function SelectionBar({ count, total, onSelectAll, onMove, onDelete, onCl
   const [open, setOpen] = useState(false);
   // the new category's name, while it's being typed
   const [naming, setNaming] = useState(null);
-  if (count === 0) return null;
+  if (count === 0 || typeof document === "undefined") return null;
 
   const tops = categories?.list.filter((c) => !c.parentId) ?? [];
   const file = (c) => {
@@ -38,17 +44,33 @@ export function SelectionBar({ count, total, onSelectAll, onMove, onDelete, onCl
   // blocks set aside today still take notes
   const choices = [...blocks, ...droppedToday];
 
-  return (
-    <div className="flex flex-wrap items-center gap-2 rounded-xl bg-chrome px-3 py-2 text-sm text-chrome-ink">
-      <span className="px-1 tabular-nums">{count} selected</span>
-
-      {onSelectAll && count < total && (
+  return createPortal(
+    <motion.div
+      role="toolbar"
+      aria-label="Selected notes"
+      initial={{ opacity: 0, y: -16, x: "-50%" }}
+      animate={{ opacity: 1, y: 0, x: "-50%" }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="fixed top-6 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-2 overflow-x-auto rounded-xl bg-popover p-2 text-popover-foreground shadow-xl ring-1 ring-foreground/10 [scrollbar-width:none]"
+    >
+      {/* how many, and ✕ to untick them */}
+      <span className="flex h-9 shrink-0 items-center gap-2 rounded-lg bg-muted ps-3 pe-1 text-sm font-medium">
+        <span className="tabular-nums">{count} selected</span>
+        <span aria-hidden className="h-4 w-px bg-foreground/15" />
         <button
           type="button"
-          onClick={onSelectAll}
-          className="flex h-8 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-xs text-chrome-ink/80 transition-colors hover:bg-chrome-ink/10 hover:text-chrome-ink"
+          onClick={onClear}
+          aria-label="Clear selection"
+          className="flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
         >
-          <CheckCheck className="size-3.5" />
+          <X className="size-4" />
+        </button>
+      </span>
+      <span aria-hidden className="h-6 w-px shrink-0 bg-border" />
+
+      {onSelectAll && count < total && (
+        <button type="button" onClick={onSelectAll} className={ACTION}>
+          <CheckCheck />
           Select all {total}
         </button>
       )}
@@ -62,11 +84,8 @@ export function SelectionBar({ count, total, onSelectAll, onMove, onDelete, onCl
       >
         <PopoverTrigger
           render={
-            <button
-              type="button"
-              className="flex h-8 cursor-pointer items-center gap-1.5 rounded-lg bg-chip px-3 text-xs text-chip-ink hover:bg-chip/85"
-            >
-              <FolderInput className="size-3.5" />
+            <button type="button" className={cn(ACTION, "data-popup-open:bg-muted/70")}>
+              <FolderInput />
               Move to
             </button>
           }
@@ -160,23 +179,11 @@ export function SelectionBar({ count, total, onSelectAll, onMove, onDelete, onCl
         </PopoverContent>
       </Popover>
 
-      <button
-        type="button"
-        onClick={onDelete}
-        className="flex h-8 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-xs text-chrome-ink/70 transition-colors hover:bg-chrome-ink/10 hover:text-chrome-ink"
-      >
-        <Trash2 className="size-3.5" />
+      <button type="button" onClick={onDelete} className={cn(ACTION, "bg-red-500/15 text-red-600 hover:bg-red-500/25 dark:text-red-400")}>
+        <Trash2 />
         Delete
       </button>
-
-      <button
-        type="button"
-        onClick={onClear}
-        aria-label="Clear selection"
-        className="ml-auto flex size-8 cursor-pointer items-center justify-center rounded-lg text-chrome-ink/50 transition-colors hover:bg-chrome-ink/10 hover:text-chrome-ink"
-      >
-        <X className="size-4" />
-      </button>
-    </div>
+    </motion.div>,
+    document.body,
   );
 }
