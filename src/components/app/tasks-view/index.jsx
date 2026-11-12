@@ -49,6 +49,7 @@ import { useCategories } from "../categories-provider";
 import { onJumpToDay, takePendingDay } from "@/lib/jump-to-day";
 import { onDayTaskAdds, takeDayTaskAdds } from "@/lib/day-task-inbox";
 import { ViewHeader } from "../view-header";
+import { toast } from "sonner";
 
 // a column is 18rem with a 1.5rem gap after it
 const COLUMN_REM = 18;
@@ -172,8 +173,11 @@ export function TasksView() {
   // the same functions every render, so a day only redraws when its own tasks change
   const add = useCallback(
     (key, title) => {
-      // nothing is added before the saved tasks are here: it would have nowhere safe to go
-      if (!canWrite) return;
+      // nothing is added before the saved tasks are here: it would have nowhere safe to go (said, not silent)
+      if (!canWrite) {
+        toast("Your tasks haven't loaded yet, so this one can't be kept. Try again in a moment.");
+        return;
+      }
       setTasks((all) => ({ ...all, [key]: [{ id: crypto.randomUUID(), title, done: false }, ...(all[key] ?? [])] }));
       showDayToast({ title: "Added to", day: dayName(key), hint: title });
       markStep("add-day-task");

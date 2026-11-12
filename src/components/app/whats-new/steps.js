@@ -22,7 +22,8 @@ export const STEPS = [
     id: "label-colour",
     title: "Colour a label",
     hint: "On a task, open its label, then pick a colour just above New category.",
-    targets: [TODAY_CARD, "today", ...WAY_HOME],
+    // the whole of today stays clear, so Add a task and the rest keep working through the step
+    targets: ["today", ...WAY_HOME],
     point: [...ON_TODAY("label-button"), TODAY_CARD, ...WAY_HOME],
   },
   {

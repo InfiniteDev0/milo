@@ -39,7 +39,11 @@ function ColourRow({ category }) {
   const categories = useCategories();
   const now = labelColour(category);
   const pick = async (colour) => {
-    if (!(await checkColors())) return toast("Label colours switch on once migration 0023 is run in Supabase.");
+    // no column yet: say so, and let the step go, so the tour never holds the page on it
+    if (!(await checkColors())) {
+      markStep("label-colour");
+      return toast("Label colours switch on once migration 0023 is run in Supabase.");
+    }
     categories.setColor(category.id, colour);
     markStep("label-colour");
   };
