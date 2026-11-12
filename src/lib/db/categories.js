@@ -13,6 +13,8 @@ const COLUMNS = "id, parent_id, name, icon, favorite, position, created_at, upda
 const TRIES = [
   `${COLUMNS}, cover, cover_y, item_order, color`,
   `${COLUMNS}, cover, cover_y, item_order`,
+  // a colour without the order: 0023 run before 0022
+  `${COLUMNS}, cover, cover_y, color`,
   `${COLUMNS}, cover, cover_y`,
   COLUMNS,
 ];
