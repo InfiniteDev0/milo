@@ -1,5 +1,5 @@
 // The app's Block view, drawn for the landing page in light: top bar, the rail, the date, and the block columns
-// running off the right edge. Small rounding, no shadows. No data, no providers.
+// running off the right edge. Small rounding, no shadows but Milo's. No data, no providers.
 
 import { Archive, ChevronDown, ChevronLeft, ChevronRight, ChevronsRight, CirclePlus, Play, Search, Sun } from "lucide-react";
 import MiloFace from "@/components/MiloFace";
@@ -9,9 +9,9 @@ import { BLOCKS } from "./board-data";
 function RailIcon({ src, label, active }) {
   return (
     <span className="flex flex-col items-center gap-1">
-      <span className={`flex size-9 items-center justify-center rounded-md ${active ? "bg-black/[0.06]" : ""}`}>
+      <span className={`flex size-8 items-center justify-center rounded-md ${active ? "bg-black/[0.06]" : ""}`}>
         <span
-          className="size-5"
+          className="size-[18px]"
           style={{
             mask: `url(${src}) center / contain no-repeat`,
             WebkitMask: `url(${src}) center / contain no-repeat`,
@@ -19,7 +19,7 @@ function RailIcon({ src, label, active }) {
           }}
         />
       </span>
-      <span className={`text-[10px] ${active ? "text-black" : "text-black/60"}`}>{label}</span>
+      <span className={`text-[9px] ${active ? "text-black" : "text-black/60"}`}>{label}</span>
     </span>
   );
 }
@@ -88,9 +88,9 @@ export function BoardShot() {
 
       <div className="flex gap-1.5">
         {/* the rail: Home and Notes, Settings at the foot */}
-        <div className="hidden w-[64px] shrink-0 flex-col items-center gap-4 rounded-md bg-white py-4 sm:flex">
-          <ChevronsRight className="size-4 text-black/60" />
-          <span className="h-px w-6 bg-black/10" />
+        <div className="hidden w-[50px] shrink-0 flex-col items-center gap-3.5 rounded-md bg-white py-3.5 sm:flex">
+          <ChevronsRight className="size-3.5 text-black/60" />
+          <span className="h-px w-5 bg-black/10" />
           <RailIcon src="/home.svg" label="Home" active />
           <RailIcon src="/pencil.svg" label="Notes" />
           <span className="mt-auto">
@@ -116,13 +116,13 @@ export function BoardShot() {
               </span>
             </span>
           </div>
-          <div className="flex h-[26rem] gap-6 px-4 pt-1">
+          <div className="flex h-[32rem] gap-6 px-4 pt-1">
             {BLOCKS.map((b) => (
               <Column key={b.name} {...b} />
             ))}
           </div>
-          {/* Milo, bottom right, as in the app */}
-          <span className="absolute right-4 bottom-4 flex size-11 items-center justify-center overflow-hidden rounded-md bg-white">
+          {/* Milo, bottom right, as in the app, lifted off the board */}
+          <span className="absolute right-4 bottom-4 flex size-11 items-center justify-center overflow-hidden rounded-md bg-white shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
             <MiloFace className="size-11" />
           </span>
         </div>

@@ -1,12 +1,13 @@
-// The top of the landing page: a small line and the headline, centred in the navbar's 1200 box.
+// The top of the landing page: a small line, the headline and the view tabs in the navbar's 1200 box, then the app
+// a little wider than it.
 
 import { ViewSwitch } from "./view-switch";
 import { BoardShot } from "./board-shot";
 
 export function Hero() {
   return (
-    <section>
-      <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center gap-2 px-4 pt-20 pb-24 text-center lg:px-11 lg:pt-24">
+    <section className="pb-24">
+      <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center gap-2 px-4 pt-20 text-center lg:px-11 lg:pt-24">
         <span className="text-[12px] font-semibold! text-[#5e17eb] uppercase">
           Curated for you to stay productive
         </span>
@@ -16,10 +17,10 @@ export function Hero() {
         <div className="mt-6">
           <ViewSwitch />
         </div>
-        {/* the app's Block view, under the tabs */}
-        <div className="mt-8 w-full">
-          <BoardShot />
-        </div>
+      </div>
+      {/* the app's Block view, under the tabs, wider than the words */}
+      <div className="mx-auto mt-8 w-full max-w-[1440px] px-4 lg:px-8">
+        <BoardShot />
       </div>
     </section>
   );
