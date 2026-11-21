@@ -226,7 +226,7 @@ body{
   user-select: none;
   box-sizing: border-box;
   scroll-behavior: smooth;
-  font-family: 'Outfit';
+  font-family: 'Albert sans';
 }
 
 /* The app doesn't select text on drag, but what you write can always be selected and copied. */
@@ -240,12 +240,12 @@ h1 , h2 , h3 , h4 , h5 , h6 , li{
 }
 
 p , span{
-  font-family: 'outfit';
+  font-family: 'Albert sans';
   font-weight: 400;
 }
 
 a{
-  font-family: 'outfit';
+  font-family: 'Albert sans';
   font-weight: 500;
 }
 

@@ -26,7 +26,7 @@ const NAV_LINKS = [
   { label: "About", href: "/about" },
 ];
 
-// every link looks like Product: Albert Sans, regular (marked ! because globals.css's unlayered a { Outfit 500 } beats plain utilities), a soft fill under the pointer and on the page you are on
+// every link looks like Product: Albert Sans, regular (marked ! because globals.css's unlayered a { 500 } beats plain utilities), a soft fill under the pointer and on the page you are on
 const LINK = "rounded-md px-2.5 py-1.5 [font-family:'Albert_sans']! text-[14px] font-normal! text-black/80 transition-colors hover:bg-black/[0.06] hover:text-black";
 const ON = "bg-black/[0.06] text-black";
 const FOLD = {

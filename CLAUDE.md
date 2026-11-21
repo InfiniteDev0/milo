@@ -81,7 +81,8 @@ gone, not paused. Brand assets live in `web/public/`.
 again via `@import` at the top of `globals.css`, which also hardcodes
 `font-family: 'Outfit'` / `'Albert sans'` on body and headings. The `next/font` variable
 names are also swapped (`Outfit` → `--font-Albert-sans`). **The user has explicitly said
-to leave the font setup alone.** Don't tidy it.
+to leave the font setup alone.** Don't tidy it. Since 21 Nov 2026 every globals.css rule
+(body, headings, p/span, a) names Albert Sans; the user doesn't want Outfit anywhere.
 
 ## Routes
 

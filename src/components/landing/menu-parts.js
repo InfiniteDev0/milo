@@ -1,5 +1,5 @@
 // What every navbar panel shares: the column title, and a link row with a soft fill under the pointer.
-// Both set Albert Sans, regular, marked ! since globals.css's unlayered a { Outfit 500 } beats plain utilities.
+// Both set Albert Sans, regular, marked ! since globals.css's unlayered a { 500 } beats plain utilities.
 
 export const HEAD = "font-mono text-[11px] tracking-[0.12em] text-black/45 uppercase";
 
