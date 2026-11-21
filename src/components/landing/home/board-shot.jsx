@@ -1,9 +1,11 @@
 "use client";
 
 // The app, drawn for the landing page: top bar, the rail, the date, and the columns running off the right edge. view
-// picks Block view (a column per block) or Task view (a column per day), from the tabs above it. The sun in its bar
+// picks Block view (a column per block) or Task view (a column per day), from the tabs above it. The arrows step the
+// days back and forward, and in Task view a task drags onto any day. The sun in its bar
 // flips it and the page between light and dark; the app's sweep, bottom up, plays on the board only. Small rounding, no shadows but Milo's. No data, no providers.
 
+import { useState } from "react";
 import { Archive, ChevronDown, ChevronLeft, ChevronRight, ChevronsRight, Moon, Play, Search, Sun } from "lucide-react";
 import MiloFace from "@/components/MiloFace";
 import { BOARD_THEMES } from "./board-themes";
@@ -12,6 +14,9 @@ import { BOARD_VT, sweep } from "./board-sweep";
 import { setLandingDark, useLandingDark } from "../landing-theme";
 import { ActionSwapIcon } from "@/components/motion/action-swap";
 import { DayColumns } from "./day-columns";
+import { TASKS, dayAt } from "./board-data";
+
+const ARROW = "flex size-7 cursor-pointer items-center justify-center rounded-md text-(--b-ink3) hover:bg-(--b-fill2) hover:text-(--b-ink)";
 
 // a sidebar icon: the app's own svg as a mask, coloured here
 function RailIcon({ src, label, active }) {
@@ -35,6 +40,11 @@ function RailIcon({ src, label, active }) {
 export function BoardShot({ view = "blocks" }) {
   // the page's own light or dark: the toggle here sets both, the sweep plays on the board alone
   const dark = useLandingDark();
+  // the first day shown (0 is today), moved by the arrows; the tasks live here so a drag stays put across views
+  const [start, setStart] = useState(0);
+  const [tasks, setTasks] = useState(TASKS);
+  const move = (id, day) => setTasks((all) => [...all.filter((t) => t.id !== id), ...all.filter((t) => t.id === id).map((t) => ({ ...t, day }))]);
+  const shown = dayAt(start);
 
   return (
     <div
@@ -89,10 +99,16 @@ export function BoardShot({ view = "blocks" }) {
         <div className="relative min-w-0 flex-1 overflow-hidden rounded-md bg-(--b-panel)">
           <div className="flex items-center gap-3 px-4 py-3">
             <span className="rounded-md bg-(--b-fill) px-3 py-1.5 text-[13px]">
-              <span className="text-[#3b82f6]">Saturday</span> : 11/21/2026
+              <span className="text-[#3b82f6]">{shown.toLocaleDateString("en-US", { weekday: "long" })}</span> :{" "}
+              {shown.toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "numeric" })}
             </span>
-            <ChevronLeft className="size-4 text-(--b-ink3)" />
-            <ChevronRight className="size-4 text-(--b-ink3)" />
+            {/* a day back, a day forward */}
+            <button type="button" aria-label="A day back" onClick={() => setStart((n) => n - 1)} className={ARROW}>
+              <ChevronLeft className="size-4" />
+            </button>
+            <button type="button" aria-label="A day forward" onClick={() => setStart((n) => n + 1)} className={ARROW}>
+              <ChevronRight className="size-4" />
+            </button>
             {/* Start and Archived belong to blocks */}
             {view === "blocks" && (
               <span className="ml-auto hidden items-center gap-2 sm:flex">
@@ -106,7 +122,7 @@ export function BoardShot({ view = "blocks" }) {
               </span>
             )}
           </div>
-          <div className="flex h-[32rem] gap-6 px-4 pt-1">{view === "blocks" ? <BlockColumns /> : <DayColumns />}</div>
+          <div className="flex h-[32rem] gap-6 px-4 pt-1">{view === "blocks" ? <BlockColumns /> : <DayColumns start={start} tasks={tasks} onMove={move} />}</div>
           {/* Milo, bottom right, as in the app, lifted off the board */}
           <span className="absolute right-4 bottom-4 flex size-11 items-center justify-center overflow-hidden rounded-md bg-white shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
             <MiloFace className="size-11" />

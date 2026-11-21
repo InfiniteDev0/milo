@@ -1,14 +1,28 @@
-// The board's Task view, as the app's day columns: the day (today in blue) and its date, how many tasks and how many
-// done, Add a task, then each task with its tick, a time if it has one, and its tools underneath.
+"use client";
 
+// The board's Task view, as the app's day columns: the day (today in blue) and its date, how many tasks and how many
+// done, Add a task, then each task with its tick, a time if it has one, and its tools underneath. Drag a task onto any
+// day, back or forward; the board's arrows move which four days show.
+
+import { useState } from "react";
 import { Check, CirclePlus, NotebookPen, Play, Workflow } from "lucide-react";
-import { DAYS } from "./board-data";
+import { dayAt } from "./board-data";
 
 const BLUE = "#2f80ed";
+const SHOWN = 4;
 
-function Task({ title, time, done }) {
+function Task({ id, title, time, done, lifted, onLift, onDrop }) {
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-(--b-fill2) bg-(--b-card) px-3 py-2.5">
+    <div
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", id);
+        onLift(id);
+      }}
+      onDragEnd={onDrop}
+      className={`flex cursor-grab flex-col gap-2 rounded-md border border-(--b-fill2) bg-(--b-card) px-3 py-2.5 active:cursor-grabbing ${lifted ? "opacity-40" : ""}`}
+    >
       <div className="flex items-start gap-2.5">
         <span className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full ${done ? "bg-[#00b86b] text-white" : "border border-(--b-line)"}`}>
           {done && <Check className="size-3" strokeWidth={3} />}
@@ -30,15 +44,27 @@ function Task({ title, time, done }) {
   );
 }
 
-function Day({ day, date, today, tasks }) {
+function Day({ n, tasks, over, setOver, lifted, setLifted, onMove }) {
+  const date = dayAt(n);
   const done = tasks.filter((t) => t.done).length;
   return (
-    <div className="flex w-[15rem] shrink-0 flex-col gap-2">
+    <div
+      onDragOver={(e) => {
+        e.preventDefault();
+        if (over !== n) setOver(n);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        onMove(e.dataTransfer.getData("text/plain"), n);
+        setOver(null);
+      }}
+      className={`-m-1.5 flex w-[15rem] shrink-0 flex-col gap-2 rounded-md p-1.5 ${over === n ? "bg-(--b-fill)" : ""}`}
+    >
       <div className="flex h-9 items-center gap-1.5">
-        <span className="text-[15px] font-semibold!" style={today ? { color: BLUE } : undefined}>
-          {day}
+        <span className="text-[15px] font-semibold!" style={n === 0 ? { color: BLUE } : undefined}>
+          {date.toLocaleDateString("en-US", { weekday: "long" })}
         </span>
-        <span className="text-[15px] text-(--b-ink3)">{date}</span>
+        <span className="text-[15px] text-(--b-ink3)">{date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
         <span className="ml-auto flex items-center gap-1.5">
           {/* as the app: no count on an empty day */}
           {tasks.length > 0 && (
@@ -54,12 +80,26 @@ function Day({ day, date, today, tasks }) {
         Add a task
       </div>
       {tasks.map((t) => (
-        <Task key={t.title} {...t} />
+        <Task
+          key={t.id}
+          {...t}
+          lifted={lifted === t.id}
+          onLift={setLifted}
+          onDrop={() => {
+            setLifted(null);
+            setOver(null);
+          }}
+        />
       ))}
     </div>
   );
 }
 
-export function DayColumns() {
-  return DAYS.map((d) => <Day key={d.day} {...d} />);
+// start: the first day shown, counted from today; tasks and onMove come from the board, so they stay put across views
+export function DayColumns({ start, tasks, onMove }) {
+  const [over, setOver] = useState(null);
+  const [lifted, setLifted] = useState(null);
+  return Array.from({ length: SHOWN }, (_, i) => start + i).map((n) => (
+    <Day key={n} n={n} tasks={tasks.filter((t) => t.day === n)} over={over} setOver={setOver} lifted={lifted} setLifted={setLifted} onMove={onMove} />
+  ));
 }
