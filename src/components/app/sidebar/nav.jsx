@@ -16,7 +16,8 @@ import {
 export const NAV_MAIN = [
   { href: "/daily", label: "Home", icon: "/home.svg" },
   { href: "/notes", label: "Notes", icon: "/pencil.svg" },
-  { href: "/journal", label: "Journal", icon: "/notes.svg" },
+  // Journal is parked for now; the page still works at /journal
+  // { href: "/journal", label: "Journal", icon: "/notes.svg" },
 ];
 
 export const NAV_BOTTOM = [{ href: "/settings", label: "Settings", icon: "/seetings.svg" }];

@@ -1,23 +1,19 @@
-import Navbar from "@/components/landing/navbar";
-import Hero from "@/components/landing/hero";
-import Philosophy from "@/components/landing/philosophy";
-import LifeBlocksSection from "@/components/landing/life-blocks";
-import Features from "@/components/landing/features";
-import Process from "@/components/landing/process";
-import BehindTheScenes from "@/components/landing/behind-the-scenes";
-import CTA from "@/components/landing/cta";
+import { Hero } from "@/components/landing/home/hero";
+// next, one at a time once the hero is right:
+// import { Chips } from "@/components/landing/home/chips";
+// import { Tour } from "@/components/landing/home/tour";
+// import { Promises } from "@/components/landing/home/promises";
+// import { Closing } from "@/components/landing/home/closing";
 
-
+// The home page, built a section at a time: the navbar (in the layout) and the hero first.
 export default function Home() {
   return (
-    <div className="px-3">
+    <>
       <Hero />
-      {/* <Philosophy />
-      <LifeBlocksSection /> */}
-      <Process/>
-      {/* <Features/>
-      <BehindTheScenes /> */}
-      {/* <CTA /> */}
-    </div>
+      {/* <section className="flex justify-center px-5 pb-6"><Chips /></section>
+      <Tour />
+      <Promises />
+      <Closing /> */}
+    </>
   );
 }

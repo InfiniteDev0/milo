@@ -7,7 +7,7 @@ export default function MarketingLayout({ children }) {
   return (
     <>
       <Navbar />
-      <div className="pt-24">{children}</div>
+      {children}
       <Footer />
     </>
   );

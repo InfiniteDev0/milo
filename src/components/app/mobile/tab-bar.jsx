@@ -1,7 +1,7 @@
 "use client";
 
 // Phones only (Manasik's strategy): the sidebar gives way to a glass bar floating at the bottom.
-// Home, Notes and Journal, each an icon over its name, the one you're on in a lighter pill that
+// Home and Notes (Journal is parked), each an icon over its name, the one you're on in a lighter pill that
 // slides across. More grows the bar upward with the rest of the pages. Beside it, +, its own
 // round button, opens Create. Every target is at least 44px.
 
@@ -22,7 +22,7 @@ import { GLASS } from "./glass";
 const TABS = [
   { title: "Home", icon: "/home.svg", href: "/daily" },
   { title: "Notes", icon: "/pencil.svg", href: "/notes" },
-  { title: "Journal", icon: "/notes.svg", href: "/journal" },
+  // { title: "Journal", icon: "/notes.svg", href: "/journal" },
   { title: "More", href: null },
 ];
 
@@ -177,8 +177,8 @@ export function MobileTabBar() {
           <div className="relative flex items-center">
             <span
               aria-hidden
-              className="pointer-events-none absolute inset-y-0 left-0 w-1/4 rounded-full bg-black/[0.07] transition-[translate] duration-[260ms] ease-[cubic-bezier(0.22,1,0.36,1)] dark:bg-white/15"
-              style={{ translate: `${active * 100}% 0` }}
+              className="pointer-events-none absolute inset-y-0 left-0 rounded-full bg-black/[0.07] transition-[translate] duration-[260ms] ease-[cubic-bezier(0.22,1,0.36,1)] dark:bg-white/15"
+              style={{ width: `${100 / TABS.length}%`, translate: `${active * 100}% 0` }}
             />
             {TABS.map((t, i) => {
               const look = cn(
