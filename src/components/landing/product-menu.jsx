@@ -40,7 +40,7 @@ export const PRODUCT = [
 export function ProductLink({ label, href, Icon, tone, onPick }) {
   return (
     <Link href={href} onClick={onPick} className="group flex items-center gap-2.5 rounded-lg py-1.5 text-[14px] text-black/85 transition-colors hover:text-black">
-      <span className="flex size-5 shrink-0 items-center justify-center rounded-md text-white transition-transform group-hover:scale-110" style={{ background: tone }}>
+      <span className="flex size-5 shrink-0 items-center justify-center rounded-[4px] text-white transition-transform group-hover:scale-110" style={{ background: tone }}>
         <Icon className="size-3" strokeWidth={2.5} />
       </span>
       {label}

@@ -17,8 +17,9 @@ const NAV_LINKS = [
   { label: "About", href: "/about" },
 ];
 
-// every link: a soft fill under the pointer
-const LINK = "rounded-md px-2.5 py-1.5 text-[14px] transition-colors hover:bg-black/[0.05] hover:text-black";
+// every link looks like Product: dark text, a soft fill under the pointer and on the page you are on
+const LINK = "rounded-md px-2.5 py-1.5 text-[14px] text-black/80 transition-colors hover:bg-black/[0.05] hover:text-black";
+const ON = "bg-black/[0.05] text-black";
 const FOLD = {
   initial: { height: 0, opacity: 0 },
   animate: { height: "auto", opacity: 1 },
@@ -71,7 +72,7 @@ export default function Navbar() {
               type="button"
               aria-expanded={product}
               onClick={() => setProduct((v) => !v)}
-              className={cn(LINK, "flex cursor-pointer items-center gap-1", product || pathname === "/features" ? "bg-black/[0.05] text-black" : "text-black/65")}
+              className={cn(LINK, "flex cursor-pointer items-center gap-1", (product || pathname === "/features") && ON)}
             >
               Product
               <ChevronDown className={cn("size-3.5 transition-transform duration-200", product && "rotate-180")} />
@@ -79,7 +80,7 @@ export default function Navbar() {
           </li>
           {NAV_LINKS.map(({ label, href }) => (
             <li key={href} onMouseEnter={hide}>
-              <Link href={href} className={cn(LINK, "block", pathname === href ? "text-[#5e17eb]" : "text-black/65")}>
+              <Link href={href} className={cn(LINK, "block", pathname === href && ON)}>
                 {label}
               </Link>
             </li>
