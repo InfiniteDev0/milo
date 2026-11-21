@@ -40,9 +40,12 @@ function Day({ day, date, today, tasks }) {
         </span>
         <span className="text-[15px] text-(--b-ink3)">{date}</span>
         <span className="ml-auto flex items-center gap-1.5">
-          <span className="rounded-[4px] bg-(--b-fill2) px-1.5 py-0.5 text-[11px] text-(--b-ink2) tabular-nums">
-            {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
-          </span>
+          {/* as the app: no count on an empty day */}
+          {tasks.length > 0 && (
+            <span className="rounded-[4px] bg-(--b-fill2) px-1.5 py-0.5 text-[11px] text-(--b-ink2) tabular-nums">
+              {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
+            </span>
+          )}
           {done > 0 && <span className="rounded-[4px] bg-[#00b86b]/15 px-1.5 py-0.5 text-[11px] text-[#00a35f] tabular-nums">{done} done</span>}
         </span>
       </div>

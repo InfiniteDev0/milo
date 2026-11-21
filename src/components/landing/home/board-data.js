@@ -1,5 +1,5 @@
 // What the landing board shows. Block view: four blocks in their own colours, each with today's tasks.
-// Task view: four days from today, each with its tasks (a time if it has one, ticked if done).
+// Task view: four days from today, each with its tasks (a time if it has one, ticked if done); Monday and Tuesday blank.
 
 export const BLOCKS = [
   { name: "Morning", tone: "#f5c443", ink: "#2a2008", tasks: ["Read", "Walk", "Breakfast", "Plan the day"] },
@@ -16,6 +16,6 @@ export const DAYS = [
     tasks: [{ title: "Read", done: true }, { title: "Walk", done: true }, { title: "Client project", time: "10:00" }, { title: "Python" }],
   },
   { day: "Sunday", date: "Nov 22", tasks: [{ title: "Breakfast with family", time: "9:30" }, { title: "Plan the week" }] },
-  { day: "Monday", date: "Nov 23", tasks: [{ title: "Design" }, { title: "Logo" }, { title: "AI course", time: "18:00" }] },
-  { day: "Tuesday", date: "Nov 24", tasks: [{ title: "Social post" }, { title: "Groceries" }] },
+  { day: "Monday", date: "Nov 23", tasks: [] },
+  { day: "Tuesday", date: "Nov 24", tasks: [] },
 ];

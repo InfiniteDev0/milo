@@ -67,16 +67,16 @@ export default function Footer() {
 
   return (
     <footer className="w-full px-3 py-4">
-      <div className="relative w-full overflow-hidden rounded-[24px] bg-white p-6 sm:rounded-[32px] sm:p-10 md:p-14">
+      <div className="relative w-full overflow-hidden rounded-[24px] bg-white p-6 dark:bg-[#1e1e1e] sm:rounded-[32px] sm:p-10 md:p-14">
         <div className="flex flex-col justify-between gap-8 md:flex-row md:gap-10">
           {/* Left: newsletter */}
           <div className="flex flex-col gap-5 md:gap-6">
-            <h2 className="m-0 text-xl font-normal text-black/70 sm:text-2xl">
+            <h2 className="m-0 text-xl font-normal text-black/70 sm:text-2xl dark:text-white/70">
               Sign up for our newsletter
             </h2>
             <form
               onSubmit={(e) => e.preventDefault()}
-              className="flex w-full max-w-sm items-center gap-2 rounded-full bg-white/70 p-1.5"
+              className="flex w-full max-w-sm items-center gap-2 rounded-full bg-white/70 p-1.5 dark:bg-white/5"
             >
               <input
                 type="email"
@@ -84,11 +84,11 @@ export default function Footer() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@email.com"
-                className="min-w-0 flex-1 bg-muted px-3 py-2 text-sm text-black outline-none placeholder:text-black/40 sm:px-4"
+                className="min-w-0 flex-1 bg-muted px-3 py-2 text-sm text-black outline-none placeholder:text-black/40 dark:text-white dark:placeholder:text-white/40 sm:px-4"
               />
               <Button
                 type="submit"
-                className="shrink-0 bg-black text-white text-sm font-medium rounded-full px-5 py-2 h-auto transition-colors duration-300 hover:bg-black/80"
+                className="shrink-0 bg-black text-white text-sm font-medium rounded-full px-5 py-2 h-auto transition-colors duration-300 hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80"
               >
                 Subscribe
               </Button>
@@ -97,7 +97,7 @@ export default function Footer() {
 
           {/* Right: pages */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
-            <span className="flex items-center gap-1 text-black/40 sm:pt-0.5">
+            <span className="flex items-center gap-1 text-black/40 sm:pt-0.5 dark:text-white/40">
               <CornerDownRight className="size-4" />
               Pages
             </span>
@@ -106,7 +106,7 @@ export default function Footer() {
                 <li key={label}>
                   <Link
                     href={href}
-                    className="text-black transition-colors duration-300 hover:text-[#5e17eb]"
+                    className="text-black transition-colors duration-300 hover:text-[#5e17eb] dark:text-white"
                   >
                     {label}
                   </Link>
@@ -125,7 +125,7 @@ export default function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={label}
-              className="flex size-9 items-center justify-center rounded-full bg-white/70 text-black transition-colors duration-300 hover:bg-white"
+              className="flex size-9 items-center justify-center rounded-full bg-white/70 text-black transition-colors duration-300 hover:bg-white dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
             >
               <Icon className="size-4" />
             </a>
@@ -135,11 +135,11 @@ export default function Footer() {
         {/* Bottom row */}
         <div className="mt-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end sm:gap-4">
           <h1
-            className="text-3xl font-normal text-black transition-colors duration-300  sm:text-4xl md:text-5xl break-all"
+            className="text-3xl font-normal text-black transition-colors duration-300 dark:text-white sm:text-4xl md:text-5xl break-all"
           >
             Milo Daily Planner
           </h1>
-          <p className="m-0 text-sm text-black/40">
+          <p className="m-0 text-sm text-black/40 dark:text-white/40">
             Milo. All rights reserved.
           </p>
         </div>

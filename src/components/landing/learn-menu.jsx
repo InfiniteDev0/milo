@@ -44,8 +44,8 @@ export function LearnColumns({ onPick }) {
       {/* the card: two columns wide on a big screen */}
       <div className="col-span-2 flex flex-col gap-2">
         <span className={HEAD}>Why Milo</span>
-        <Link href="/about" onClick={onPick} className="group flex flex-col gap-4 rounded-xl bg-black/[0.03] p-5 transition-colors hover:bg-black/[0.05]">
-          <span className="text-[17px] leading-snug text-black/85">&ldquo;Milo notices what you did, not what you didn&rsquo;t.&rdquo;</span>
+        <Link href="/about" onClick={onPick} className="group flex flex-col gap-4 rounded-xl bg-black/[0.03] p-5 transition-colors hover:bg-black/[0.05] dark:bg-white/[0.04] dark:hover:bg-white/[0.07]">
+          <span className="text-[17px] leading-snug text-black/85 dark:text-white/85">&ldquo;Milo notices what you did, not what you didn&rsquo;t.&rdquo;</span>
           <span className="flex items-center gap-1 text-[14px] font-semibold">
             Read why
             <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />

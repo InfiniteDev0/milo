@@ -2,14 +2,14 @@
 
 // The app, drawn for the landing page: top bar, the rail, the date, and the columns running off the right edge. view
 // picks Block view (a column per block) or Task view (a column per day), from the tabs above it. The sun in its bar
-// flips it between light and dark with the app's sweep, bottom up. Small rounding, no shadows but Milo's. No data, no providers.
+// flips it and the page between light and dark; the app's sweep, bottom up, plays on the board only. Small rounding, no shadows but Milo's. No data, no providers.
 
-import { useState } from "react";
 import { Archive, ChevronDown, ChevronLeft, ChevronRight, ChevronsRight, Moon, Play, Search, Sun } from "lucide-react";
 import MiloFace from "@/components/MiloFace";
 import { BOARD_THEMES } from "./board-themes";
 import { BlockColumns } from "./block-columns";
 import { BOARD_VT, sweep } from "./board-sweep";
+import { setLandingDark, useLandingDark } from "../landing-theme";
 import { ActionSwapIcon } from "@/components/motion/action-swap";
 import { DayColumns } from "./day-columns";
 
@@ -33,7 +33,8 @@ function RailIcon({ src, label, active }) {
 }
 
 export function BoardShot({ view = "blocks" }) {
-  const [dark, setDark] = useState(false);
+  // the page's own light or dark: the toggle here sets both, the sweep plays on the board alone
+  const dark = useLandingDark();
 
   return (
     <div
@@ -50,10 +51,10 @@ export function BoardShot({ view = "blocks" }) {
           <ChevronDown className="size-3.5 text-(--b-ink2)" />
         </span>
         <span className="ml-auto flex items-center gap-4 text-(--b-ink2)">
-          {/* the theme toggle: flips this board, not the page */}
+          {/* the theme toggle: the board sweeps, the page behind it just switches */}
           <button
             type="button"
-            onClick={() => sweep(() => setDark((d) => !d))}
+            onClick={() => sweep(() => setLandingDark(!dark))}
             aria-label={dark ? "Show it in light" : "Show it in dark"}
             className="flex size-7 cursor-pointer items-center justify-center rounded-md hover:bg-(--b-fill2) hover:text-(--b-ink)"
           >

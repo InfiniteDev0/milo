@@ -1,5 +1,5 @@
 // The app's theme sweep (theme-toggle.jsx's "rectangle", bottom up), on the landing board alone: a view transition
-// on the board's own name, with the page itself left still.
+// on the board's own name. The page behind it switches at once: its old picture is dropped, its new one shown.
 
 import { flushSync } from "react-dom";
 
@@ -7,8 +7,8 @@ export const BOARD_VT = "milo-board";
 
 const STYLE_ID = "milo-board-vt";
 const CSS = `
-html[data-board-vt]::view-transition-old(root),
-html[data-board-vt]::view-transition-new(root) { animation: none; }
+html[data-board-vt]::view-transition-old(root) { display: none; }
+html[data-board-vt]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 ::view-transition-old(${BOARD_VT}) { animation: none; mix-blend-mode: normal; }
 ::view-transition-new(${BOARD_VT}) { mix-blend-mode: normal; animation: milo-board-reveal 400ms ease-out; }
 @keyframes milo-board-reveal {

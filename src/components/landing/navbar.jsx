@@ -27,8 +27,8 @@ const NAV_LINKS = [
 ];
 
 // every link looks like Product: Albert Sans, regular (marked ! because globals.css's unlayered a { 500 } beats plain utilities), a soft fill under the pointer and on the page you are on
-const LINK = "rounded-md px-2.5 py-1.5 [font-family:'Albert_sans']! text-[14px] font-normal! text-black/80 transition-colors hover:bg-black/[0.06] hover:text-black";
-const ON = "bg-black/[0.06] text-black";
+const LINK = "rounded-md px-2.5 py-1.5 [font-family:'Albert_sans']! text-[14px] font-normal! text-black/80 transition-colors hover:bg-black/[0.06] hover:text-black dark:text-white/80 dark:hover:bg-white/[0.08] dark:hover:text-white";
+const ON = "bg-black/[0.06] text-black dark:bg-white/[0.08] dark:text-white";
 const FOLD = {
   initial: { height: 0, opacity: 0 },
   animate: { height: "auto", opacity: 1 },
@@ -69,10 +69,13 @@ export default function Navbar() {
   const Panel = MENUS.find((m) => m.key === menu)?.Panel;
 
   return (
-    <nav onMouseLeave={hide} className="sticky top-0 z-50 bg-white">
+    <nav onMouseLeave={hide} className="sticky top-0 z-50 bg-white dark:bg-[#111111]">
       <div className="relative mx-auto flex h-14 w-full max-w-[1200px] items-center gap-6 px-4 lg:px-11">
-        <Link href="/" aria-label="Go to home" className="flex shrink-0 items-center gap-1">
-          <MiloFace className="size-8 touch-none select-none" />
+        <Link href="/" aria-label="Go to home" className="flex shrink-0 items-center gap-1.5">
+          {/* his lines are near-black, so on the dark bar he sits on a white tile, as in the app */}
+          <span className="flex size-8 items-center justify-center overflow-hidden rounded-md dark:bg-white">
+            <MiloFace className="size-8 touch-none select-none" />
+          </span>
           <span className="text-[19px] font-semibold tracking-[-0.04em]">Milo</span>
         </Link>
 
@@ -101,10 +104,10 @@ export default function Navbar() {
         </ul>
 
         <div onMouseEnter={hide} className="ml-auto hidden items-center gap-2.5 md:flex">
-          <Link href="/auth" className="rounded-md bg-black/[0.05] px-3 py-1 text-[14px] font-semibold transition-colors hover:bg-black/10">
+          <Link href="/auth" className="rounded-md bg-black/[0.05] px-3 py-1 text-[14px] font-semibold transition-colors hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
             Log in
           </Link>
-          <Link href="/auth" className="rounded-md bg-black px-3 py-1 text-[14px] font-semibold text-white transition-opacity hover:opacity-85">
+          <Link href="/auth" className="rounded-md bg-black px-3 py-1 text-[14px] font-semibold text-white transition-opacity hover:opacity-85 dark:bg-white dark:text-black">
             Sign up
           </Link>
         </div>
@@ -114,7 +117,7 @@ export default function Navbar() {
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-label="Toggle menu"
-          className="ml-auto flex size-8 items-center justify-center rounded-lg bg-black/[0.05] md:hidden"
+          className="ml-auto flex size-8 items-center justify-center rounded-lg bg-black/[0.05] md:hidden dark:bg-white/10"
         >
           {open ? <X className="size-4" /> : <Menu className="size-4" />}
         </button>
@@ -126,7 +129,7 @@ export default function Navbar() {
           <motion.div
             {...FOLD}
             onMouseEnter={() => show(menu)}
-            className="absolute inset-x-0 top-full hidden overflow-hidden bg-white shadow-[0_24px_40px_-24px_rgba(0,0,0,0.25)] md:block"
+            className="absolute inset-x-0 top-full hidden overflow-hidden bg-white dark:bg-[#111111] shadow-[0_24px_40px_-24px_rgba(0,0,0,0.25)] md:block"
           >
             <div className="mx-auto w-full max-w-[1200px] px-4 pt-3 pb-8 lg:px-11">
               {/* a fresh key, so switching panels swaps the columns in place */}
@@ -154,10 +157,10 @@ export default function Navbar() {
                 ))}
               </ul>
               <div className="grid grid-cols-2 gap-2">
-                <Link href="/auth" className="rounded-lg bg-black/[0.05] py-1.5 text-center text-[14px] font-semibold">
+                <Link href="/auth" className="rounded-lg bg-black/[0.05] py-1.5 text-center text-[14px] font-semibold dark:bg-white/10">
                   Log in
                 </Link>
-                <Link href="/auth" className="rounded-lg bg-black py-1.5 text-center text-[14px] font-semibold text-white">
+                <Link href="/auth" className="rounded-lg bg-black py-1.5 text-center text-[14px] font-semibold text-white dark:bg-white dark:text-black">
                   Sign up
                 </Link>
               </div>

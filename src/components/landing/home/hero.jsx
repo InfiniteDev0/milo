@@ -1,16 +1,14 @@
 // The top of the landing page: stars behind it, a small line and the headline in the navbar's 1200 box, then the view
 // tabs and the app under them.
 
-import { ShootingStars } from "@/components/ui/shooting-stars";
-import { StarsBackground } from "@/components/ui/stars-background";
+import { HeroSky } from "./hero-sky";
 import { HeroStage } from "./hero-stage";
 
 export function Hero() {
   return (
     <section className="relative overflow-hidden pb-24">
-      {/* the sky: dark stars, since the page is light */}
-      <StarsBackground starColor="40, 30, 80" starDensity={0.0003} />
-      <ShootingStars />
+      {/* the sky: dark stars on light, white on dark */}
+      <HeroSky />
       <div className="relative mx-auto flex w-full max-w-[1200px] flex-col items-center gap-2 px-4 pt-20 text-center lg:px-11 lg:pt-24">
         <span className="text-[12px] font-semibold! text-[#5e17eb] uppercase">
           Curated for you to stay productive

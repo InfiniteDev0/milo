@@ -68,7 +68,7 @@ export function SolutionsColumns({ onPick }) {
                   {label}
                   <span className="rounded-[4px] bg-[#5e17eb]/8 px-1.5 py-px font-mono text-[10px] text-[#5e17eb]">NEW</span>
                 </span>
-                <span className="text-[13px] text-black/50">{hint}</span>
+                <span className="text-[13px] text-black/50 dark:text-white/50">{hint}</span>
               </span>
             </Link>
           ))}
