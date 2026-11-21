@@ -1,49 +1,94 @@
 "use client";
 
-// The site's top bar, laid out as ClickUp's: Milo and the pages on the left, Log in and Sign up on the right.
-// On a phone the pages fold into Menu.
+// The site's top bar, laid out as ClickUp's: Milo, Product (opens a panel of what's inside), Pricing and About on
+// the left; Log in and Sign up on the right. On a phone the pages fold into Menu.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MiloFace from "../MiloFace";
+import { ProductColumns } from "./product-menu";
 
 const NAV_LINKS = [
-  { label: "Features", href: "/features" },
   { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
 ];
 
+const LINK = "rounded-lg px-2.5 py-1.5 text-[14px] transition-colors hover:text-black";
+const FOLD = {
+  initial: { height: 0, opacity: 0 },
+  animate: { height: "auto", opacity: 1 },
+  exit: { height: 0, opacity: 0 },
+  transition: { duration: 0.22, ease: "easeInOut" },
+};
+
 export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [product, setProduct] = useState(false);
+  const leave = useRef(null);
+
+  // a new page folds everything away
+  const [at, setAt] = useState(pathname);
+  if (at !== pathname) {
+    setAt(pathname);
+    setProduct(false);
+    setOpen(false);
+  }
+  // so does Escape
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && setProduct(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // the pointer can cross the gap between Product and its panel without it closing
+  const show = () => {
+    clearTimeout(leave.current);
+    setProduct(true);
+  };
+  const hide = () => {
+    clearTimeout(leave.current);
+    leave.current = setTimeout(() => setProduct(false), 150);
+  };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-[1200px] items-center gap-8 px-4 lg:px-11">
+    <nav onMouseLeave={hide} className="sticky top-0 z-50 bg-white">
+      <div className="mx-auto flex h-14 w-full max-w-[1200px] items-center gap-6 px-4 lg:px-11">
         <Link href="/" aria-label="Go to home" className="flex shrink-0 items-center gap-1">
           <MiloFace className="size-8 touch-none select-none" />
           <span className="text-[19px] font-semibold tracking-[-0.04em]">Milo</span>
         </Link>
 
-        <ul className="hidden items-center gap-6 md:flex">
+        <ul className="hidden items-center gap-1.5 md:flex">
+          <li onMouseEnter={show}>
+            <button
+              type="button"
+              aria-expanded={product}
+              onClick={() => setProduct((v) => !v)}
+              className={cn(LINK, "flex cursor-pointer items-center gap-1", product || pathname === "/features" ? "bg-black/[0.05] text-black" : "text-black/65")}
+            >
+              Product
+              <ChevronDown className={cn("size-3.5 transition-transform duration-200", product && "rotate-180")} />
+            </button>
+          </li>
           {NAV_LINKS.map(({ label, href }) => (
-            <li key={href}>
-              <Link href={href} className={cn("text-[14px] transition-colors hover:text-black", pathname === href ? "text-[#5e17eb]" : "text-black/65")}>
+            <li key={href} onMouseEnter={hide}>
+              <Link href={href} className={cn(LINK, "block", pathname === href ? "text-[#5e17eb]" : "text-black/65")}>
                 {label}
               </Link>
             </li>
           ))}
         </ul>
 
-        <div className="ml-auto hidden items-center gap-2.5 md:flex">
-          <Link href="/auth" className="rounded-lg bg-black/[0.05] px-3 py-2 text-[14px] font-semibold transition-colors hover:bg-black/10">
+        <div onMouseEnter={hide} className="ml-auto hidden items-center gap-2.5 md:flex">
+          <Link href="/auth" className="rounded-md bg-black/[0.05] px-3 py-1 text-[14px] font-semibold transition-colors hover:bg-black/10">
             Log in
           </Link>
-          <Link href="/auth" className="rounded-lg bg-black px-3 py-2 text-[14px] font-semibold text-white transition-opacity hover:opacity-85">
+          <Link href="/auth" className="rounded-md bg-black px-3 py-1 text-[14px] font-semibold text-white transition-opacity hover:opacity-85">
             Sign up
           </Link>
         </div>
@@ -59,28 +104,45 @@ export default function Navbar() {
         </button>
       </div>
 
+      {/* Product's panel: full width under the bar, its columns lined up with the bar's edges */}
+      <AnimatePresence>
+        {product && (
+          <motion.div
+            {...FOLD}
+            onMouseEnter={show}
+            className="absolute inset-x-0 top-full hidden overflow-hidden bg-white shadow-[0_24px_40px_-24px_rgba(0,0,0,0.25)] md:block"
+          >
+            <div className="mx-auto w-full max-w-[1200px] px-4 pt-3 pb-8 lg:px-11">
+              <ProductColumns onPick={() => setProduct(false)} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* phone: Product's columns, then the pages, then the way in */}
       <AnimatePresence>
         {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="overflow-hidden md:hidden"
-          >
-            <ul className="flex flex-col gap-1 px-4 pb-4">
-              {NAV_LINKS.map(({ label, href }) => (
-                <li key={href}>
-                  <Link href={href} onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2.5 text-[15px] active:bg-black/5">
-                    {label}
-                  </Link>
-                </li>
-              ))}
-              <li className="mt-2 grid grid-cols-2 gap-2">
-                <Link href="/auth" className="rounded-lg bg-black/[0.05] py-2.5 text-center text-[14px] font-semibold">Log in</Link>
-                <Link href="/auth" className="rounded-lg bg-black py-2.5 text-center text-[14px] font-semibold text-white">Sign up</Link>
-              </li>
-            </ul>
+          <motion.div {...FOLD} className="overflow-hidden md:hidden">
+            <div className="flex flex-col gap-4 px-4 pb-4">
+              <ProductColumns onPick={() => setOpen(false)} />
+              <ul className="flex flex-col gap-1">
+                {NAV_LINKS.map(({ label, href }) => (
+                  <li key={href}>
+                    <Link href={href} onClick={() => setOpen(false)} className="block rounded-lg px-1 py-2.5 text-[15px] active:bg-black/5">
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <div className="grid grid-cols-2 gap-2">
+                <Link href="/auth" className="rounded-lg bg-black/[0.05] py-1.5 text-center text-[14px] font-semibold">
+                  Log in
+                </Link>
+                <Link href="/auth" className="rounded-lg bg-black py-1.5 text-center text-[14px] font-semibold text-white">
+                  Sign up
+                </Link>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
