@@ -19,5 +19,9 @@ export const TASKS = [
   { id: "week", day: 1, title: "Plan the week" },
 ];
 
+// the days the Task view's row holds, counted from today: a week back, four weeks on
+export const FIRST_DAY = -7;
+export const LAST_DAY = 27;
+
 // the date that many days from today
 export const dayAt = (n) => new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + n);

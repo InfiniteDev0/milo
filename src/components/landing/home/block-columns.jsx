@@ -1,7 +1,11 @@
-// The board's Block view: a column per block, its coloured head, Add a task, then today's tasks.
+// The board's Block view: today's date with the arrows resting (it only ever shows today, as in the app), Start and
+// Archived, then a column per block: its coloured head, Add a task, then today's tasks.
 
-import { ChevronDown, CirclePlus, Play } from "lucide-react";
-import { BLOCKS } from "./board-data";
+import { Archive, ChevronDown, CirclePlus, Play } from "lucide-react";
+import { BLOCKS, TODAY } from "./board-data";
+import { BoardHeader } from "./board-header";
+
+const BOX = "flex items-center gap-1.5 rounded-md bg-(--b-fill) px-3 py-1.5 text-[13px]";
 
 function Column({ name, tone, ink, tasks, hidden }) {
   return (
@@ -42,5 +46,30 @@ function Column({ name, tone, ink, tasks, hidden }) {
 }
 
 export function BlockColumns() {
-  return BLOCKS.map((b) => <Column key={b.name} {...b} />);
+  return (
+    <>
+      <BoardHeader
+        restingTitle="The Blocks view shows today"
+        start={
+          <span className={BOX}>
+            <span className="text-[#3b82f6]">{TODAY.toLocaleDateString("en-US", { weekday: "long" })}</span> :{" "}
+            {TODAY.toLocaleDateString("en-US")}
+          </span>
+        }
+      >
+        <span className={BOX}>
+          <Play className="size-3.5 fill-current" /> Start
+        </span>
+        <span className={BOX}>
+          <Archive className="size-3.5" /> Archived
+          <span className="rounded-[4px] bg-(--b-fill2) px-1.5 text-[11px] text-(--b-ink2)">1</span>
+        </span>
+      </BoardHeader>
+      <div className="flex h-[32rem] gap-6 px-4 pt-1">
+        {BLOCKS.map((b) => (
+          <Column key={b.name} {...b} />
+        ))}
+      </div>
+    </>
+  );
 }
