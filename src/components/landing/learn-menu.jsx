@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { HEAD, ITEM } from "./menu-parts";
 
 const LEARN = [
   {
@@ -29,10 +30,10 @@ export function LearnColumns({ onPick }) {
     <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
       {LEARN.map((col) => (
         <div key={col.title} className="flex flex-col gap-2">
-          <span className="font-mono text-[11px] tracking-[0.12em] text-black/45 uppercase">{col.title}</span>
+          <span className={HEAD}>{col.title}</span>
           <div className="flex flex-col gap-1">
             {col.items.map(({ label, href }) => (
-              <Link key={label} href={href} onClick={onPick} className="py-1.5 text-[14px] text-black/85 transition-colors hover:text-black">
+              <Link key={label} href={href} onClick={onPick} className={ITEM}>
                 {label}
               </Link>
             ))}
@@ -42,7 +43,7 @@ export function LearnColumns({ onPick }) {
 
       {/* the card: two columns wide on a big screen */}
       <div className="col-span-2 flex flex-col gap-2">
-        <span className="font-mono text-[11px] tracking-[0.12em] text-black/45 uppercase">Why Milo</span>
+        <span className={HEAD}>Why Milo</span>
         <Link href="/about" onClick={onPick} className="group flex flex-col gap-4 rounded-xl bg-black/[0.03] p-5 transition-colors hover:bg-black/[0.05]">
           <span className="text-[17px] leading-snug text-black/85">&ldquo;Milo notices what you did, not what you didn&rsquo;t.&rdquo;</span>
           <span className="flex items-center gap-1 text-[14px] font-semibold">

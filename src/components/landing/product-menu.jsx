@@ -2,6 +2,7 @@
 // Only things the app does today.
 
 import Link from "next/link";
+import { HEAD, ITEM } from "./menu-parts";
 import { CalendarDays, Columns3, Image, LayoutGrid, Palette, PenLine, Search, Smartphone, SquareCheck, Tag, Timer } from "lucide-react";
 
 export const PRODUCT = [
@@ -39,9 +40,13 @@ export const PRODUCT = [
 // one row: the tile, then the name
 export function ProductLink({ label, href, Icon, tone, onPick }) {
   return (
-    <Link href={href} onClick={onPick} className="group flex items-center gap-2.5 rounded-lg py-1.5 text-[14px] text-black/85 transition-colors hover:text-black">
-      <span className="flex size-5 shrink-0 items-center justify-center rounded-[4px] text-white transition-transform group-hover:scale-110" style={{ background: tone }}>
-        <Icon className="size-3" strokeWidth={2.5} />
+    <Link href={href} onClick={onPick} className={`group gap-2.5 ${ITEM}`}>
+      {/* a little app tile: lighter at the top, a glint along its edge */}
+      <span
+        className="flex size-6 shrink-0 items-center justify-center rounded-[5px] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-transform group-hover:scale-110"
+        style={{ background: `linear-gradient(180deg, color-mix(in srgb, ${tone} 78%, white), ${tone})` }}
+      >
+        <Icon className="size-3.5" strokeWidth={2.4} />
       </span>
       {label}
     </Link>
@@ -54,7 +59,7 @@ export function ProductColumns({ onPick }) {
     <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
       {PRODUCT.map((col) => (
         <div key={col.title} className="flex flex-col gap-2">
-          <span className="font-mono text-[11px] tracking-[0.12em] text-black/45 uppercase">{col.title}</span>
+          <span className={HEAD}>{col.title}</span>
           <div className="flex flex-col gap-1">
             {col.items.map((item) => (
               <ProductLink key={item.label} {...item} onPick={onPick} />
