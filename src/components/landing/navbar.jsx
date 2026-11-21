@@ -17,7 +17,8 @@ const NAV_LINKS = [
   { label: "About", href: "/about" },
 ];
 
-const LINK = "rounded-lg px-2.5 py-1.5 text-[14px] transition-colors hover:text-black";
+// every link: a soft fill under the pointer
+const LINK = "rounded-md px-2.5 py-1.5 text-[14px] transition-colors hover:bg-black/[0.05] hover:text-black";
 const FOLD = {
   initial: { height: 0, opacity: 0 },
   animate: { height: "auto", opacity: 1 },
@@ -57,13 +58,14 @@ export default function Navbar() {
 
   return (
     <nav onMouseLeave={hide} className="sticky top-0 z-50 bg-white">
-      <div className="mx-auto flex h-14 w-full max-w-[1200px] items-center gap-6 px-4 lg:px-11">
+      <div className="relative mx-auto flex h-14 w-full max-w-[1200px] items-center gap-6 px-4 lg:px-11">
         <Link href="/" aria-label="Go to home" className="flex shrink-0 items-center gap-1">
           <MiloFace className="size-8 touch-none select-none" />
           <span className="text-[19px] font-semibold tracking-[-0.04em]">Milo</span>
         </Link>
 
-        <ul className="hidden items-center gap-1.5 md:flex">
+        {/* the pages, in the middle of the bar */}
+        <ul className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1.5 md:flex">
           <li onMouseEnter={show}>
             <button
               type="button"
