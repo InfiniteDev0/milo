@@ -1,14 +1,17 @@
 "use client";
 
-// The app's Block view, drawn for the landing page: top bar, the rail, the date, and the block columns running off the
-// right edge. The sun in its bar flips it between light and dark, as the app's does. Small rounding, no shadows but
-// Milo's. No data, no providers.
+// The app, drawn for the landing page: top bar, the rail, the date, and the columns running off the right edge. view
+// picks Block view (a column per block) or Task view (a column per day), from the tabs above it. The sun in its bar
+// flips it between light and dark with the app's sweep, bottom up. Small rounding, no shadows but Milo's. No data, no providers.
 
 import { useState } from "react";
-import { Archive, ChevronDown, ChevronLeft, ChevronRight, ChevronsRight, CirclePlus, Moon, Play, Search, Sun } from "lucide-react";
+import { Archive, ChevronDown, ChevronLeft, ChevronRight, ChevronsRight, Moon, Play, Search, Sun } from "lucide-react";
 import MiloFace from "@/components/MiloFace";
-import { BLOCKS } from "./board-data";
 import { BOARD_THEMES } from "./board-themes";
+import { BlockColumns } from "./block-columns";
+import { BOARD_VT, sweep } from "./board-sweep";
+import { ActionSwapIcon } from "@/components/motion/action-swap";
+import { DayColumns } from "./day-columns";
 
 // a sidebar icon: the app's own svg as a mask, coloured here
 function RailIcon({ src, label, active }) {
@@ -29,52 +32,13 @@ function RailIcon({ src, label, active }) {
   );
 }
 
-// a block: its coloured head, Add a task, then today's tasks
-function Column({ name, tone, ink, tasks, hidden }) {
-  return (
-    <div className="flex w-[15rem] shrink-0 flex-col gap-2.5">
-      <div className="flex items-center justify-between rounded-md px-4 py-3" style={{ background: tone, color: ink }}>
-        <span className="flex flex-col text-left">
-          <span className="text-[15px]">{name}</span>
-          <span className="text-[11px] opacity-70">
-            {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
-          </span>
-        </span>
-        {/* start: a white tile with a ring in it */}
-        <span className="flex size-8 items-center justify-center rounded-md bg-white/85">
-          <span className="size-3.5 rounded-[4px] border-[3px] border-black" />
-        </span>
-      </div>
-      <div className="flex items-center gap-2 rounded-md bg-(--b-fill) px-3 py-2.5 text-[13px] text-(--b-ink2)">
-        <CirclePlus className="size-4" />
-        Add a task
-      </div>
-      {tasks.map((t) => (
-        <div key={t} className="flex items-center gap-2.5 rounded-md border bg-(--b-card) px-3 py-3" style={{ borderColor: tone }}>
-          <span className="size-4 shrink-0 rounded-full border border-(--b-line)" />
-          <span className="flex-1 text-left text-[13px] text-(--b-ink)">{t}</span>
-          <Play className="size-3.5 fill-current text-(--b-ink2)" />
-          <span className="rounded-[4px] bg-(--b-fill2) px-1.5 py-0.5 text-[11px] text-(--b-ink2) tabular-nums">0:00</span>
-        </div>
-      ))}
-      {hidden && (
-        <div className="flex items-center gap-2 rounded-md bg-(--b-fill) px-3 py-2.5 text-[13px] text-(--b-ink2)">
-          <span className="flex-1 text-left">Hidden tasks</span>
-          <span className="rounded-[4px] bg-(--b-fill2) px-1.5 text-[11px]">{hidden}</span>
-          <ChevronDown className="size-3.5" />
-        </div>
-      )}
-    </div>
-  );
-}
-
-export function BoardShot() {
+export function BoardShot({ view = "blocks" }) {
   const [dark, setDark] = useState(false);
 
   return (
     <div
-      style={BOARD_THEMES[dark ? "dark" : "light"]}
-      className="w-full overflow-hidden rounded-lg bg-(--b-frame) p-1.5 text-(--b-ink) transition-colors duration-300 [&_*]:transition-colors [&_*]:duration-300"
+      style={{ ...BOARD_THEMES[dark ? "dark" : "light"], viewTransitionName: BOARD_VT }}
+      className="w-full overflow-hidden rounded-lg bg-(--b-frame) p-1.5 text-(--b-ink)"
     >
       {/* the top bar */}
       <div className="flex items-center gap-3 px-2 pt-1 pb-2">
@@ -89,17 +53,16 @@ export function BoardShot() {
           {/* the theme toggle: flips this board, not the page */}
           <button
             type="button"
-            onClick={() => setDark((d) => !d)}
+            onClick={() => sweep(() => setDark((d) => !d))}
             aria-label={dark ? "Show it in light" : "Show it in dark"}
             className="flex size-7 cursor-pointer items-center justify-center rounded-md hover:bg-(--b-fill2) hover:text-(--b-ink)"
           >
-            {dark ? <Moon className="size-4" /> : <Sun className="size-4" />}
+            {/* as the app: the moon to go dark, the sun to come back */}
+            <ActionSwapIcon value={dark ? "dark" : "light"} animation="blur" className="size-4">
+              {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </ActionSwapIcon>
           </button>
           <Search className="size-4" />
-          <span className="flex rounded-md bg-(--b-fill2) p-0.5 text-[12px]">
-            <span className="px-3 py-1 text-(--b-ink2)">Tasks</span>
-            <span className="rounded-[5px] bg-white px-3 py-1 text-black">Blocks</span>
-          </span>
           {/* the account: a rounded-square picture and a chevron, as the app's top bar has it */}
           <span className="flex items-center gap-1.5">
             {/* eslint-disable-next-line @next/next/no-img-element -- a remote picture, too small to need next/image */}
@@ -129,21 +92,20 @@ export function BoardShot() {
             </span>
             <ChevronLeft className="size-4 text-(--b-ink3)" />
             <ChevronRight className="size-4 text-(--b-ink3)" />
-            <span className="ml-auto hidden items-center gap-2 sm:flex">
-              <span className="flex items-center gap-1.5 rounded-md bg-(--b-fill) px-3 py-1.5 text-[13px]">
-                <Play className="size-3.5 fill-current" /> Start
+            {/* Start and Archived belong to blocks */}
+            {view === "blocks" && (
+              <span className="ml-auto hidden items-center gap-2 sm:flex">
+                <span className="flex items-center gap-1.5 rounded-md bg-(--b-fill) px-3 py-1.5 text-[13px]">
+                  <Play className="size-3.5 fill-current" /> Start
+                </span>
+                <span className="flex items-center gap-1.5 rounded-md bg-(--b-fill) px-3 py-1.5 text-[13px]">
+                  <Archive className="size-3.5" /> Archived
+                  <span className="rounded-[4px] bg-(--b-fill2) px-1.5 text-[11px] text-(--b-ink2)">1</span>
+                </span>
               </span>
-              <span className="flex items-center gap-1.5 rounded-md bg-(--b-fill) px-3 py-1.5 text-[13px]">
-                <Archive className="size-3.5" /> Archived
-                <span className="rounded-[4px] bg-(--b-fill2) px-1.5 text-[11px] text-(--b-ink2)">1</span>
-              </span>
-            </span>
+            )}
           </div>
-          <div className="flex h-[32rem] gap-6 px-4 pt-1">
-            {BLOCKS.map((b) => (
-              <Column key={b.name} {...b} />
-            ))}
-          </div>
+          <div className="flex h-[32rem] gap-6 px-4 pt-1">{view === "blocks" ? <BlockColumns /> : <DayColumns />}</div>
           {/* Milo, bottom right, as in the app, lifted off the board */}
           <span className="absolute right-4 bottom-4 flex size-11 items-center justify-center overflow-hidden rounded-md bg-white shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
             <MiloFace className="size-11" />

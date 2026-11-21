@@ -1,27 +1,25 @@
-// The top of the landing page: a small line, the headline and the view tabs in the navbar's 1200 box, then the app
-// a little wider than it.
+// The top of the landing page: stars behind it, a small line and the headline in the navbar's 1200 box, then the view
+// tabs and the app under them.
 
-import { ViewSwitch } from "./view-switch";
-import { BoardShot } from "./board-shot";
+import { ShootingStars } from "@/components/ui/shooting-stars";
+import { StarsBackground } from "@/components/ui/stars-background";
+import { HeroStage } from "./hero-stage";
 
 export function Hero() {
   return (
-    <section className="pb-24">
-      <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center gap-2 px-4 pt-20 text-center lg:px-11 lg:pt-24">
+    <section className="relative overflow-hidden pb-24">
+      {/* the sky: dark stars, since the page is light */}
+      <StarsBackground starColor="40, 30, 80" starDensity={0.0003} />
+      <ShootingStars />
+      <div className="relative mx-auto flex w-full max-w-[1200px] flex-col items-center gap-2 px-4 pt-20 text-center lg:px-11 lg:pt-24">
         <span className="text-[12px] font-semibold! text-[#5e17eb] uppercase">
           Curated for you to stay productive
         </span>
         <h1 className="text-[32px] leading-[1.05] font-normal tracking-[-0.03em] text-balance sm:text-[40px] lg:text-[40px]">Manage your life in Blocks</h1>
         {/* Be a part of our productive community */}
-        {/* Block view or Task view, as the app switches them */}
-        <div className="mt-6">
-          <ViewSwitch />
-        </div>
       </div>
-      {/* the app's Block view, under the tabs, wider than the words */}
-      <div className="mx-auto mt-8 w-full max-w-[1440px] px-4 lg:px-8">
-        <BoardShot />
-      </div>
+      {/* Block view or Task view, and the app under them */}
+      <HeroStage />
     </section>
   );
 }
