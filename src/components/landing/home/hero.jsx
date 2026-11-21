@@ -1,7 +1,7 @@
 // The top of the landing page: a small line and the headline, centred in the navbar's 1200 box.
 
-import { MiloFloat } from "./milo-float";
 import { ViewSwitch } from "./view-switch";
+import { BoardShot } from "./board-shot";
 
 export function Hero() {
   return (
@@ -16,8 +16,11 @@ export function Hero() {
         <div className="mt-6">
           <ViewSwitch />
         </div>
+        {/* the app's Block view, under the tabs */}
+        <div className="mt-8 w-full">
+          <BoardShot />
+        </div>
       </div>
-      <MiloFloat />
     </section>
   );
 }
