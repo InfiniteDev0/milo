@@ -2,7 +2,7 @@
 // Only things the app does today.
 
 import Link from "next/link";
-import { GRID, HEAD, ITEM } from "./menu-parts";
+import { HEAD, ITEM } from "./menu-parts";
 import { CalendarDays, Columns3, Image, LayoutGrid, Palette, PenLine, Search, Smartphone, SquareCheck, Tag, Timer } from "lucide-react";
 
 export const PRODUCT = [
@@ -56,7 +56,7 @@ export function ProductLink({ label, href, Icon, tone, onPick }) {
 // the columns, as the panel under the bar shows them
 export function ProductColumns({ onPick }) {
   return (
-    <div className={GRID}>
+    <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
       {PRODUCT.map((col) => (
         <div key={col.title} className="flex flex-col gap-2">
           <span className={HEAD}>{col.title}</span>

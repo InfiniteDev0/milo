@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { GRID, HEAD, ITEM } from "./menu-parts";
+import { HEAD, ITEM } from "./menu-parts";
 
 const LEARN = [
   {
@@ -27,7 +27,7 @@ const LEARN = [
 
 export function LearnColumns({ onPick }) {
   return (
-    <div className={GRID}>
+    <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
       {LEARN.map((col) => (
         <div key={col.title} className="flex flex-col gap-2">
           <span className={HEAD}>{col.title}</span>
