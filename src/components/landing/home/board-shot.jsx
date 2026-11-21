@@ -2,7 +2,7 @@
 
 // The app, drawn for the landing page: top bar, the rail, the date, and the columns running off the right edge. view
 // picks Block view (a column per block) or Task view (a column per day), from the tabs above it. The arrows step the
-// days back and forward, and in Task view a task drags onto any day. The sun in its bar
+// days back and forward, and in Task view a task drags as in the app. The sun in its bar
 // flips it and the page between light and dark; the app's sweep, bottom up, plays on the board only. Small rounding, no shadows but Milo's. No data, no providers.
 
 import { useState } from "react";
@@ -15,6 +15,7 @@ import { setLandingDark, useLandingDark } from "../landing-theme";
 import { ActionSwapIcon } from "@/components/motion/action-swap";
 import { DayColumns } from "./day-columns";
 import { TASKS, dayAt } from "./board-data";
+import { dropTask } from "./board-moves";
 
 const ARROW = "flex size-7 cursor-pointer items-center justify-center rounded-md text-(--b-ink3) hover:bg-(--b-fill2) hover:text-(--b-ink)";
 
@@ -43,7 +44,7 @@ export function BoardShot({ view = "blocks" }) {
   // the first day shown (0 is today), moved by the arrows; the tasks live here so a drag stays put across views
   const [start, setStart] = useState(0);
   const [tasks, setTasks] = useState(TASKS);
-  const move = (id, day) => setTasks((all) => [...all.filter((t) => t.id !== id), ...all.filter((t) => t.id === id).map((t) => ({ ...t, day }))]);
+  const drop = (from, id, to, index) => setTasks((all) => dropTask(all, from, id, to, index));
   const shown = dayAt(start);
 
   return (
@@ -122,7 +123,7 @@ export function BoardShot({ view = "blocks" }) {
               </span>
             )}
           </div>
-          <div className="flex h-[32rem] gap-6 px-4 pt-1">{view === "blocks" ? <BlockColumns /> : <DayColumns start={start} tasks={tasks} onMove={move} />}</div>
+          <div className="flex h-[32rem] gap-6 px-4 pt-1">{view === "blocks" ? <BlockColumns /> : <DayColumns start={start} tasks={tasks} onDrop={drop} />}</div>
           {/* Milo, bottom right, as in the app, lifted off the board */}
           <span className="absolute right-4 bottom-4 flex size-11 items-center justify-center overflow-hidden rounded-md bg-white shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
             <MiloFace className="size-11" />
