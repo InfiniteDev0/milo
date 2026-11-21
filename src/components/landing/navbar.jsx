@@ -1,7 +1,7 @@
 "use client";
 
-// The site's top bar, laid out as ClickUp's: Milo, Product (opens a panel of what's inside), Pricing and About on
-// the left; Log in and Sign up on the right. On a phone the pages fold into Menu.
+// The site's top bar, laid out as ClickUp's: Milo on the left; Product, Solutions and Learn (each opens a panel), Pricing and
+// About in the middle; Log in and Sign up on the right. On a phone the pages fold into Menu.
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -11,14 +11,23 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MiloFace from "../MiloFace";
 import { ProductColumns } from "./product-menu";
+import { LearnColumns } from "./learn-menu";
+import { SolutionsColumns } from "./solutions-menu";
+
+// the pages that open a panel, and what each panel holds
+const MENUS = [
+  { key: "product", label: "Product", Panel: ProductColumns, here: "/features" },
+  { key: "solutions", label: "Solutions", Panel: SolutionsColumns },
+  { key: "learn", label: "Learn", Panel: LearnColumns },
+];
 
 const NAV_LINKS = [
   { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
 ];
 
-// every link looks like Product: dark text, a soft fill under the pointer and on the page you are on
-const LINK = "rounded-md px-2.5 py-1.5 text-[14px] text-black/80 transition-colors hover:bg-black/[0.05] hover:text-black";
+// every link looks like Product (Albert Sans, regular, over the global a { Outfit 500 }): dark text, a soft fill under the pointer and on the page you are on
+const LINK = "rounded-md px-2.5 py-1.5 [font-family:'Albert_sans'] text-[14px] font-normal text-black/80 transition-colors hover:bg-black/[0.05] hover:text-black";
 const ON = "bg-black/[0.05] text-black";
 const FOLD = {
   initial: { height: 0, opacity: 0 },
@@ -30,32 +39,34 @@ const FOLD = {
 export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [product, setProduct] = useState(false);
+  // which panel is open: a MENUS key, or none
+  const [menu, setMenu] = useState(null);
   const leave = useRef(null);
 
   // a new page folds everything away
   const [at, setAt] = useState(pathname);
   if (at !== pathname) {
     setAt(pathname);
-    setProduct(false);
+    setMenu(null);
     setOpen(false);
   }
   // so does Escape
   useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && setProduct(false);
+    const onKey = (e) => e.key === "Escape" && setMenu(null);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // the pointer can cross the gap between Product and its panel without it closing
-  const show = () => {
+  // the pointer can cross the gap between a page and its panel without it closing
+  const show = (key) => {
     clearTimeout(leave.current);
-    setProduct(true);
+    setMenu(key);
   };
   const hide = () => {
     clearTimeout(leave.current);
-    leave.current = setTimeout(() => setProduct(false), 150);
+    leave.current = setTimeout(() => setMenu(null), 150);
   };
+  const Panel = MENUS.find((m) => m.key === menu)?.Panel;
 
   return (
     <nav onMouseLeave={hide} className="sticky top-0 z-50 bg-white">
@@ -67,17 +78,19 @@ export default function Navbar() {
 
         {/* the pages, in the middle of the bar */}
         <ul className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1.5 md:flex">
-          <li onMouseEnter={show}>
-            <button
-              type="button"
-              aria-expanded={product}
-              onClick={() => setProduct((v) => !v)}
-              className={cn(LINK, "flex cursor-pointer items-center gap-1", (product || pathname === "/features") && ON)}
-            >
-              Product
-              <ChevronDown className={cn("size-3.5 transition-transform duration-200", product && "rotate-180")} />
-            </button>
-          </li>
+          {MENUS.map(({ key, label, here }) => (
+            <li key={key} onMouseEnter={() => show(key)}>
+              <button
+                type="button"
+                aria-expanded={menu === key}
+                onClick={() => setMenu((m) => (m === key ? null : key))}
+                className={cn(LINK, "flex cursor-pointer items-center gap-1", (menu === key || pathname === here) && ON)}
+              >
+                {label}
+                <ChevronDown className={cn("size-3.5 transition-transform duration-200", menu === key && "rotate-180")} />
+              </button>
+            </li>
+          ))}
           {NAV_LINKS.map(({ label, href }) => (
             <li key={href} onMouseEnter={hide}>
               <Link href={href} className={cn(LINK, "block", pathname === href && ON)}>
@@ -107,16 +120,19 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Product's panel: full width under the bar, its columns lined up with the bar's edges */}
+      {/* the open panel: full width under the bar, its columns lined up with the bar's edges */}
       <AnimatePresence>
-        {product && (
+        {Panel && (
           <motion.div
             {...FOLD}
-            onMouseEnter={show}
+            onMouseEnter={() => show(menu)}
             className="absolute inset-x-0 top-full hidden overflow-hidden bg-white shadow-[0_24px_40px_-24px_rgba(0,0,0,0.25)] md:block"
           >
             <div className="mx-auto w-full max-w-[1200px] px-4 pt-3 pb-8 lg:px-11">
-              <ProductColumns onPick={() => setProduct(false)} />
+              {/* a fresh key, so switching panels swaps the columns in place */}
+              <motion.div key={menu} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}>
+                <Panel onPick={() => setMenu(null)} />
+              </motion.div>
             </div>
           </motion.div>
         )}

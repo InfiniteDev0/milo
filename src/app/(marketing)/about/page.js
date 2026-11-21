@@ -143,7 +143,7 @@ export default function About() {
             </span>
           </div>
           <div className="flex flex-col gap-4">
-            <h2 className="m-0 max-w-2xl text-2xl font-extralight sm:text-3xl">
+            <h2 id="research" className="scroll-mt-24 m-0 max-w-2xl text-2xl font-extralight sm:text-3xl">
               Students who forgave themselves for putting off the first exam put
               it off less before the second one.
             </h2>
@@ -177,7 +177,7 @@ export default function About() {
           <span className="text-sm tracking-wide text-zinc-500">
             What that looks like
           </span>
-          <h2 className="m-0 text-3xl font-extralight sm:text-4xl">
+          <h2 id="try" className="scroll-mt-24 m-0 text-3xl font-extralight sm:text-4xl">
             Start a block. Skip one. Watch nothing bad happen.
           </h2>
           <p className="m-0 text-lg text-zinc-600">
@@ -211,7 +211,7 @@ export default function About() {
           <span className="text-sm tracking-wide text-zinc-500">
             What Milo promises
           </span>
-          <h2 className="m-0 max-w-3xl text-3xl font-extralight sm:text-4xl">
+          <h2 id="promises" className="scroll-mt-24 m-0 max-w-3xl text-3xl font-extralight sm:text-4xl">
             Six things Milo will never do to you.
           </h2>
         </div>
@@ -234,7 +234,7 @@ export default function About() {
             <span className="text-sm tracking-wide text-zinc-500">
               Who it&apos;s for
             </span>
-            <h2 className="m-0 max-w-3xl text-3xl font-extralight sm:text-4xl">
+            <h2 id="who" className="scroll-mt-24 m-0 max-w-3xl text-3xl font-extralight sm:text-4xl">
               Not a job title. Not a diagnosis.
             </h2>
             <p className="m-0 max-w-2xl text-lg text-zinc-600">
@@ -261,7 +261,7 @@ export default function About() {
           <span className="text-sm tracking-wide text-zinc-500">
             Who&apos;s building it
           </span>
-          <h2 className="m-0 max-w-3xl text-3xl font-extralight sm:text-4xl">
+          <h2 id="building" className="scroll-mt-24 m-0 max-w-3xl text-3xl font-extralight sm:text-4xl">
             One person, in public.
           </h2>
         </div>
@@ -353,7 +353,7 @@ export default function About() {
           <span className="text-sm tracking-wide text-zinc-500">
             What Milo won&apos;t become
           </span>
-          <h2 className="m-0 max-w-3xl text-3xl font-extralight sm:text-4xl">
+          <h2 id="wont" className="scroll-mt-24 m-0 max-w-3xl text-3xl font-extralight sm:text-4xl">
             The things that are easier to promise than to refuse.
           </h2>
         </div>
