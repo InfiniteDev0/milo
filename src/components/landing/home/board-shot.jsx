@@ -82,7 +82,12 @@ export function BoardShot() {
             <span className="px-3 py-1 text-black/60">Tasks</span>
             <span className="rounded-[5px] bg-white px-3 py-1 text-black">Blocks</span>
           </span>
-          <span className="size-7 rounded-full bg-gradient-to-br from-[#e4ded4] to-[#a59d91]" />
+          {/* the account: a rounded-square picture and a chevron, as the app's top bar has it */}
+          <span className="flex items-center gap-1.5">
+            {/* eslint-disable-next-line @next/next/no-img-element -- a remote picture, too small to need next/image */}
+            <img src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/purple.jpg" alt="" className="size-7 rounded-[9px] object-cover" />
+            <ChevronDown className="size-3.5 text-black/45" strokeWidth={2.5} />
+          </span>
         </span>
       </div>
 
